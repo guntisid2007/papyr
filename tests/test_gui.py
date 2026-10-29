@@ -159,3 +159,32 @@ def test_no_save_animation_when_cancelled(app, window, make):
     for _ in range(5):
         app.processEvents()
     assert not window.findChildren(SaveAnimation)
+
+
+def test_save_animation_follows_window_resize(app, window):
+    window._open_button.show()
+    window.resize(1040, 680)
+    app.processEvents()
+    animation = window._play_save_animation(1)
+    animation._animation.stop()
+    window.resize(880, 580)
+    app.processEvents()
+    animation.set_progress(0.8)
+    canvas = window.centralWidget()
+    assert animation.geometry() == canvas.rect()
+    assert canvas.rect().contains(animation._end.toPoint())
+    assert animation._end == window._save_animation_endpoints()[1]
+
+
+def test_queued_save_animation_is_dropped_with_deleted_window(app, tmp_path, capfd):
+    from PySide6.QtCore import QCoreApplication, QEvent
+
+    from converter import ConversionReport
+
+    win = MainWindow()
+    win._on_finished(ConversionReport(outputs=[tmp_path / "x.pdf"]))
+    win.close()
+    win.deleteLater()
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    app.processEvents()
+    assert "already deleted" not in capfd.readouterr().err  # Qt prints slot exceptions instead of raising

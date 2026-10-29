@@ -1,3 +1,4 @@
+from functools import partial
 from pathlib import Path
 
 from PySide6.QtCore import QPointF, QSettings, QStandardPaths, Qt, QThread, QTimer, QUrl
@@ -400,7 +401,7 @@ class MainWindow(QMainWindow):
             self._last_output = report.outputs[0]
             self._open_button.show()
             if not report.cancelled:
-                QTimer.singleShot(0, lambda count=len(report.outputs): self._play_save_animation(count))
+                QTimer.singleShot(0, self, partial(self._play_save_animation, len(report.outputs)))
         if report.cancelled:
             kept = f" {len(report.outputs)} PDF{'s' if len(report.outputs) != 1 else ''} were kept." \
                 if report.outputs else ""
@@ -420,12 +421,14 @@ class MainWindow(QMainWindow):
             more = f"\n…and {len(report.failures) - 12} more." if len(report.failures) > 12 else ""
             QMessageBox.warning(self, "Some Files Were Not Converted", f"{lines}{more}")
 
-    def _play_save_animation(self, count: int) -> SaveAnimation:
+    def _save_animation_endpoints(self) -> tuple[QPointF, QPointF]:
         canvas = self.centralWidget()
         start = self._stack.mapTo(canvas, self._stack.rect().center())
         target = self._open_button.mapTo(canvas, self._open_button.rect().center())
-        landing = QPointF(target) - QPointF(self._open_button.width() / 2 + 52, 0)
-        animation = SaveAnimation(canvas, QPointF(start), landing, count)
+        return QPointF(start), QPointF(target) - QPointF(self._open_button.width() / 2 + 52, 0)
+
+    def _play_save_animation(self, count: int) -> SaveAnimation:
+        animation = SaveAnimation(self.centralWidget(), self._save_animation_endpoints, count)
         animation.start()
         return animation
 

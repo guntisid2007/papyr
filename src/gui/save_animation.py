@@ -1,4 +1,5 @@
 import math
+from collections.abc import Callable
 
 from PySide6.QtCore import QEasingCurve, QPointF, QRectF, Qt, QVariantAnimation
 from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPen
@@ -22,11 +23,13 @@ def _phase(t: float, start: float, end: float) -> float:
 class SaveAnimation(QWidget):
     """Overlay that flies a PDF page from the image list into a folder, then removes itself."""
 
-    def __init__(self, parent: QWidget, start: QPointF, end: QPointF, count: int, duration_ms: int = 1400):
+    def __init__(self, parent: QWidget, endpoints: Callable[[], tuple[QPointF, QPointF]], count: int,
+                 duration_ms: int = 1400):
         super().__init__(parent)
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self._endpoints, self._count = endpoints, count
+        self._start, self._end = endpoints()
         self.setGeometry(parent.rect())
-        self._start, self._end, self._count = start, end, count
         self._t = 0.0
         self._animation = QVariantAnimation(self)
         self._animation.setStartValue(0.0)
@@ -41,7 +44,10 @@ class SaveAnimation(QWidget):
         self._animation.start()
 
     def set_progress(self, t: float) -> None:
+        """Advance the animation, tracking the window's current layout so a resize never strands it."""
         self._t = t
+        self.setGeometry(self.parentWidget().rect())
+        self._start, self._end = self._endpoints()
         self.update()
 
     def paintEvent(self, event) -> None:
