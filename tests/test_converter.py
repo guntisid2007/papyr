@@ -367,3 +367,29 @@ def test_cmyk_jpeg_with_icc_profile_converts(tmp_path):
     source = tmp_path / "cmyk.jpg"
     Image.new("CMYK", (10, 10), (0, 255, 255, 0)).save(source, icc_profile=srgb)
     assert load_image(source).mode == "RGB"
+
+
+GRAY_ICC = Path("/System/Library/ColorSync/Profiles/Generic Gray Profile.icc")
+
+
+@pytest.mark.skipif(not GRAY_ICC.exists(), reason="needs the macOS Generic Gray profile")
+@pytest.mark.parametrize("mode, values, key", [("L", [0, 128, 192], 0), ("I;16", [0, 32768, 49152], 0)])
+def test_gray_icc_with_color_key_keeps_color_management(tmp_path, mode, values, key):
+    from PIL import ImageCms
+    icc = GRAY_ICC.read_bytes()
+    source = tmp_path / "gray_key.png"
+    image = Image.new(mode, (3, 1))
+    for x, value in enumerate(values):
+        image.putpixel((x, 0), value)
+    image.save(source, transparency=key, icc_profile=icc)
+
+    eight_bit = Image.new("L", (3, 1))
+    for x, value in enumerate(values):
+        eight_bit.putpixel((x, 0), value if mode == "L" else value // 256)
+    reference = ImageCms.profileToProfile(eight_bit, ImageCms.ImageCmsProfile(io.BytesIO(icc)),
+                                          ImageCms.createProfile("sRGB"), outputMode="RGB").convert("L")
+    result = load_image(source).convert("L")
+    assert result.getpixel((0, 0)) == 255
+    assert [result.getpixel((x, 0)) for x in (1, 2)] == pytest.approx(
+        [reference.getpixel((x, 0)) for x in (1, 2)], abs=2)
+    assert reference.getpixel((1, 0)) != eight_bit.getpixel((1, 0))  # the profile changes the tones

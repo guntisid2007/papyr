@@ -28,36 +28,40 @@ def _to_srgb(image: Image.Image, icc: bytes | None) -> Image.Image:
         return image
     try:
         source = ImageCms.ImageCmsProfile(io.BytesIO(icc))
-        mode = "RGBA" if "A" in image.getbands() else "RGB"
-        return ImageCms.profileToProfile(image, source, ImageCms.createProfile("sRGB"), outputMode=mode)
+        return ImageCms.profileToProfile(image, source, ImageCms.createProfile("sRGB"), outputMode="RGB")
     except (ImageCms.PyCMSError, OSError, ValueError):
         return image
 
 
-def _with_alpha(image: Image.Image) -> Image.Image:
-    """Scale 16-bit gray to 8 bits and turn a color-key transparency into an alpha band."""
+def _split_alpha(image: Image.Image) -> tuple[Image.Image, Image.Image | None]:
+    """Separate 8-bit color (RGB, L, or CMYK) from transparency, using the original pixel values."""
     key = image.info.get("transparency")
     if image.mode in DEEP_GRAY_MODES:
         wide = image.convert("I")
         gray = wide.convert("F").point(lambda v: v / 256).convert("L")
         if not isinstance(key, int):
-            return gray
+            return gray, None
         mask = ImageMath.lambda_eval(lambda a: a["convert"](a["notequal"](a["x"], key) * 255, "L"), x=wide)
-        return Image.merge("LA", (gray, mask))
-    if key is not None or image.mode == "P":
-        return image.convert("RGBA")
-    return image
+        return gray, mask
+    if key is not None or image.mode == "P" or "A" in image.getbands():
+        mask = image.convert("RGBA").getchannel("A")
+        color = image.convert("L" if image.mode in ("L", "LA", "1") else "RGB")
+        return color, mask
+    if image.mode in ("L", "RGB", "CMYK"):
+        return image, None
+    return image.convert("L" if image.mode == "1" else "RGB"), None
 
 
 def _normalize(image: Image.Image, icc: bytes | None) -> Image.Image:
     """Return 8-bit sRGB (RGB or L) with any transparency composited onto white."""
-    image = _to_srgb(_with_alpha(image), icc)
-    if "A" in image.getbands():
-        rgba = image.convert("RGBA")
-        background = Image.new("RGB", rgba.size, "white")
-        background.paste(rgba.convert("RGB"), mask=rgba.getchannel("A"))
-        return background
-    return image.convert("L" if image.mode in ("L", "1") else "RGB")
+    color, mask = _split_alpha(image)
+    color = _to_srgb(color, icc)
+    color = color.convert("L" if color.mode == "L" else "RGB")
+    if mask is None:
+        return color
+    background = Image.new(color.mode, color.size, "white")
+    background.paste(color, mask=mask)
+    return background
 
 
 def load_image(path: Path) -> Image.Image:
