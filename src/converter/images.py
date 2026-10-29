@@ -3,7 +3,7 @@ import zlib
 from pathlib import Path
 
 import pillow_heif
-from PIL import Image, ImageCms, ImageOps, UnidentifiedImageError
+from PIL import Image, ImageCms, ImageMath, ImageOps, UnidentifiedImageError
 
 from .pdf_writer import EncodedImage
 
@@ -11,6 +11,7 @@ pillow_heif.register_heif_opener()
 
 SUPPORTED_EXTENSIONS = frozenset({".heic", ".heif", ".jpg", ".jpeg", ".png"})
 LOSSLESS_EXTENSIONS = frozenset({".png"})
+DEEP_GRAY_MODES = frozenset({"I", "I;16", "I;16B", "I;16L"})
 JPEG_QUALITY = 92
 
 
@@ -22,8 +23,7 @@ def is_supported(path: Path) -> bool:
     return path.suffix.lower() in SUPPORTED_EXTENSIONS
 
 
-def _to_srgb(image: Image.Image) -> Image.Image:
-    icc = image.info.get("icc_profile")
+def _to_srgb(image: Image.Image, icc: bytes | None) -> Image.Image:
     if not icc:
         return image
     try:
@@ -34,18 +34,30 @@ def _to_srgb(image: Image.Image) -> Image.Image:
         return image
 
 
-def _flatten(image: Image.Image) -> Image.Image:
-    if "transparency" in image.info or "A" in image.getbands() or image.mode == "P":
+def _with_alpha(image: Image.Image) -> Image.Image:
+    """Scale 16-bit gray to 8 bits and turn a color-key transparency into an alpha band."""
+    key = image.info.get("transparency")
+    if image.mode in DEEP_GRAY_MODES:
+        wide = image.convert("I")
+        gray = wide.convert("F").point(lambda v: v / 256).convert("L")
+        if not isinstance(key, int):
+            return gray
+        mask = ImageMath.lambda_eval(lambda a: a["convert"](a["notequal"](a["x"], key) * 255, "L"), x=wide)
+        return Image.merge("LA", (gray, mask))
+    if key is not None or image.mode == "P":
+        return image.convert("RGBA")
+    return image
+
+
+def _normalize(image: Image.Image, icc: bytes | None) -> Image.Image:
+    """Return 8-bit sRGB (RGB or L) with any transparency composited onto white."""
+    image = _to_srgb(_with_alpha(image), icc)
+    if "A" in image.getbands():
         rgba = image.convert("RGBA")
         background = Image.new("RGB", rgba.size, "white")
-        background.paste(rgba, mask=rgba.getchannel("A"))
+        background.paste(rgba.convert("RGB"), mask=rgba.getchannel("A"))
         return background
-    if image.mode in ("I", "I;16", "I;16B", "I;16L", "F"):
-        wide = image.convert("F")
-        return wide.point(lambda v: v / 256).convert("L") if wide.getextrema()[1] > 255 else wide.convert("L")
-    if image.mode in ("L", "1"):
-        return image.convert("L")
-    return image.convert("RGB")
+    return image.convert("L" if image.mode in ("L", "1") else "RGB")
 
 
 def load_image(path: Path) -> Image.Image:
@@ -55,14 +67,12 @@ def load_image(path: Path) -> Image.Image:
     try:
         with Image.open(path) as source:
             source.load()
-            image = ImageOps.exif_transpose(source)
-            if image is source:
-                image = source.copy()
+            image = _normalize(ImageOps.exif_transpose(source), source.info.get("icc_profile"))
     except Image.DecompressionBombError as exc:
         raise ImageLoadError("Image is too large to convert safely") from exc
     except (UnidentifiedImageError, OSError, SyntaxError, ValueError) as exc:
         raise ImageLoadError(f"Could not read image: {exc}") from exc
-    return _flatten(_to_srgb(image))
+    return image
 
 
 def encode_for_pdf(path: Path) -> EncodedImage:

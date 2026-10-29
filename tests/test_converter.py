@@ -328,3 +328,42 @@ def test_cancel_during_last_image_is_honoured(make, tmp_path, merged):
     assert report.cancelled and report.outputs == []
     assert existing.read_bytes() == b"keep me"
     assert sorted(p.name for p in out.iterdir()) == ["only.pdf"]
+
+
+def _gray16(tmp_path, values, **save_kwargs):
+    source = tmp_path / "g16.png"
+    image = Image.new("I;16", (len(values), 1))
+    for x, value in enumerate(values):
+        image.putpixel((x, 0), value)
+    image.save(source, **save_kwargs)
+    return source
+
+
+def test_16_bit_scaling_comes_from_bit_depth_not_pixel_values(tmp_path):
+    upright = load_image(_gray16(tmp_path, [0, 64, 128, 255]))
+    assert [upright.getpixel((x, 0)) for x in range(4)] == [0, 0, 0, 0]
+
+
+def test_16_bit_color_key_transparency(tmp_path):
+    upright = load_image(_gray16(tmp_path, [0, 32768, 65535], transparency=32768)).convert("L")
+    assert [upright.getpixel((x, 0)) for x in range(3)] == pytest.approx([0, 255, 255], abs=1)
+
+
+def test_color_key_survives_embedded_icc_profile(tmp_path):
+    from PIL import ImageCms
+    srgb = ImageCms.ImageCmsProfile(ImageCms.createProfile("sRGB")).tobytes()
+    source = tmp_path / "icc_key.png"
+    image = Image.new("RGB", (10, 10), (0, 0, 0))
+    image.putpixel((0, 0), (200, 10, 10))
+    image.save(source, transparency=(0, 0, 0), icc_profile=srgb)
+    upright = load_image(source)
+    assert_close_color(upright.getpixel((5, 5)), (255, 255, 255), 2)
+    assert_close_color(upright.getpixel((0, 0)), (200, 10, 10), 6)
+
+
+def test_cmyk_jpeg_with_icc_profile_converts(tmp_path):
+    from PIL import ImageCms
+    srgb = ImageCms.ImageCmsProfile(ImageCms.createProfile("sRGB")).tobytes()
+    source = tmp_path / "cmyk.jpg"
+    Image.new("CMYK", (10, 10), (0, 255, 255, 0)).save(source, icc_profile=srgb)
+    assert load_image(source).mode == "RGB"
