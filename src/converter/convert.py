@@ -74,7 +74,7 @@ def _encoded_pages(source: Path, settings: PdfSettings, cancelled: CancelCheck) 
 
 def _read_pdf(source: Path) -> pypdf.PdfReader:
     reader = pypdf.PdfReader(source)
-    if reader.is_encrypted:
+    if reader.is_encrypted and reader.decrypt("") == pypdf.PasswordType.NOT_DECRYPTED:
         raise ImageLoadError("PDF is password-protected")
     if not reader.pages:
         raise ImageLoadError("PDF has no pages")

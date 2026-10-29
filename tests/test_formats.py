@@ -165,3 +165,42 @@ def test_broken_pdf_is_reported(tmp_path):
     assert report.outputs == [] and report.failures[0][0] == bad
     report = convert_merged([bad], tmp_path / "m.pdf", ORIGINAL)
     assert report.outputs == [] and report.failures[0][0] == bad
+
+
+def test_pdf_thumbnails_from_many_threads_do_not_crash(tmp_path):
+    """PDFium is not thread-safe. Run in a subprocess so a crash fails this test instead of the whole run."""
+    import subprocess
+    import sys
+
+    script = f"""
+import sys
+sys.path[:0] = {[str(Path(__file__).parent.parent / "src"), str(Path(__file__).parent)]!r}
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from converter.images import iter_pages, make_thumbnail
+from pdf_samples import text_pdf
+paths = [text_pdf(Path({str(tmp_path)!r}) / f"{{i}}.pdf", ["a", "b"]) for i in range(24)]
+with ThreadPoolExecutor(8) as pool:
+    for _ in range(10):
+        list(pool.map(lambda p: make_thumbnail(p, 80), paths))
+        list(pool.map(lambda p: [page.size for page in iter_pages(p)], paths))
+print("ok")
+"""
+    result = subprocess.run([sys.executable, "-c", script], capture_output=True, text=True, timeout=120)
+    assert result.returncode == 0 and "ok" in result.stdout, result.stderr[-2000:]
+
+
+@pytest.mark.parametrize("output", [OutputFormat.PDF, OutputFormat.PNG], ids=lambda f: f.name)
+def test_pdf_with_empty_user_password_converts(tmp_path, output):
+    import pypdf
+    source = tmp_path / "restricted.pdf"
+    writer = pypdf.PdfWriter(clone_from=text_pdf(tmp_path / "plain.pdf", ["Readable"]))
+    writer.encrypt("", owner_password="owner", algorithm="RC4-128")
+    with open(source, "wb") as stream:
+        writer.write(stream)
+    if output is OutputFormat.PDF:
+        report = convert_individual([source], tmp_path / "out", ORIGINAL)
+        assert "Readable" in PdfReader(report.outputs[0]).pages[0].extract_text()
+    else:
+        report = convert_images([source], tmp_path / "out", ImageSettings(output))
+    assert report.failures == [] and len(report.outputs) == 1

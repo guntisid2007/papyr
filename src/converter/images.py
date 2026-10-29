@@ -1,5 +1,6 @@
 import io
 import math
+import threading
 import zlib
 from collections.abc import Iterator
 from pathlib import Path
@@ -17,6 +18,7 @@ pillow_heif.register_heif_opener()
 DEEP_GRAY_MODES = frozenset({"I", "I;16", "I;16B", "I;16L"})
 PDF_EMBED_JPEG_QUALITY = 92
 DEFAULT_PDF_DPI = 200
+_PDFIUM_LOCK = threading.Lock()  # PDFium is not thread-safe; thumbnails and conversion use it concurrently
 
 
 class ImageLoadError(Exception):
@@ -93,27 +95,38 @@ def _flatten(image: Image.Image) -> Image.Image:
     return background
 
 
-def _pdf_pages(path: Path, dpi: int) -> Iterator[Image.Image]:
-    try:
-        document = pdfium.PdfDocument(path)
-    except pdfium.PdfiumError as exc:
-        message = "PDF is password-protected" if "password" in str(exc).lower() else f"Could not read PDF: {exc}"
-        raise ImageLoadError(message) from exc
-    try:
-        if len(document) == 0:
-            raise ImageLoadError("PDF has no pages")
-        for page in document:
+def _render_page(document: pdfium.PdfDocument, index: int, dpi: int) -> Image.Image:
+    with _PDFIUM_LOCK:
+        page = document[index]
+        try:
             width, height = page.get_size()
             scale = dpi / 72
             pixels = width * height * scale * scale
             if pixels > Image.MAX_IMAGE_PIXELS:
                 scale *= math.sqrt(Image.MAX_IMAGE_PIXELS / pixels)
-            try:
-                yield page.render(scale=scale).to_pil().convert("RGB")
-            finally:
-                page.close()
+            return page.render(scale=scale).to_pil().convert("RGB")
+        finally:
+            page.close()
+
+
+def _pdf_pages(path: Path, dpi: int) -> Iterator[Image.Image]:
+    """Render each page. The PDFium lock is held per call, not across yields, so a long conversion
+    never blocks thumbnails."""
+    try:
+        with _PDFIUM_LOCK:
+            document = pdfium.PdfDocument(path)
+            count = len(document)
+    except pdfium.PdfiumError as exc:
+        message = "PDF is password-protected" if "password" in str(exc).lower() else f"Could not read PDF: {exc}"
+        raise ImageLoadError(message) from exc
+    try:
+        if count == 0:
+            raise ImageLoadError("PDF has no pages")
+        for index in range(count):
+            yield _render_page(document, index, dpi)
     finally:
-        document.close()
+        with _PDFIUM_LOCK:
+            document.close()
 
 
 def _image_pages(path: Path, keep_alpha: bool) -> Iterator[Image.Image]:
