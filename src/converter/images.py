@@ -104,7 +104,11 @@ def _render_page(document: pdfium.PdfDocument, index: int, dpi: int) -> Image.Im
             pixels = width * height * scale * scale
             if pixels > Image.MAX_IMAGE_PIXELS:
                 scale *= math.sqrt(Image.MAX_IMAGE_PIXELS / pixels)
-            return page.render(scale=scale).to_pil().convert("RGB")
+            bitmap = page.render(scale=scale)
+            try:
+                return bitmap.to_pil().convert("RGB")
+            finally:
+                bitmap.close()
         finally:
             page.close()
 

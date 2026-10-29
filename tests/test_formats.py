@@ -204,3 +204,25 @@ def test_pdf_with_empty_user_password_converts(tmp_path, output):
     else:
         report = convert_images([source], tmp_path / "out", ImageSettings(output))
     assert report.failures == [] and len(report.outputs) == 1
+
+
+def test_pdfium_bitmap_is_freed_under_the_lock_even_on_error(tmp_path, monkeypatch):
+    import pypdfium2 as pdfium
+
+    from converter import images
+
+    closes = []
+    real_close = pdfium.PdfBitmap.close
+
+    def recording_close(self, *args, **kwargs):
+        closes.append(images._PDFIUM_LOCK.locked())
+        return real_close(self, *args, **kwargs)
+
+    def failing_to_pil(self):
+        raise MemoryError("simulated")
+
+    monkeypatch.setattr(pdfium.PdfBitmap, "close", recording_close)
+    monkeypatch.setattr(pdfium.PdfBitmap, "to_pil", failing_to_pil)
+    with pytest.raises(MemoryError):
+        images.load_image(text_pdf(tmp_path / "a.pdf", ["x"]))
+    assert closes and all(closes)
