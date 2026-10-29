@@ -200,8 +200,8 @@ def test_corrupted_files_raise_clear_error(tmp_path, name, content):
 
 
 def test_unsupported_extension_rejected(tmp_path):
-    path = tmp_path / "doc.gif"
-    Image.new("RGB", (10, 10)).save(path)
+    path = tmp_path / "doc.psd"
+    path.write_bytes(b"8BPS")
     with pytest.raises(ImageLoadError, match="Unsupported"):
         load_image(path)
 

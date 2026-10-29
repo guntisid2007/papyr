@@ -11,6 +11,7 @@ from PIL import Image, ImageDraw
 from PySide6.QtCore import QSettings, QThreadPool, Qt
 
 from gui.app import create_app
+from converter import OutputFormat
 from gui.main_window import MainWindow
 
 
@@ -54,8 +55,12 @@ def main(scheme: str) -> None:
 
         window = MainWindow()
         window._output_label.setText(str(Path.home() / "Documents" / "PDFs"))
-        window._merged.setChecked(True)
-        window._name_edit.setText("Trip Photos")
+        if scheme == "dark":
+            window._format_combo.setCurrentIndex(window._format_combo.findData(OutputFormat.JPEG))
+        else:
+            window._format_combo.setCurrentIndex(window._format_combo.findData(OutputFormat.PDF))
+            window._merged.setChecked(True)
+            window._name_edit.setText("Trip Photos")
         window.show()
         window.resize(1040, 660)
         window._stack.setCurrentIndex(0)
@@ -70,7 +75,9 @@ def main(scheme: str) -> None:
         for _ in range(20):
             app.processEvents()
         window._list.item(1).setSelected(True)
-        window._set_status("✓ Saved Trip Photos.pdf in PDFs.", "success")
+        window._list.setFocus()
+        window._set_status("✓ Saved Trip Photos.pdf in PDFs." if scheme == "light"
+                           else "✓ Created 5 files in PDFs.", "success")
         app.processEvents()
         window.grab().save(str(out / f"main-{scheme}.png"))
         window.close()

@@ -1,11 +1,12 @@
 import threading
+from collections.abc import Callable
 from pathlib import Path
 
 from PIL import Image
 from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal
 from PySide6.QtGui import QImage
 
-from converter import PdfSettings, convert_individual, convert_merged
+from converter import ConversionReport
 from converter.images import ImageLoadError, make_thumbnail
 
 
@@ -50,25 +51,23 @@ class _ThumbnailTask(QRunnable):
 
 
 class ConversionWorker(QObject):
+    """Runs one conversion job on a QThread. The job takes (progress, cancelled) and returns a report."""
+
     progress = Signal(int, int, str)
     finished = Signal(object)
 
-    def __init__(self, sources: list[Path], settings: PdfSettings, *,
-                 output_dir: Path | None = None, merged_path: Path | None = None):
+    def __init__(self, job: Callable[..., ConversionReport]):
         super().__init__()
-        self._sources, self._settings = sources, settings
-        self._output_dir, self._merged_path = output_dir, merged_path
+        self._job = job
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
         self._cancel.set()
 
     def run(self) -> None:
-        report_progress = lambda done, total, path: self.progress.emit(done, total, path.name)
-        if self._merged_path is not None:
-            report = convert_merged(self._sources, self._merged_path, self._settings,
-                                    report_progress, self._cancel.is_set)
-        else:
-            report = convert_individual(self._sources, self._output_dir, self._settings,
-                                        report_progress, self._cancel.is_set)
+        try:
+            report = self._job(lambda done, total, path: self.progress.emit(done, total, path.name),
+                               self._cancel.is_set)
+        except Exception as exc:  # the window waits on finished, so it must always be emitted
+            report = ConversionReport(failures=[(Path("Conversion"), f"Unexpected error: {exc}")])
         self.finished.emit(report)

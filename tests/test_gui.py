@@ -8,7 +8,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from PySide6.QtCore import QSettings, Qt, QThreadPool  # noqa: E402
 from pypdf import PdfReader  # noqa: E402
 
-from converter import PageSize  # noqa: E402
+from converter import OutputFormat, PageSize  # noqa: E402
 from gui.app import create_app  # noqa: E402
 from gui.main_window import MainWindow  # noqa: E402
 
@@ -118,9 +118,9 @@ def test_closing_mid_conversion_waits_for_worker(app, make, tmp_path, monkeypatc
 
     real_encode = convert_module.encode_for_pdf
 
-    def slow_encode(path):
+    def slow_encode(*args):
         time.sleep(12)  # longer than the old 10 s shutdown timeout
-        return real_encode(path)
+        return real_encode(*args)
 
     monkeypatch.setattr(convert_module, "encode_for_pdf", slow_encode)
     win = MainWindow()
@@ -188,3 +188,37 @@ def test_queued_save_animation_is_dropped_with_deleted_window(app, tmp_path, cap
     QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
     app.processEvents()
     assert "already deleted" not in capfd.readouterr().err  # Qt prints slot exceptions instead of raising
+
+
+def test_unexpected_error_in_job_returns_window_to_idle(app, window, make, monkeypatch):
+    import converter.convert as convert_module
+
+    def explode(*args):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(convert_module, "encode_for_pdf", explode)
+    monkeypatch.setattr("gui.main_window.QMessageBox.warning", lambda *a: None)
+    window.add_paths([make("a.png")])
+    window._format_combo.setCurrentIndex(window._format_combo.findData(OutputFormat.PDF))
+    window._convert_button.click()
+    wait_until(app, lambda: not window._converting, timeout=5)
+    assert "failed" in window._status.text().lower()
+    assert window._convert_button.isEnabled()
+
+
+def test_converting_to_an_image_format_from_the_window(app, window, make, tmp_path):
+    from pdf_samples import text_pdf
+
+    doc = text_pdf(tmp_path / "notes.pdf", ["a", "b"], size=(72, 72))
+    window.add_paths([make("photo.heic"), doc])
+    window._format_combo.setCurrentIndex(window._format_combo.findData(OutputFormat.WEBP))
+    assert window._image_options.isVisibleTo(window) and not window._pdf_options.isVisibleTo(window)
+    assert window._quality.isVisibleTo(window)
+    assert window._convert_button.text() == "Convert to WebP"
+    window._convert_button.click()
+    wait_until(app, lambda: not window._converting)
+    assert sorted(p.name for p in (tmp_path / "out").iterdir()) == [
+        "notes-page-1.webp", "notes-page-2.webp", "photo.webp"]
+
+    window._format_combo.setCurrentIndex(window._format_combo.findData(OutputFormat.PNG))
+    assert not window._quality.isVisibleTo(window)

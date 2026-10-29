@@ -6,15 +6,19 @@ _RESERVED = frozenset({"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1,
                        *(f"LPT{i}" for i in range(1, 10))})
 
 
-def sanitize_pdf_name(name: str, fallback: str = "Converted") -> str:
-    """Turn user input into a safe file name that ends in .pdf."""
+def sanitize_name(name: str, extension: str, fallback: str = "Converted") -> str:
+    """Turn user input into a safe file name that ends in extension."""
     stem = name.strip()
-    if stem.lower().endswith(".pdf"):
-        stem = stem[:-4]
+    if stem.lower().endswith(extension):
+        stem = stem[:-len(extension)]
     stem = _ILLEGAL.sub("_", stem).strip(" .")
     if not stem or stem.upper() in _RESERVED:
         stem = fallback
-    return f"{stem[:200]}.pdf"
+    return f"{stem[:200]}{extension}"
+
+
+def sanitize_pdf_name(name: str, fallback: str = "Converted") -> str:
+    return sanitize_name(name, ".pdf", fallback)
 
 
 def unique_path(path: Path, taken: set[Path] = frozenset()) -> Path:
@@ -26,12 +30,12 @@ def unique_path(path: Path, taken: set[Path] = frozenset()) -> Path:
     return candidate
 
 
-def individual_output_paths(sources: list[Path], output_dir: Path) -> list[Path]:
-    """Map each source to '<original name>.pdf' in output_dir without overwriting anything."""
+def individual_output_paths(sources: list[Path], output_dir: Path, extension: str = ".pdf") -> list[Path]:
+    """Map each source to '<original name><extension>' in output_dir without overwriting anything."""
     taken: set[Path] = set()
     outputs = []
     for source in sources:
-        path = unique_path(output_dir / sanitize_pdf_name(source.stem), taken)
+        path = unique_path(output_dir / sanitize_name(source.stem, extension), taken)
         taken.add(path)
         outputs.append(path)
     return outputs

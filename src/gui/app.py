@@ -3,6 +3,7 @@ import sys
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
+from utils.app_info import APP_NAME
 from utils.resources import asset_path
 
 from .main_window import MainWindow
@@ -33,8 +34,8 @@ QProgressBar::chunk { border-radius: 3px; background: #e5534b; }
 
 def create_app(argv: list[str]) -> QApplication:
     app = QApplication(argv)
-    app.setApplicationName("HEIC to PDF")
-    app.setOrganizationName("HEIC to PDF")
+    app.setApplicationName(APP_NAME)
+    app.setOrganizationName(APP_NAME)
     app.setWindowIcon(QIcon(str(asset_path("icon.png"))))
     app.setStyleSheet(STYLE)
     return app

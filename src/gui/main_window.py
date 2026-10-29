@@ -5,10 +5,12 @@ from PySide6.QtCore import QPointF, QSettings, QStandardPaths, Qt, QThread, QTim
 from PySide6.QtGui import QDesktopServices, QIcon, QImage, QPixmap
 from PySide6.QtWidgets import (QButtonGroup, QComboBox, QDoubleSpinBox, QFileDialog, QFormLayout,
                                QFrame, QHBoxLayout, QLabel, QLineEdit, QListWidgetItem, QMainWindow,
-                               QMessageBox, QProgressBar, QPushButton, QRadioButton, QStackedWidget,
-                               QStyle, QVBoxLayout, QWidget)
+                               QMessageBox, QProgressBar, QPushButton, QRadioButton, QSpinBox,
+                               QStackedWidget, QStyle, QVBoxLayout, QWidget)
 
-from converter import SUPPORTED_EXTENSIONS, ConversionReport, PageSize, PdfSettings
+from converter import (INPUT_EXTENSIONS, ConversionReport, ImageSettings, OutputFormat, PageSize, PdfSettings,
+                       convert_images, convert_individual, convert_merged)
+from utils.app_info import APP_NAME
 from utils.filenames import sanitize_pdf_name
 from utils.files import collect_images, human_size
 from utils.resources import asset_path
@@ -17,14 +19,15 @@ from .save_animation import SaveAnimation
 from .widgets import DropZone, ImageList
 from .workers import ConversionWorker, ThumbnailLoader
 
-FILE_FILTER = "Images ({})".format(" ".join(f"*{ext}" for ext in sorted(SUPPORTED_EXTENSIONS)))
+FILE_FILTER = "Images and PDFs ({})".format(" ".join(f"*{ext}" for ext in sorted(INPUT_EXTENSIONS)))
 THUMBNAIL_SIZE = 112
+PDF_DPI_CHOICES = (100, 150, 200, 300)
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("HEIC to PDF")
+        self.setWindowTitle(APP_NAME)
         self.setMinimumSize(880, 580)
         self.resize(1040, 680)
         self._settings = QSettings()
@@ -63,9 +66,10 @@ class MainWindow(QMainWindow):
         text = QVBoxLayout()
         row.addLayout(text, 1)
         text.setSpacing(0)
-        title = QLabel("HEIC to PDF")
+        title = QLabel(APP_NAME)
         title.setObjectName("Title")
-        subtitle = QLabel("Turn iPhone photos and other images into PDFs. Everything stays on this computer.")
+        subtitle = QLabel("Convert photos and PDFs between HEIC, JPEG, PNG, WebP, PDF, and more. "
+                          "Everything stays on this computer.")
         subtitle.setObjectName("Muted")
         text.addWidget(title)
         text.addWidget(subtitle)
@@ -122,30 +126,39 @@ class MainWindow(QMainWindow):
         column.setContentsMargins(16, 16, 16, 16)
         column.setSpacing(10)
 
-        heading = QLabel("Output")
+        heading = QLabel("Convert to")
         heading.setObjectName("Strong")
         column.addWidget(heading)
-        self._individual = QRadioButton("One PDF per image")
+        self._format_combo = QComboBox()
+        for fmt in OutputFormat:
+            self._format_combo.addItem(fmt.label, fmt)
+        self._format_combo.currentIndexChanged.connect(self._refresh)
+        column.addWidget(self._format_combo)
+
+        self._pdf_options = QWidget()
+        column.addWidget(self._pdf_options)
+        pdf_column = QVBoxLayout(self._pdf_options)
+        pdf_column.setContentsMargins(0, 0, 0, 0)
+        pdf_column.setSpacing(10)
+        self._individual = QRadioButton("One PDF per file")
         self._merged = QRadioButton("Combine into one PDF")
         self._mode_group = QButtonGroup(self)
         for button in (self._individual, self._merged):
             self._mode_group.addButton(button)
-            column.addWidget(button)
+            pdf_column.addWidget(button)
         self._individual.setChecked(True)
         self._mode_group.buttonToggled.connect(self._refresh)
-
+        self._name_label = QLabel("PDF name")
         self._name_edit = QLineEdit()
         self._name_edit.setPlaceholderText("Combined")
-        self._name_label = QLabel("PDF name")
-        column.addWidget(self._name_label)
-        column.addWidget(self._name_edit)
-
-        column.addSpacing(6)
+        pdf_column.addWidget(self._name_label)
+        pdf_column.addWidget(self._name_edit)
+        pdf_column.addSpacing(6)
         page_heading = QLabel("Page")
         page_heading.setObjectName("Strong")
-        column.addWidget(page_heading)
+        pdf_column.addWidget(page_heading)
         form = QFormLayout()
-        column.addLayout(form)
+        pdf_column.addLayout(form)
         form.setLabelAlignment(Qt.AlignmentFlag.AlignLeft)
         self._page_combo = QComboBox()
         for size in PageSize:
@@ -158,11 +171,33 @@ class MainWindow(QMainWindow):
         self._margin.setSuffix(" mm")
         self._margin.setValue(10)
         form.addRow("Margins", self._margin)
-        orientation = QLabel("Pages turn landscape automatically for wide photos. "
-                             "Images are scaled to fit without stretching.")
+        orientation = QLabel("Pages turn landscape automatically for wide photos. Images are scaled to fit "
+                             "without stretching. PDF files keep their own pages and text.")
         orientation.setObjectName("Muted")
         orientation.setWordWrap(True)
-        column.addWidget(orientation)
+        pdf_column.addWidget(orientation)
+
+        self._image_options = QWidget()
+        column.addWidget(self._image_options)
+        image_form = QFormLayout(self._image_options)
+        image_form.setContentsMargins(0, 0, 0, 0)
+        image_form.setLabelAlignment(Qt.AlignmentFlag.AlignLeft)
+        self._quality = QSpinBox()
+        self._quality.setRange(1, 100)
+        self._quality.setSuffix(" %")
+        self._quality.setValue(90)
+        self._quality_label = QLabel("Quality")
+        image_form.addRow(self._quality_label, self._quality)
+        self._dpi_combo = QComboBox()
+        for dpi in PDF_DPI_CHOICES:
+            self._dpi_combo.addItem(f"{dpi} DPI", dpi)
+        self._dpi_combo.setCurrentIndex(self._dpi_combo.findData(200))
+        self._dpi_combo.setToolTip("Resolution used when turning PDF pages into images")
+        image_form.addRow("PDF pages", self._dpi_combo)
+        image_hint = QLabel("Each PDF page becomes its own image. Transparency is kept where the format allows.")
+        image_hint.setObjectName("Muted")
+        image_hint.setWordWrap(True)
+        image_form.addRow(image_hint)
 
         column.addSpacing(6)
         save_heading = QLabel("Save to")
@@ -177,8 +212,8 @@ class MainWindow(QMainWindow):
         choose.clicked.connect(self._choose_output_dir)
         column.addWidget(choose)
         column.addStretch()
-        self._settings_widgets = [self._individual, self._merged, self._name_edit, self._page_combo,
-                                  self._margin, choose]
+        self._settings_widgets = [self._format_combo, self._individual, self._merged, self._name_edit,
+                                  self._page_combo, self._margin, self._quality, self._dpi_combo, choose]
         return panel
 
     def _build_actions(self) -> QWidget:
@@ -222,18 +257,31 @@ class MainWindow(QMainWindow):
     def _pdf_settings(self) -> PdfSettings:
         return PdfSettings(self._page_combo.currentData(), self._margin.value())
 
+    def _output_format(self) -> OutputFormat:
+        return self._format_combo.currentData()
+
+    def _image_settings(self) -> ImageSettings:
+        return ImageSettings(self._output_format(), self._quality.value(), self._dpi_combo.currentData())
+
     def _refresh(self) -> None:
         count = self._list.count()
         self._stack.setCurrentIndex(1 if count else 0)
-        self._count_label.setText(f"{count} image{'s' if count != 1 else ''}")
+        self._count_label.setText(f"{count} file{'s' if count != 1 else ''}")
         has_selection = bool(self._list.selectedItems())
         for button in self._list_buttons:
             button.setEnabled(not self._converting)
         for button in (self._up_button, self._down_button, self._remove_button):
             button.setEnabled(has_selection and not self._converting)
+        fmt = self._output_format()
+        to_pdf = fmt is OutputFormat.PDF
+        self._pdf_options.setVisible(to_pdf)
+        self._image_options.setVisible(not to_pdf)
+        self._quality.setVisible(fmt.has_quality)
+        self._quality_label.setVisible(fmt.has_quality)
         merged = self._merged.isChecked()
         self._name_label.setVisible(merged)
         self._name_edit.setVisible(merged)
+        self._convert_button.setText(f"Convert to {fmt.label}")
         for widget in self._settings_widgets:
             widget.setEnabled(not self._converting)
         self._list.setEnabled(not self._converting)
@@ -245,6 +293,12 @@ class MainWindow(QMainWindow):
         saved = Path(str(self._settings.value("output_dir", documents or Path.home())))
         self._output_label.setText(str(saved if saved.is_dir() else Path.home()))
         (self._merged if self._settings.value("mode") == "merged" else self._individual).setChecked(True)
+        saved_format = OutputFormat.__members__.get(str(self._settings.value("output_format", "PDF")), OutputFormat.PDF)
+        self._format_combo.setCurrentIndex(self._format_combo.findData(saved_format))
+        self._quality.setValue(int(self._settings.value("quality", 90)))
+        dpi_index = self._dpi_combo.findData(int(self._settings.value("pdf_dpi", 200)))
+        if dpi_index >= 0:
+            self._dpi_combo.setCurrentIndex(dpi_index)
         index = self._page_combo.findText(str(self._settings.value("page_size", PageSize.A4.label)))
         if index >= 0:
             self._page_combo.setCurrentIndex(index)
@@ -257,6 +311,9 @@ class MainWindow(QMainWindow):
         self._settings.setValue("page_size", self._page_combo.currentText())
         self._settings.setValue("margin_mm", self._margin.value())
         self._settings.setValue("merged_name", self._name_edit.text())
+        self._settings.setValue("output_format", self._output_format().name)
+        self._settings.setValue("quality", self._quality.value())
+        self._settings.setValue("pdf_dpi", self._dpi_combo.currentData())
 
     def _set_status(self, text: str, kind: str = "") -> None:
         self._status.setText(text)
@@ -283,11 +340,11 @@ class MainWindow(QMainWindow):
             self._thumbnails.request(path)
             added += 1
         if added:
-            self._set_status(f"Added {added} image{'s' if added != 1 else ''}.")
+            self._set_status(f"Added {added} file{'s' if added != 1 else ''}.")
         elif found:
-            self._set_status("Those images are already in the list.")
+            self._set_status("Those files are already in the list.")
         elif paths:
-            self._set_status("No HEIC, HEIF, JPEG, or PNG images found there.", "error")
+            self._set_status("No supported images or PDFs found there.", "error")
         self._open_button.hide()
         self._refresh()
 
@@ -318,20 +375,20 @@ class MainWindow(QMainWindow):
 
     def _browse_files(self) -> None:
         start = str(self._settings.value("input_dir", Path.home()))
-        files, _ = QFileDialog.getOpenFileNames(self, "Choose Images", start, FILE_FILTER)
+        files, _ = QFileDialog.getOpenFileNames(self, "Choose Files", start, FILE_FILTER)
         if files:
             self._settings.setValue("input_dir", str(Path(files[0]).parent))
             self.add_paths([Path(f) for f in files])
 
     def _browse_folder(self) -> None:
         start = str(self._settings.value("input_dir", Path.home()))
-        folder = QFileDialog.getExistingDirectory(self, "Choose a Folder of Images", start)
+        folder = QFileDialog.getExistingDirectory(self, "Choose a Folder", start)
         if folder:
             self._settings.setValue("input_dir", folder)
             self.add_paths([Path(folder)])
 
     def _choose_output_dir(self) -> None:
-        folder = QFileDialog.getExistingDirectory(self, "Choose Where to Save PDFs", str(self._output_dir()))
+        folder = QFileDialog.getExistingDirectory(self, "Choose Where to Save", str(self._output_dir()))
         if folder:
             self._output_label.setText(folder)
             self._settings.setValue("output_dir", folder)
@@ -348,16 +405,18 @@ class MainWindow(QMainWindow):
                                 f"The folder {output_dir} no longer exists. Choose another folder.")
             return
         self._save_settings()
-        if self._merged.isChecked():
+        if self._output_format() is not OutputFormat.PDF:
+            job = partial(convert_images, sources, output_dir, self._image_settings())
+        elif self._merged.isChecked():
             merged_path = output_dir / sanitize_pdf_name(self._name_edit.text() or "Combined", "Combined")
             if merged_path.exists() and QMessageBox.question(
                     self, "Replace File?", f"“{merged_path.name}” already exists in this folder. Replace it?"
             ) != QMessageBox.StandardButton.Yes:
                 return
-            worker = ConversionWorker(sources, self._pdf_settings(), merged_path=merged_path)
+            job = partial(convert_merged, sources, merged_path, self._pdf_settings())
         else:
-            worker = ConversionWorker(sources, self._pdf_settings(), output_dir=output_dir)
-        self._start(worker)
+            job = partial(convert_individual, sources, output_dir, self._pdf_settings())
+        self._start(ConversionWorker(job))
 
     def _start(self, worker: ConversionWorker) -> None:
         self._thread = QThread(self)
@@ -403,12 +462,12 @@ class MainWindow(QMainWindow):
             if not report.cancelled:
                 QTimer.singleShot(0, self, partial(self._play_save_animation, len(report.outputs)))
         if report.cancelled:
-            kept = f" {len(report.outputs)} PDF{'s' if len(report.outputs) != 1 else ''} were kept." \
+            kept = f" {len(report.outputs)} finished file{'s' if len(report.outputs) != 1 else ''} kept." \
                 if report.outputs else ""
             self._set_status(f"Conversion cancelled.{kept}")
         elif report.outputs and not report.failures:
             done = (f"Saved {report.outputs[0].name}" if len(report.outputs) == 1
-                    else f"Created {len(report.outputs)} PDFs")
+                    else f"Created {len(report.outputs)} files")
             self._set_status(f"✓ {done} in {report.outputs[0].parent.name or report.outputs[0].parent}.",
                              "success")
         elif report.outputs:

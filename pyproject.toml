@@ -1,7 +1,7 @@
 [project]
-name = "heic-to-pdf"
-version = "1.1.0"
-description = "A free, lightweight, offline desktop application for converting HEIC images to PDF."
+name = "papyr"
+version = "2.0.0"
+description = "Papyr: a free, offline desktop converter between HEIC, JPEG, PNG, WebP, AVIF, TIFF, BMP, GIF, and PDF."
 license = "MIT"
 requires-python = ">=3.10"
 

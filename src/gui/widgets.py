@@ -25,9 +25,9 @@ class DropZone(QFrame):
         layout.addStretch()
         glyph = QLabel("⇣")
         glyph.setObjectName("DropGlyph")
-        title = QLabel("Drop photos or folders here")
+        title = QLabel("Drop photos, PDFs, or folders here")
         title.setObjectName("DropTitle")
-        hint = QLabel("HEIC, HEIF, JPEG, and PNG")
+        hint = QLabel("HEIC, JPEG, PNG, WebP, AVIF, TIFF, BMP, GIF, and PDF")
         hint.setObjectName("Muted")
         for label in (glyph, title, hint):
             label.setAlignment(Qt.AlignmentFlag.AlignCenter)

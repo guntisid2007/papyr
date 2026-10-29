@@ -65,7 +65,7 @@ class PdfWriter:
         self._write_object(2, f"<< /Type /Pages /Kids [{kids}] /Count {len(self._page_ids)} >>".encode())
         self._write_object(1, b"<< /Type /Catalog /Pages 2 0 R >>")
         info_id = self._allocate()
-        self._write_object(info_id, b"<< /Producer (HEIC to PDF) >>")
+        self._write_object(info_id, b"<< /Producer (Papyr) >>")
 
         xref_offset = self._stream.tell()
         lines = [f"xref\n0 {self._next_id}\n", "0000000000 65535 f \n"]

@@ -23,18 +23,18 @@ jobs:
         include:
           - name: macOS Apple Silicon
             os: macos-15
-            asset: HEIC-to-PDF-macOS-AppleSilicon.zip
+            asset: Papyr-macOS-AppleSilicon.zip
             arch: arm64
           - name: macOS Intel
             os: macos-15-intel
-            asset: HEIC-to-PDF-macOS-Intel.zip
+            asset: Papyr-macOS-Intel.zip
             arch: x86_64
           - name: Windows
             os: windows-latest
-            asset: HEIC-to-PDF-Windows.zip
+            asset: Papyr-Windows.zip
           - name: Linux
             os: ubuntu-22.04
-            asset: HEIC-to-PDF-Linux-x86_64.tar.gz
+            asset: Papyr-Linux-x86_64.tar.gz
     steps:
       - uses: actions/checkout@v5
 
@@ -60,13 +60,13 @@ jobs:
         run: python -m pytest -v
 
       - name: Build with PyInstaller
-        run: pyinstaller --noconfirm --clean heic-to-pdf.spec
+        run: pyinstaller --noconfirm --clean papyr.spec
 
       - name: Smoke test and package (macOS)
         if: runner.os == 'macOS'
         run: |
-          APP="dist/HEIC to PDF.app"
-          BIN="$APP/Contents/MacOS/HEIC to PDF"
+          APP="dist/Papyr.app"
+          BIN="$APP/Contents/MacOS/Papyr"
           test "$(lipo -archs "$BIN")" = "${{ matrix.arch }}"
           "$BIN" --self-test tests/fixtures/sample.heic
           ditto -c -k --sequesterRsrc --keepParent "$APP" "${{ matrix.asset }}"
@@ -75,16 +75,16 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $p = Start-Process -FilePath "dist\HEIC to PDF\HEIC to PDF.exe" `
+          $p = Start-Process -FilePath "dist\Papyr\Papyr.exe" `
             -ArgumentList '--self-test', 'tests\fixtures\sample.heic' -Wait -PassThru -NoNewWindow
           if ($p.ExitCode -ne 0) { throw "Self-test failed with exit code $($p.ExitCode)" }
-          Compress-Archive -Path "dist\HEIC to PDF" -DestinationPath "${{ matrix.asset }}"
+          Compress-Archive -Path "dist\Papyr" -DestinationPath "${{ matrix.asset }}"
 
       - name: Smoke test and package (Linux)
         if: runner.os == 'Linux'
         run: |
-          "dist/HEIC to PDF/HEIC to PDF" --self-test tests/fixtures/sample.heic
-          tar -C dist -czf "${{ matrix.asset }}" "HEIC to PDF"
+          "dist/Papyr/Papyr" --self-test tests/fixtures/sample.heic
+          tar -C dist -czf "${{ matrix.asset }}" "Papyr"
 
       - uses: actions/upload-artifact@v7
         with:
@@ -115,4 +115,4 @@ jobs:
           if [ ${#files[@]} -eq 0 ]; then echo "No build passed; nothing to publish." >&2; exit 1; fi
           (cd assets && sha256sum *) > SHA256SUMS.txt
           gh release create "$TAG" "${files[@]}" SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" \
-            --title "HEIC to PDF $TAG" --generate-notes
+            --title "Papyr $TAG" --generate-notes

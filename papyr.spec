@@ -1,10 +1,10 @@
-# PyInstaller spec. Build with: pyinstaller heic-to-pdf.spec
+# PyInstaller spec. Build with: pyinstaller papyr.spec
 import sys
 
 from PyInstaller.utils.hooks import collect_dynamic_libs
 
-APP_NAME = "HEIC to PDF"
-VERSION = "1.1.0"
+APP_NAME = "Papyr"
+VERSION = "2.0.0"
 icon = "assets/icon.icns" if sys.platform == "darwin" else "assets/icon.ico"
 
 a = Analysis(
@@ -27,7 +27,7 @@ if sys.platform == "darwin":
         coll,
         name=f"{APP_NAME}.app",
         icon=icon,
-        bundle_identifier="io.github.guntisid2007.heic-to-pdf",
+        bundle_identifier="io.github.guntisid2007.papyr",
         version=VERSION,
         info_plist={
             "CFBundleShortVersionString": VERSION,
@@ -36,9 +36,11 @@ if sys.platform == "darwin":
             "LSMinimumSystemVersion": "14.4",
             "NSRequiresAquaSystemAppearance": False,
             "CFBundleDocumentTypes": [{
-                "CFBundleTypeName": "Image",
+                "CFBundleTypeName": "Image or PDF",
                 "CFBundleTypeRole": "Viewer",
-                "LSItemContentTypes": ["public.heic", "public.heif", "public.jpeg", "public.png"],
+                "LSItemContentTypes": ["public.heic", "public.heif", "public.jpeg", "public.png", "org.webmproject.webp",
+                                       "public.avif", "public.tiff", "com.microsoft.bmp", "com.compuserve.gif",
+                                       "com.adobe.pdf"],
             }],
         },
     )
