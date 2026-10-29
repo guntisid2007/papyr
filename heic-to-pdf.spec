@@ -4,7 +4,7 @@ import sys
 from PyInstaller.utils.hooks import collect_dynamic_libs
 
 APP_NAME = "HEIC to PDF"
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 icon = "assets/icon.icns" if sys.platform == "darwin" else "assets/icon.ico"
 
 a = Analysis(
