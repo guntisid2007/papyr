@@ -248,7 +248,7 @@ def test_cancel_during_individual_keeps_finished_files(make, tmp_path):
                                 progress=lambda done, total, path: calls.append(done),
                                 cancelled=lambda: len(calls) >= 2)
     assert report.cancelled
-    assert sorted(p.name for p in (tmp_path / "out").iterdir()) == ["0.pdf", "1.pdf"]
+    assert sorted(p.name for p in (tmp_path / "out").iterdir()) == ["0.pdf"]
 
 
 def test_progress_reports_every_step(make, tmp_path):
@@ -290,3 +290,41 @@ def test_oversized_heic_is_refused(sample_heic, monkeypatch):
     monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 1000)
     with pytest.raises(ImageLoadError, match="too large"):
         load_image(sample_heic)
+
+
+def test_16_bit_grayscale_keeps_its_tones(tmp_path):
+    source = tmp_path / "deep.png"
+    image = Image.new("I;16", (4, 1))
+    for x, value in enumerate([0, 16384, 32768, 65535]):
+        image.putpixel((x, 0), value)
+    image.save(source)
+    upright = load_image(source)
+    assert upright.mode == "L"
+    assert [upright.getpixel((x, 0)) for x in range(4)] == pytest.approx([0, 64, 128, 255], abs=1)
+
+
+@pytest.mark.parametrize("mode, key", [("RGB", (0, 0, 0)), ("L", 0)])
+def test_png_color_key_transparency_becomes_white(tmp_path, mode, key):
+    source = tmp_path / f"key_{mode}.png"
+    Image.new(mode, (10, 10), key).save(source, transparency=key)
+    pixel = load_image(source).convert("RGB").getpixel((5, 5))
+    assert_close_color(pixel, (255, 255, 255), 2)
+
+
+@pytest.mark.parametrize("merged", [True, False])
+def test_cancel_during_last_image_is_honoured(make, tmp_path, merged):
+    source = make("only.png")
+    out = tmp_path / "out"
+    out.mkdir()
+    existing = out / "only.pdf"
+    existing.write_bytes(b"keep me")
+    flag = []
+    progress = lambda done, total, path: flag.append(True)
+    cancelled = lambda: len(flag) > 0
+    if merged:
+        report = convert_merged([source], existing, ORIGINAL, progress, cancelled)
+    else:
+        report = convert_individual([source], out, ORIGINAL, progress, cancelled)
+    assert report.cancelled and report.outputs == []
+    assert existing.read_bytes() == b"keep me"
+    assert sorted(p.name for p in out.iterdir()) == ["only.pdf"]

@@ -109,3 +109,26 @@ def test_cancel_stops_merge_and_leaves_no_file(app, window, make, tmp_path):
     wait_until(app, lambda: not window._converting)
     assert "cancelled" in window._status.text()
     assert list((tmp_path / "out").iterdir()) == []
+
+
+def test_closing_mid_conversion_waits_for_worker(app, make, tmp_path, monkeypatch):
+    import converter.convert as convert_module
+
+    real_encode = convert_module.encode_for_pdf
+
+    def slow_encode(path):
+        time.sleep(12)  # longer than the old 10 s shutdown timeout
+        return real_encode(path)
+
+    monkeypatch.setattr(convert_module, "encode_for_pdf", slow_encode)
+    win = MainWindow()
+    win._output_label.setText(str(tmp_path))
+    win.add_paths([make("slow.png")])
+    win._individual.setChecked(True)
+    win._convert_button.click()
+    thread = win._thread
+    wait_until(app, lambda: "Converting" in win._status.text())
+    win.close()
+    assert not thread.isRunning()
+    assert list(tmp_path.glob("*.pdf")) == []  # cancelled before the PDF was written
+    win.deleteLater()

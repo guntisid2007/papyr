@@ -427,6 +427,6 @@ class MainWindow(QMainWindow):
             self._worker.cancel()
         if self._thread is not None:
             self._thread.quit()
-            self._thread.wait(10000)
+            self._thread.wait()  # the worker stops at the next image; destroying a running QThread aborts
         self._thumbnails.shutdown()
         super().closeEvent(event)

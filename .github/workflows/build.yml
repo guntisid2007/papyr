@@ -86,7 +86,7 @@ jobs:
           "dist/HEIC to PDF/HEIC to PDF" --self-test tests/fixtures/sample.heic
           tar -C dist -czf "${{ matrix.asset }}" "HEIC to PDF"
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.asset }}
           path: ${{ matrix.asset }}
@@ -100,7 +100,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v8
         with:
           path: assets
           merge-multiple: true

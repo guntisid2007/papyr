@@ -59,6 +59,9 @@ def convert_individual(sources: list[Path], output_dir: Path, settings: PdfSetti
         progress(index, len(sources), source)
         try:
             image = encode_for_pdf(source)
+            if cancelled():
+                report.cancelled = True
+                break
             with _atomic_pdf(destination) as writer:
                 writer.add_page(image, compute_placement(image.width, image.height, settings))
                 writer.close()
@@ -86,6 +89,8 @@ def convert_merged(sources: list[Path], destination: Path, settings: PdfSettings
                     report.failures.append((source, str(exc)))
                     continue
                 writer.add_page(image, compute_placement(image.width, image.height, settings))
+            if cancelled():
+                raise _Cancelled
             if writer.page_count == 0:
                 raise ValueError("None of the images could be read")
             writer.close()

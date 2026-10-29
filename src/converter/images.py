@@ -35,15 +35,16 @@ def _to_srgb(image: Image.Image) -> Image.Image:
 
 
 def _flatten(image: Image.Image) -> Image.Image:
-    if image.mode == "L":
-        return image
-    if image.mode in ("1", "I", "I;16", "I;16B", "I;16L", "F"):
-        return image.convert("L") if image.mode == "1" else ImageOps.grayscale(image.convert("RGB"))
-    if image.mode == "LA" or image.mode == "P" or "A" in image.getbands():
+    if "transparency" in image.info or "A" in image.getbands() or image.mode == "P":
         rgba = image.convert("RGBA")
         background = Image.new("RGB", rgba.size, "white")
         background.paste(rgba, mask=rgba.getchannel("A"))
         return background
+    if image.mode in ("I", "I;16", "I;16B", "I;16L", "F"):
+        wide = image.convert("F")
+        return wide.point(lambda v: v / 256).convert("L") if wide.getextrema()[1] > 255 else wide.convert("L")
+    if image.mode in ("L", "1"):
+        return image.convert("L")
     return image.convert("RGB")
 
 

@@ -33,7 +33,7 @@ if sys.platform == "darwin":
             "CFBundleShortVersionString": VERSION,
             "CFBundleVersion": VERSION,
             "NSHighResolutionCapable": True,
-            "LSMinimumSystemVersion": "12.0",
+            "LSMinimumSystemVersion": "14.4",
             "NSRequiresAquaSystemAppearance": False,
             "CFBundleDocumentTypes": [{
                 "CFBundleTypeName": "Image",

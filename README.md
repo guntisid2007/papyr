@@ -94,8 +94,8 @@ If a file cannot be read (for example, it is damaged), it is marked in the list.
 
 | System | Status |
 | --- | --- |
-| macOS 12 or later, Apple silicon | Built and tested in CI on every release |
-| macOS 12 or later, Intel | Built and tested in CI on every release |
+| macOS 14.4 (Sonoma) or later, Apple silicon | Built and tested in CI on every release |
+| macOS 14.4 (Sonoma) or later, Intel | Built and tested in CI on every release |
 | Windows 10 and 11, 64-bit | Built and tested in CI on every release |
 | Linux x86-64 (glibc 2.35+) | Built and tested in CI on every release |
 
