@@ -5,7 +5,7 @@
 <p align="center">A free, offline desktop converter for photos and PDFs.<br>
 HEIC, JPEG, PNG, WebP, AVIF, TIFF, BMP, GIF, and PDF, from any of them to any of them.</p>
 
-<p align="center"><a href="https://github.com/guntisid2007/heic-to-pdf/releases/latest"><b>Download the latest version</b></a></p>
+<p align="center"><a href="https://github.com/guntisid2007/papyr/releases/latest"><b>Download the latest version</b></a></p>
 
 ![Papyr with five photos ready to combine into one PDF](docs/screenshots/main-light.png)
 
@@ -40,7 +40,7 @@ Papyr turns iPhone photos (HEIC) into PDFs or JPEGs, PDFs into images, PNGs into
 
 ## Download and install
 
-Go to the [Releases page](https://github.com/guntisid2007/heic-to-pdf/releases/latest) and download the file for your computer.
+Go to the [Releases page](https://github.com/guntisid2007/papyr/releases/latest) and download the file for your computer.
 
 | Your computer | File to download |
 | --- | --- |
@@ -126,8 +126,8 @@ If a file cannot be read (for example, it is damaged or password-protected), it 
 You need Python 3.10 or newer.
 
 ```sh
-git clone https://github.com/guntisid2007/heic-to-pdf.git
-cd heic-to-pdf
+git clone https://github.com/guntisid2007/papyr.git
+cd papyr
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements-dev.txt
