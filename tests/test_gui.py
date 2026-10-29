@@ -5,7 +5,7 @@ import pytest
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtCore import QCoreApplication, QSettings, QThreadPool  # noqa: E402
+from PySide6.QtCore import QSettings, Qt, QThreadPool  # noqa: E402
 from pypdf import PdfReader  # noqa: E402
 
 from converter import PageSize  # noqa: E402
@@ -14,14 +14,16 @@ from gui.main_window import MainWindow  # noqa: E402
 
 
 @pytest.fixture(scope="module")
-def app():
-    QCoreApplication.setOrganizationName("HEIC to PDF Tests")
+def app(tmp_path_factory):
+    QSettings.setDefaultFormat(QSettings.Format.IniFormat)
+    QSettings.setPath(QSettings.Format.IniFormat, QSettings.Scope.UserScope,
+                      str(tmp_path_factory.mktemp("settings")))  # never touch the real preferences
     return create_app(["test"])
 
 
 @pytest.fixture
 def window(app, tmp_path):
-    QSettings("HEIC to PDF Tests", "HEIC to PDF").clear()
+    QSettings().clear()
     win = MainWindow()
     win._output_label.setText(str(tmp_path / "out"))
     (tmp_path / "out").mkdir()
@@ -132,3 +134,28 @@ def test_closing_mid_conversion_waits_for_worker(app, make, tmp_path, monkeypatc
     assert not thread.isRunning()
     assert list(tmp_path.glob("*.pdf")) == []  # cancelled before the PDF was written
     win.deleteLater()
+
+
+def test_save_animation_plays_after_conversion_and_cleans_up(app, window, make, tmp_path):
+    from gui.save_animation import SaveAnimation
+
+    window.add_paths([make("one.png"), make("two.png")])
+    window._convert_button.click()
+    wait_until(app, lambda: window.findChildren(SaveAnimation))
+    overlay = window.findChildren(SaveAnimation)[0]
+    assert overlay.isVisible() and overlay._count == 2
+    assert overlay.testAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+    wait_until(app, lambda: not window.findChildren(SaveAnimation), timeout=5)
+
+
+def test_no_save_animation_when_cancelled(app, window, make):
+    from gui.save_animation import SaveAnimation
+
+    window.add_paths([make(f"{i}.png", (2500, 2500)) for i in range(20)])
+    window._merged.setChecked(True)
+    window._convert_button.click()
+    window._cancel()
+    wait_until(app, lambda: not window._converting)
+    for _ in range(5):
+        app.processEvents()
+    assert not window.findChildren(SaveAnimation)

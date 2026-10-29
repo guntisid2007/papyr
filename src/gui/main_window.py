@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from PySide6.QtCore import QSettings, QStandardPaths, Qt, QThread, QUrl
+from PySide6.QtCore import QPointF, QSettings, QStandardPaths, Qt, QThread, QTimer, QUrl
 from PySide6.QtGui import QDesktopServices, QIcon, QImage, QPixmap
 from PySide6.QtWidgets import (QButtonGroup, QComboBox, QDoubleSpinBox, QFileDialog, QFormLayout,
                                QFrame, QHBoxLayout, QLabel, QLineEdit, QListWidgetItem, QMainWindow,
@@ -12,6 +12,7 @@ from utils.filenames import sanitize_pdf_name
 from utils.files import collect_images, human_size
 from utils.resources import asset_path
 
+from .save_animation import SaveAnimation
 from .widgets import DropZone, ImageList
 from .workers import ConversionWorker, ThumbnailLoader
 
@@ -398,6 +399,8 @@ class MainWindow(QMainWindow):
         if report.outputs:
             self._last_output = report.outputs[0]
             self._open_button.show()
+            if not report.cancelled:
+                QTimer.singleShot(0, lambda count=len(report.outputs): self._play_save_animation(count))
         if report.cancelled:
             kept = f" {len(report.outputs)} PDF{'s' if len(report.outputs) != 1 else ''} were kept." \
                 if report.outputs else ""
@@ -416,6 +419,15 @@ class MainWindow(QMainWindow):
             lines = "\n".join(f"• {path.name}: {error}" for path, error in report.failures[:12])
             more = f"\n…and {len(report.failures) - 12} more." if len(report.failures) > 12 else ""
             QMessageBox.warning(self, "Some Files Were Not Converted", f"{lines}{more}")
+
+    def _play_save_animation(self, count: int) -> SaveAnimation:
+        canvas = self.centralWidget()
+        start = self._stack.mapTo(canvas, self._stack.rect().center())
+        target = self._open_button.mapTo(canvas, self._open_button.rect().center())
+        landing = QPointF(target) - QPointF(self._open_button.width() / 2 + 52, 0)
+        animation = SaveAnimation(canvas, QPointF(start), landing, count)
+        animation.start()
+        return animation
 
     def _open_output(self) -> None:
         if self._last_output is not None:

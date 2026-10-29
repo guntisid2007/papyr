@@ -8,10 +8,16 @@ sys.path.insert(0, str(ROOT / "src"))
 
 import pillow_heif
 from PIL import Image, ImageDraw
-from PySide6.QtCore import QThreadPool, Qt
+from PySide6.QtCore import QSettings, QThreadPool, Qt
 
 from gui.app import create_app
 from gui.main_window import MainWindow
+
+
+def isolate_settings() -> None:
+    """Keep the scripted window from reading or overwriting the real app preferences."""
+    QSettings.setDefaultFormat(QSettings.Format.IniFormat)
+    QSettings.setPath(QSettings.Format.IniFormat, QSettings.Scope.UserScope, tempfile.mkdtemp())
 
 
 def sample_photo(path: Path, size, sky, ground, sun) -> None:
@@ -27,6 +33,7 @@ def sample_photo(path: Path, size, sky, ground, sun) -> None:
 def main(scheme: str) -> None:
     out = ROOT / "docs" / "screenshots"
     out.mkdir(parents=True, exist_ok=True)
+    isolate_settings()
     app = create_app(sys.argv[:1])
     app.styleHints().setColorScheme(Qt.ColorScheme.Dark if scheme == "dark" else Qt.ColorScheme.Light)
     with tempfile.TemporaryDirectory() as tmp:

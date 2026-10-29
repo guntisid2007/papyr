@@ -23,9 +23,11 @@ HEIC to PDF turns iPhone photos (HEIC) and ordinary JPEG and PNG images into PDF
 - Photos taken sideways or upside down come out the right way up.
 - iPhone colours (Display P3) are converted to standard sRGB so they look right in any PDF viewer.
 - A progress bar and a Cancel button. The window stays responsive while it works.
-- "Show in Folder" opens the results when conversion finishes.
+- When conversion finishes, the new PDF flies into a folder, and "Show in Folder" opens the results.
 - Remembers your output folder and settings.
 - Follows your system's light or dark mode.
+
+![The finished PDF flying into the output folder](docs/screenshots/save-animation.gif)
 
 | Light mode | Dark mode |
 | --- | --- |
