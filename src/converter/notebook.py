@@ -21,11 +21,13 @@ from PySide6.QtCore import (QBuffer, QByteArray, QCoreApplication, QIODevice, QL
 from PySide6.QtGui import (QAbstractTextDocumentLayout, QColor, QFont, QFontDatabase, QFontInfo, QGuiApplication,
                            QImage, QPageLayout, QPageSize, QPainter, QPalette, QPdfWriter, QTextBlockFormat,
                            QTextCharFormat, QTextCursor, QTextDocument, QTextDocumentFragment,
-                           QTextFragment, QTextFrameFormat, QTextImageFormat, QTextOption)
+                           QTextFragment, QTextFrame, QTextFrameFormat, QTextImageFormat, QTextLength,
+                           QTextOption, QTextTable)
 
 from .formats import ImageLoadError
 from .layout import PageSize, PdfSettings
-from .notebook_media import Picture, math_link, math_name, prepare_markdown, render_math, render_svg
+from .notebook_media import (Picture, decode_image, math_link, math_name, prepare_markdown, render_math,
+                             render_svg)
 
 ERROR = "error"
 NOTE = "note"  # an output Papyr can't draw, named so the reader knows something was there
@@ -39,6 +41,7 @@ _CSS_DPI = 96  # Jupyter shows an image pixel as one CSS pixel; the PDF writer a
 _BODY_PT = 10.5
 _CODE_PT = 9
 _CELL_GAP = 10
+_CELL_CHROME_IN = 0.1  # a table cell's padding and borders, kept free so a fitted image never overhangs
 _INK = QColor("#1f2328")
 _LINK = QColor("#0b5cad")
 _MUTED = QColor("#8a8a8a")
@@ -217,21 +220,26 @@ def _code_span(text: str) -> str:
     return f"{ticks} {text} {ticks}"
 
 
-def _data_image(url: QUrl) -> QImage | None:
-    """Decode an inline data: image here as a QImage. Qt would make a QPixmap, which only the GUI thread may use."""
+def _data_payload(url: QUrl) -> bytes:
     header, _, payload = url.toString(QUrl.ComponentFormattingOption.FullyEncoded).partition(",")
     try:
-        data = base64.b64decode(payload) if header.endswith(";base64") else \
+        return base64.b64decode(payload) if header.endswith(";base64") else \
             QUrl.fromPercentEncoding(payload.encode()).encode()
     except ValueError:
-        return None
-    image = QImage.fromData(data)
-    return None if image.isNull() else image
+        return b""
+
+
+def _nothing() -> QImage:
+    """What a refused image resolves to. Answering None would make Qt load the name as a file path itself."""
+    image = QImage(1, 1, QImage.Format.Format_ARGB32)
+    image.fill(Qt.GlobalColor.transparent)
+    return image
 
 
 class _NotebookDocument(QTextDocument):
-    """Loads registered images and inline data, plus files inside the notebook's folder and nothing else, so a
-    notebook can't pull an unrelated private image from elsewhere on the disk into the PDF."""
+    """Loads registered images and inline data, plus image files inside the notebook's folder and nothing else, so a
+    notebook can't pull an unrelated private image from elsewhere on the disk into the PDF. Every image is decoded by
+    decode_image, which names the format, so Qt never sniffs one and never reads an SVG's references."""
 
     def __init__(self, folder: Path):
         super().__init__()
@@ -239,15 +247,24 @@ class _NotebookDocument(QTextDocument):
         self.setBaseUrl(QUrl.fromLocalFile(f"{self._folder}/"))
 
     def loadResource(self, kind: int, url: QUrl):
+        if kind != QTextDocument.ResourceType.ImageResource:
+            return QByteArray()  # style sheets and anything else a notebook's HTML links to
+        image = decode_image(self._read(url))
+        return _nothing() if image.isNull() else image
+
+    def _read(self, url: QUrl) -> bytes:
         if url.scheme() == "data":
-            return _data_image(url) if kind == QTextDocument.ResourceType.ImageResource else None
+            return _data_payload(url)
         if url.scheme() not in ("", "file"):
-            return None
+            return b""
         target = Path(url.toLocalFile() if url.isLocalFile() else url.path())
         target = (self._folder / target).resolve()
         if not target.is_relative_to(self._folder) or not target.is_file():
-            return None
-        return super().loadResource(kind, QUrl.fromLocalFile(str(target)))
+            return b""
+        try:
+            return target.read_bytes()
+        except OSError:
+            return b""
 
 
 class _Builder:
@@ -316,7 +333,7 @@ class _Builder:
         self.cursor.insertFragment(QTextDocumentFragment(source))
 
     def add_image(self, name: str, data: bytes, width: float | None = None) -> bool:
-        image = QImage.fromData(data)
+        image = decode_image(data)
         if image.isNull():
             return False
         self.add_picture(name, Picture(image, width or image.width(), 0))
@@ -428,7 +445,7 @@ def _resource_image(doc: QTextDocument, name: str) -> QImage:
     if isinstance(resource, QImage):
         return resource
     if isinstance(resource, (QByteArray, bytes)):
-        return QImage.fromData(resource)
+        return decode_image(bytes(resource))
     return QImage()
 
 
@@ -436,6 +453,8 @@ def _finish(doc: QTextDocument, widths: dict[str, float], max_width_in: float, m
     """Show each image at its natural size, scaled down (never up) to fit the text area, so no figure is cut at a
     page edge. Links get a print color, since Qt colors them from the app's theme, which may be dark."""
     dpi = _logical_dpi()
+    _fit_tables(doc.rootFrame(), max_width_in * _CSS_DPI)
+    cursor = QTextCursor(doc)
     changes = []
     for fragment in _fragments(doc):
         char_format = fragment.charFormat()
@@ -455,12 +474,27 @@ def _finish(doc: QTextDocument, widths: dict[str, float], max_width_in: float, m
             natural_in = image_format.width() / dpi
         else:
             natural_in = image.width() / _CSS_DPI
+        cursor.setPosition(fragment.position())
+        table = cursor.currentTable()
+        room_in = max_width_in / table.columns() - _CELL_CHROME_IN if table else max_width_in
         aspect = image.height() / image.width()
-        width_in = min(natural_in, max_width_in, max_height_in / aspect)
+        width_in = min(natural_in, room_in, max_height_in / aspect)
         image_format.setWidth(width_in * dpi)
         image_format.setHeight(width_in * dpi * aspect)
         changes.append((fragment.position(), fragment.length(), image_format))
     _set_format(doc, changes)
+
+
+def _fit_tables(frame: QTextFrame, max_width_px: float) -> None:
+    """HTML tables may ask for a fixed width wider than the paper; those become full width so no column is cut."""
+    for child in frame.childFrames():
+        if isinstance(child, QTextTable):
+            table_format = child.format()
+            width = table_format.width()
+            if width.type() == QTextLength.Type.FixedLength and width.rawValue() > max_width_px:
+                table_format.setWidth(QTextLength(QTextLength.Type.PercentageLength, 100))
+                child.setFormat(table_format)
+        _fit_tables(child, max_width_px)
 
 
 def _page_layout(settings: PdfSettings) -> QPageLayout:
@@ -529,6 +563,8 @@ def render_notebook(path: Path, settings: PdfSettings) -> bytes:
         _finish(doc, widths, (paper.width() - 2 * margin) / _CSS_DPI, (paper.height() - 2 * margin) / _CSS_DPI * 0.9)
     except Exception as exc:  # noqa: BLE001 - notebook content is untrusted, so any layout failure is this file's
         raise ImageLoadError(f"Notebook could not be laid out: {exc}") from exc
+    if not doc.toPlainText().strip():  # cells whose source draws nothing, such as only an HTML comment
+        raise ImageLoadError("Notebook has no cells with any content")
 
     context = QAbstractTextDocumentLayout.PaintContext()
     context.palette = _print_palette()

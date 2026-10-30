@@ -1,5 +1,6 @@
 """Every fixture notebook is converted the way the window converts it, while the app wears a dark theme, and the
 PDF is judged by what a reader sees and can copy: ink on every page, the text in order, and the figures."""
+import base64
 import io
 import os
 import socket
@@ -8,6 +9,7 @@ from pathlib import Path
 
 import pypdfium2 as pdfium
 import pytest
+from PIL import Image
 from pypdf import PdfReader
 from PySide6.QtGui import QColor, QPalette
 
@@ -185,9 +187,10 @@ def test_no_cell_is_ever_run(tmp_path, monkeypatch):
 
 def test_only_images_inside_the_notebook_folder_are_read():
     pdf = render("external-references")
-    colors = [obj.get_bitmap().to_pil().convert("RGB").getpixel((5, 5))
-              for page in pdfium.PdfDocument(pdf) for obj in page.get_objects()
-              if obj.type == pdfium.raw.FPDF_PAGEOBJ_IMAGE]
+    bitmaps = [obj.get_bitmap().to_pil().convert("RGBA") for page in pdfium.PdfDocument(pdf)
+               for obj in page.get_objects() if obj.type == pdfium.raw.FPDF_PAGEOBJ_IMAGE]
+    colors = [bitmap.getpixel((bitmap.width // 2, bitmap.height // 2))[:3] for bitmap in bitmaps
+              if bitmap.getpixel((bitmap.width // 2, bitmap.height // 2))[3]]
     def near(color, target):
         return all(abs(a - b) <= 3 for a, b in zip(color, target))
     assert not any(near(color, (255, 0, 255)) for color in colors)  # ../outside.png, from markdown, HTML, or SVG
@@ -205,3 +208,97 @@ def test_empty_and_corrupted_notebooks_fail_clearly_and_leave_no_file(tmp_path, 
     [(path, reason)] = report.failures
     assert path.name == f"{name}.ipynb" and friendly_error(reason) == friendly
     assert report.outputs == [] and os.listdir(tmp_path) == []
+
+
+def red_pixels(pdf: bytes) -> int:
+    image = pdfium.PdfDocument(pdf)[0].render(scale=1).to_pil().convert("RGB")
+    red, green, _ = (band.tobytes() for band in image.split())
+    return sum(1 for r, g in zip(red, green) if r > 200 and g < 60)
+
+
+SVG_NS = 'xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"'
+
+
+def svg_with(reference: str) -> str:
+    return f'<svg {SVG_NS} width="80" height="80"><image {reference} width="80" height="80"/></svg>'
+
+
+def data_url(mime: str, text: str) -> str:
+    return f"data:{mime};base64,{base64.b64encode(text.encode()).decode()}"
+
+
+@pytest.mark.parametrize("attack", [
+    "absolute path", "file url", "svg in data url", "svg labeled png", "doctype default href",
+    "svg nested in svg", "css processing instruction"])
+def test_no_trick_reads_an_image_outside_the_notebook_folder(tmp_path, attack):
+    from test_notebook import code, display, markdown, write_notebook
+    secret = tmp_path / "secret.png"
+    Image.new("RGB", (80, 80), (255, 0, 0)).save(secret)
+    (tmp_path / "evil.css").write_text("rect { fill: #ff0000 }")
+    folder = tmp_path / "notebook"
+    folder.mkdir()
+    href = f'xlink:href="{secret}"'
+    cell = {
+        "absolute path": markdown(f"![x]({secret})"),
+        "file url": markdown(f"![x](file://{secret})"),
+        "svg in data url": markdown(f"![x]({data_url('image/svg+xml', svg_with(href))})"),
+        "svg labeled png": code("x", display(image_png=base64.b64encode(svg_with(href).encode()).decode())),
+        "doctype default href": code("x", display(**{"image/svg+xml": (
+            f'<!DOCTYPE svg [<!ATTLIST image xlink:href CDATA "{secret}">]>'
+            f'<svg {SVG_NS} width="40" height="40"><image width="40" height="40"/></svg>')})),
+        "svg nested in svg": code("x", display(**{"image/svg+xml": (
+            f'<svg {SVG_NS} width="40" height="40"><image width="40" height="40" '
+            f'xlink:href="{data_url("image/svg+xml", svg_with(href))}"/></svg>')})),
+        "css processing instruction": code("x", display(**{"image/svg+xml": (
+            f'<?xml-stylesheet type="text/css"href="{tmp_path / "evil.css"}"?>'
+            f'<svg {SVG_NS} width="40" height="40"><rect width="40" height="40" fill="blue"/></svg>')})),
+    }[attack]
+    source = write_notebook(folder / "nb.ipynb", markdown("Visible text"), cell)
+    assert red_pixels(render_notebook(source, A4)) == 0
+
+
+@pytest.mark.parametrize("markdown_text, kept", [
+    ("    $x$ is code\n\nText $y$", "$x$ is code"),
+    ("```\n$x$ in a fence\n````\n\nText $y$", "$x$ in a fence"),
+    ("Use $HOME and $PATH.", "Use $HOME and $PATH."),
+])
+def test_dollars_in_code_and_shell_variables_stay_literal(tmp_path, markdown_text, kept):
+    from test_notebook import markdown, write_notebook
+    [text] = page_texts(render_notebook(write_notebook(tmp_path / "nb.ipynb", markdown(markdown_text)), A4))
+    assert kept in text and "math:" not in text and "$y$" not in text
+
+
+def test_images_in_a_table_fit_their_cells_and_wide_tables_fit_the_page(tmp_path):
+    from test_notebook import code, display, png_b64, write_notebook
+    picture = f'<img src="data:image/png;base64,{png_b64((2000, 1000), "blue")}">'
+    html = f'<table><tr><td>{picture}</td><td>{picture}</td></tr></table>' \
+           '<table width="2000"><tr><td>LEFT</td><td>RIGHT</td></tr></table>'
+    pdf = render_notebook(write_notebook(tmp_path / "nb.ipynb", code("df", display(text_html=html))), A4)
+    page = pdfium.PdfDocument(pdf)[0]
+    margin = 10 * 72 / 25.4
+    boxes = [obj.get_bounds() for obj in page.get_objects() if obj.type == pdfium.raw.FPDF_PAGEOBJ_IMAGE]
+    assert len(boxes) == 2 and all(right <= page.get_width() - margin + 1 for _, _, right, _ in boxes)
+    assert "LEFT RIGHT" in page_texts(pdf)[0]
+
+
+def test_a_notebook_that_draws_nothing_is_reported_empty(tmp_path):
+    from test_notebook import markdown, write_notebook
+    source = write_notebook(tmp_path / "nb.ipynb", markdown("<!-- nothing visible -->"))
+    report = convert_individual([source], tmp_path / "out", A4)
+    assert report.outputs == [] and friendly_error(report.failures[0][1]) == "This notebook is empty."
+
+
+def test_math_typesets_correctly_from_many_threads_at_once(tmp_path):
+    from concurrent.futures import ThreadPoolExecutor
+    from test_notebook import markdown, write_notebook
+    formulas = ["\\sum_{n=1}^{100} \\frac{n^2}{n+1}", "\\int_0^1 x^2 dx", "\\alpha\\beta\\gamma",
+                "\\begin{bmatrix}1&2\\\\3&4\\end{bmatrix}"] * 3
+    paths = [write_notebook(tmp_path / f"nb{n}.ipynb", markdown(f"$${latex}$$")) for n, latex in enumerate(formulas)]
+    switch = sys.getswitchinterval()
+    sys.setswitchinterval(1e-6)
+    try:
+        with ThreadPoolExecutor(6) as pool:
+            counts = list(pool.map(lambda path: sum(images_per_page(render_notebook(path, A4))), paths))
+    finally:
+        sys.setswitchinterval(switch)
+    assert counts == [1] * len(formulas)
