@@ -107,12 +107,8 @@ class GifWriter:
     def add(self, frame: Image.Image) -> None:
         # Every frame reserves a transparent index, even an opaque one. Disposal 2 then clears to transparency, so
         # an opaque page never shows through the clear areas of a transparent picture after it.
-        paletted = to_gif_palette(frame.convert("RGBA"))
-        palette = paletted.getpalette() or []
-        paletted.putpalette(palette + [0] * (768 - len(palette)))
-        params = {"duration": self._settings.frame_ms, "disposal": 2}
-        if "transparency" in paletted.info:
-            params["transparency"] = paletted.info["transparency"]
+        paletted = to_gif_palette(frame, reserve_transparent=True)
+        params = {"duration": self._settings.frame_ms, "disposal": 2, "transparency": paletted.info["transparency"]}
         if self.frame_count == 0:
             header, _ = GifImagePlugin.getheader(paletted, info={"loop": self._settings.loop,
                                                                  "duration": self._settings.frame_ms})

@@ -232,13 +232,17 @@ def save_image(image: Image.Image, stream: BinaryIO, fmt: OutputFormat, quality:
     image.save(stream, fmt.pillow_format, **options)
 
 
-def to_gif_palette(image: Image.Image) -> Image.Image:
-    """Quantize to 255 colours and reserve index 255 for fully transparent pixels."""
-    if "A" not in image.getbands():
-        return image.convert("RGB").quantize(256, dither=Image.Dither.FLOYDSTEINBERG)
-    alpha = image.getchannel("A")
+def to_gif_palette(image: Image.Image, reserve_transparent: bool = False) -> Image.Image:
+    """Quantize to 256 colours, or to 255 with index 255 for fully transparent pixels when there are any (or
+    reserve_transparent asks for the index anyway). The palette is padded so index 255 is always in range."""
+    clear = image.getchannel("A").point(lambda a: 255 if a < 128 else 0) if "A" in image.getbands() else None
+    if not reserve_transparent and (clear is None or clear.getbbox() is None):
+        return _flatten(image).convert("RGB").quantize(256, dither=Image.Dither.FLOYDSTEINBERG)
     paletted = _flatten(image).convert("RGB").quantize(255, dither=Image.Dither.FLOYDSTEINBERG)
-    paletted.paste(255, mask=alpha.point(lambda a: 255 if a < 128 else 0))
+    if clear is not None:
+        paletted.paste(255, mask=clear)
+    palette = paletted.getpalette() or []
+    paletted.putpalette(palette + [0] * (768 - len(palette)))
     paletted.info["transparency"] = 255
     return paletted
 

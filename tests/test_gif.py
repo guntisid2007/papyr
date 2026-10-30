@@ -263,3 +263,31 @@ def test_cancelling_during_the_last_frame_discards_the_animation(tmp_path):
     out.mkdir()
     report = convert_animated_gifs([source], out, GifSettings(), cancelled=cancelled)
     assert report.cancelled and report.outputs == [] and out_names(out) == []
+
+
+def transparency_field(path: Path) -> tuple[int, bool, int]:
+    """(colour table size, transparency flag, transparent index) of a still GIF's first graphic control block."""
+    data = path.read_bytes()
+    table = 2 << (data[10] & 0x07)
+    block = 13 + table * 3
+    assert data[block:block + 2] == b"\x21\xf9", "graphic control extension follows the colour table"
+    return table, bool(data[block + 3] & 1), data[block + 6]
+
+
+@pytest.mark.parametrize("convert", ["animated", "separate"])
+def test_still_gifs_declare_transparency_only_when_they_have_some_and_within_the_palette(tmp_path, convert):
+    opaque = Image.new("RGBA", (20, 20), (255, 0, 0, 255))
+    holed = opaque.copy()
+    holed.putpixel((0, 0), (0, 0, 0, 0))
+    for name, image in (("opaque", opaque), ("holed", holed)):
+        image.save(tmp_path / f"{name}.png")
+        source = tmp_path / f"{name}.png"
+        report = (convert_animated_gifs([source], tmp_path / name, GifSettings()) if convert == "animated"
+                  else convert_images([source], tmp_path / name, ImageSettings(OutputFormat.GIF)))
+        if name == "opaque":
+            with Image.open(report.outputs[0]) as gif:
+                assert "transparency" not in gif.info
+        else:
+            table, flag, index = transparency_field(report.outputs[0])
+            assert flag and index < table
+            assert gif_frames(report.outputs[0])[0][0].getpixel((0, 0))[3] == 0
