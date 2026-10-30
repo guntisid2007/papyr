@@ -1,11 +1,12 @@
-import os
 from pathlib import Path
 
 import pillow_heif
 import pytest
 from PIL import Image
 
-os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+from gui.app import use_headless_platform
+
+use_headless_platform()
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
