@@ -1,7 +1,8 @@
-import platform
 import re
 import sys
 from pathlib import Path
+
+import pytest
 
 from converter import INPUT_EXTENSIONS
 from utils.app_info import __version__
@@ -18,9 +19,10 @@ def macos_bundle(monkeypatch) -> dict:
         def __init__(self, *args, **kwargs):
             pass
 
+    if sys.platform != "darwin":
+        pytest.skip("PyInstaller builds the macOS bundle only on macOS")
     bundle: dict = {}
     monkeypatch.setattr(sys, "platform", "darwin")
-    monkeypatch.setattr(platform, "mac_ver", lambda: ("14.4", ("", "", ""), "arm64"))
     monkeypatch.setattr(sys, "path", list(sys.path))
     spec = ROOT / "papyr.spec"
     exec(compile(spec.read_text(), str(spec), "exec"),
