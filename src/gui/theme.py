@@ -30,6 +30,7 @@ class Theme:
     control_hover: QColor
     control_pressed: QColor
     selected: QColor
+    segment: QColor  # the chosen segment in a segmented bar
     hover: QColor
     border: QColor
     border_strong: QColor
@@ -61,6 +62,7 @@ LIGHT = Theme(
     control_hover=QColor("#e3e3e6"),
     control_pressed=QColor("#d8d8dc"),
     selected=_rgba("#d0432f", 0.10),
+    segment=QColor("#ffffff"),
     hover=_rgba("#16161a", 0.045),
     border=_rgba("#16161a", 0.09),
     border_strong=_rgba("#16161a", 0.16),
@@ -92,6 +94,7 @@ DARK = Theme(
     control_hover=QColor("#35353b"),
     control_pressed=QColor("#3e3e45"),
     selected=_rgba("#ff7a66", 0.14),
+    segment=QColor("#3d3d44"),
     hover=_rgba("#ffffff", 0.05),
     border=_rgba("#ffffff", 0.08),
     border_strong=_rgba("#ffffff", 0.14),
@@ -185,6 +188,7 @@ QLineEdit, QDoubleSpinBox { background: %(control)s; color: %(text)s; border: 1p
 QLineEdit:hover, QDoubleSpinBox:hover { background: %(control_hover)s; }
 QLineEdit:focus, QDoubleSpinBox:focus { border: 2px solid %(accent)s; padding: 3px 7px; }
 QLineEdit:disabled, QDoubleSpinBox:disabled { color: %(text_tertiary)s; }
+/* Zero-width steppers rather than NoButtons, which collapses the macOS edit field to one pixel. */
 QDoubleSpinBox::up-button, QDoubleSpinBox::down-button { width: 0; border: none; }
 
 QSlider { min-height: 22px; background: transparent; }

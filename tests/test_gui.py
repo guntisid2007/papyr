@@ -459,6 +459,16 @@ def test_move_up_and_down_reorder_the_selection(window, make):
     assert names(window) == ["a.png", "b.png", "c.png"]
 
 
+def test_rows_fit_the_list_after_the_window_shrinks(app, window, make):
+    from gui.main_window import DEFAULT_SIZE, MINIMUM_SIZE
+
+    window.add_paths([make("a.png")])
+    for size in (DEFAULT_SIZE, (1280, 800), MINIMUM_SIZE):
+        window.resize(*size)
+        app.processEvents()
+        assert window.queue.visualItemRect(window.queue.item(0)).width() == window.queue.viewport().width()
+
+
 def test_two_hundred_files_load_thumbnails_off_the_gui_thread(app, window, make):
     window.add_paths([make(f"{i:03d}.png", (60, 40)) for i in range(200)])
     assert window.queue.count() == 200
@@ -473,7 +483,7 @@ def test_missing_folder_blocks_convert_and_says_why(window, make, tmp_path):
     window.set_output_dir(tmp_path / "gone")
     assert not window.dock.convert_button.isEnabled()
     assert window.dock.convert_button.toolTip() == "The Save to folder no longer exists. Choose another folder."
-    assert window.dock.destination.value() == "Folder not found — choose another"
+    assert window.dock.destination.value() == "Folder not found"
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="POSIX permissions")
@@ -485,7 +495,7 @@ def test_unwritable_folder_blocks_convert(window, make, tmp_path):
         window.add_paths([make("a.png")])
         window.set_output_dir(locked)
         assert not window.dock.convert_button.isEnabled()
-        assert window.dock.destination.value() == "This folder isn't writable"
+        assert window.dock.destination.value() == "Folder isn't writable"
     finally:
         locked.chmod(0o755)
 

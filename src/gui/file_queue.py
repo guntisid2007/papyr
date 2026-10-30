@@ -5,7 +5,7 @@ from enum import Enum, IntEnum
 from pathlib import Path
 
 from PySide6.QtCore import QEvent, QItemSelectionModel, QPointF, QRectF, QSize, Qt, Signal
-from PySide6.QtGui import QCursor, QFontMetrics, QImage, QPainter, QPainterPath, QPen, QPixmap
+from PySide6.QtGui import QCursor, QFontMetrics, QImage, QKeySequence, QPainter, QPainterPath, QPen, QPixmap
 from PySide6.QtWidgets import QAbstractItemView, QListWidget, QListWidgetItem, QStyle, QStyledItemDelegate, QToolTip
 
 from converter import is_document
@@ -14,8 +14,10 @@ from utils.files import human_size
 from .icons import Icon, paint_icon
 from .model import QueueSummary
 from .theme import RADIUS_ROW, Type, current, font
+from .widgets import shortcut_text
 
 ROW_HEIGHT = 50
+MINIMUM_ROW_WIDTH = 200
 THUMB = 34
 REMOVE_SIZE = 24
 REMOVE_TOOLTIP = "Remove from list"
@@ -172,8 +174,42 @@ class FileQueue(QListWidget):
     def show_active(self, row: int) -> None:
         self.active_row = row
         if 0 <= row < self.count():
-            self.scrollToItem(self.item(row))
+            self.scrollToItem(self.item(row), QAbstractItemView.ScrollHint.PositionAtCenter)
         self.viewport().update()
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        if 0 <= self.active_row < self.count():
+            self.scrollToItem(self.item(self.active_row), QAbstractItemView.ScrollHint.PositionAtCenter)
+
+    def paintEvent(self, event) -> None:
+        super().paintEvent(event)
+        if self.count() and not self.locked:
+            self._paint_drop_hint()
+
+    def _paint_drop_hint(self) -> None:
+        """Below the last row, say that more files can be dropped there."""
+        last = QueueDelegate.row_rect(self.visualItemRect(self.item(self.count() - 1)))
+        free = QRectF(last.left(), last.bottom() + 10, last.width(), self.viewport().height() - last.bottom() - 22)
+        if free.height() < 64:
+            return
+        free.setHeight(min(free.height(), 96))
+        theme = current()
+        painter = QPainter(self.viewport())
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        pen = QPen(theme.border_strong, 1, Qt.PenStyle.DashLine)
+        pen.setDashPattern([4, 4])
+        painter.setPen(pen)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.drawRoundedRect(free, RADIUS_ROW + 3, RADIUS_ROW + 3)
+        painter.setFont(font(Type.CAPTION))
+        text = f"Drop more files here, or press {shortcut_text(QKeySequence.StandardKey.Open)}"
+        width = painter.fontMetrics().horizontalAdvance(text)
+        icon = QRectF(free.center().x() - (width + 20) / 2, free.center().y() - 7, 14, 14)
+        paint_icon(painter, Icon.PLUS, icon, theme.text_secondary)
+        painter.setPen(theme.text_secondary)
+        painter.drawText(QRectF(icon.right() + 6, free.top(), width + 4, free.height()),
+                         Qt.AlignmentFlag.AlignVCenter, text)
 
     # Thumbnails
 
@@ -220,7 +256,7 @@ class QueueDelegate(QStyledItemDelegate):
         self._queue = queue
 
     def sizeHint(self, option, index) -> QSize:
-        return QSize(max(option.rect.width(), 200), ROW_HEIGHT)
+        return QSize(MINIMUM_ROW_WIDTH, ROW_HEIGHT)  # the list stretches rows to its own width
 
     @staticmethod
     def row_rect(option_rect) -> QRectF:
@@ -235,7 +271,7 @@ class QueueDelegate(QStyledItemDelegate):
         state = option.state
         enabled = bool(state & QStyle.StateFlag.State_Enabled)
         selected = bool(state & QStyle.StateFlag.State_Selected)
-        hovered = bool(state & QStyle.StateFlag.State_MouseOver) and enabled
+        hovered = bool(state & QStyle.StateFlag.State_MouseOver) and enabled and not self._queue.locked
         active = index.row() == self._queue.active_row
         row = self.row_rect(option.rect)
         painter.save()

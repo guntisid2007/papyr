@@ -8,7 +8,7 @@ from ..theme import Type, current
 from ..widgets import Button, Glyph, Kind, label, set_tone
 
 TAGLINE = "Convert photos, PDFs, and notebooks to PDF or any image format."
-FORMATS_LINE = "HEIC · JPEG · PNG · WebP · AVIF · TIFF · GIF · BMP · PDF · Jupyter notebooks"
+FORMATS = (("Photos", "HEIC · JPEG · PNG · WebP · AVIF · TIFF · GIF · BMP"), ("Documents", "PDF · Jupyter notebooks"))
 PRIVACY_LINE = "Everything stays on this Mac. Nothing is uploaded."
 
 
@@ -98,9 +98,11 @@ class WelcomeView(QWidget):
         buttons.addStretch()
         column.addLayout(buttons)
         column.addSpacing(14)
-        formats = label(FORMATS_LINE, Type.CAPTION, "secondary", wrap=True)
-        formats.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        column.addWidget(formats)
+        for kind, names in FORMATS:
+            line = label(f"<b>{kind}</b>&nbsp;&nbsp;{names}", Type.CAPTION, "secondary", wrap=True)
+            line.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            column.addWidget(line)
+            column.addSpacing(2)
 
         outer.addSpacing(10)
         self.notice = label("", Type.CAPTION, "danger", wrap=True)

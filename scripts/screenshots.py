@@ -20,8 +20,8 @@ sys.path.insert(0, str(ROOT / "src"))
 
 import pillow_heif
 from PIL import Image, ImageDraw
-from PySide6.QtCore import QSettings, Qt, QThreadPool
-from PySide6.QtGui import QColor, QPalette
+from PySide6.QtCore import QRect, QSettings, Qt, QThreadPool
+from PySide6.QtGui import QColor, QCursor, QPalette
 
 from converter import ConversionReport, OutputFormat
 from gui.app import create_app
@@ -127,11 +127,23 @@ class Shooter:
 
     def shoot(self, name: str, size: str = "default") -> Path:
         self.window.resize(*SIZES[size])
+        self.away_from_cursor()
         self.settle()
         path = self.out / f"{name}-{self.scheme}-{size}.png"
         self.window.grab().save(str(path))
         print(path)
         return path
+
+    def away_from_cursor(self) -> None:
+        """Put the window in a screen corner the pointer isn't over, so no row is drawn hovered."""
+        frame = self.window.frameGeometry()
+        screen = self.window.screen().availableGeometry()
+        pointer = QCursor.pos()
+        for x in (screen.left(), screen.right() - frame.width()):
+            for y in (screen.top(), screen.bottom() - frame.height()):
+                if not QRect(x, y, frame.width(), frame.height()).contains(pointer):
+                    self.window.move(x, y)
+                    return
 
     def shoot_sizes(self, name: str) -> None:
         for size in SIZES:
@@ -228,6 +240,34 @@ def states(app, scheme: str, tmp: Path, out: Path) -> None:
     shooter.window.add_paths(photos[:3])
     shooter.window.set_output_dir(tmp / "Exports (deleted)")
     shooter.shoot("destination-missing")
+    shooter.close()
+
+    shooter.open(OutputFormat.WEBP)
+    window = shooter.window
+    window.add_paths([photos[0], photos[1], document])
+    window.dock._edit(format=OutputFormat.PDF, merge=True, merged_name="Trip Photos")
+    shooter.settle()
+    for chip, popover, name in ((window.dock.page_chip, window.dock.page_popover, "page"),
+                                (window.dock.name_chip, window.dock.name_popover, "name")):
+        chip.click()
+        shooter.settle()
+        popover.grab().save(str(out / f"popover-{name}-{scheme}.png"))
+        popover.close()
+    window.dock._edit(format=OutputFormat.WEBP)
+    for chip, popover, name in ((window.dock.quality_chip, window.dock.quality_popover, "quality"),
+                                (window.dock.dpi_chip, window.dock.dpi_popover, "resolution")):
+        chip.click()
+        shooter.settle()
+        popover.grab().save(str(out / f"popover-{name}-{scheme}.png"))
+        popover.close()
+    window._show_drop_target(True)
+    shooter.shoot("drop-hover-workspace")
+    window._show_drop_target(False)
+    shooter.close()
+
+    shooter.open()
+    shooter.window._show_drop_target(True)
+    shooter.shoot("drop-hover-welcome")
     shooter.close()
 
 

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from PySide6.QtCore import (QEasingCurve, QEvent, QPoint, QPointF, QRect, QRectF, QSize, Qt, QVariantAnimation,
                             Signal)
-from PySide6.QtGui import QColor, QFontMetrics, QPainter, QPainterPath, QPen, QPixmap
+from PySide6.QtGui import QColor, QFontMetrics, QKeySequence, QPainter, QPainterPath, QPen, QPixmap
 from PySide6.QtWidgets import QAbstractButton, QFrame, QLabel, QSizePolicy, QVBoxLayout, QWidget
 
 from . import motion
@@ -13,6 +13,11 @@ from .theme import RADIUS_CONTROL, Theme, Type, current, font
 
 KEYBOARD_REASONS = (Qt.FocusReason.TabFocusReason, Qt.FocusReason.BacktabFocusReason,
                     Qt.FocusReason.ShortcutFocusReason, Qt.FocusReason.OtherFocusReason)
+
+
+def shortcut_text(sequence: QKeySequence | str) -> str:
+    """How the platform writes a shortcut, such as ⌘O on a Mac and Ctrl+O elsewhere. Needs the application."""
+    return QKeySequence(sequence).toString(QKeySequence.SequenceFormat.NativeText)
 
 
 def dropped_paths(event) -> list[Path]:
@@ -253,16 +258,15 @@ class Segment(Button):
         rect = QRectF(self.rect())
         checked, hover = self.isChecked(), self.underMouse() and self.isEnabled()
         if checked:
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(theme.accent if self.isEnabled() else theme.control_pressed)
-            painter.drawRoundedRect(rect, 6, 6)
+            painter.setPen(QPen(theme.border_strong, 1) if not theme.dark else Qt.PenStyle.NoPen)
+            painter.setBrush(theme.segment)
+            painter.drawRoundedRect(rect.adjusted(0.5, 0.5, -0.5, -0.5), 6, 6)
         elif hover:
             painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(theme.hover)
             painter.drawRoundedRect(rect, 6, 6)
-        color = theme.on_accent if checked and self.isEnabled() else \
-            theme.text if hover or (checked and not self.isEnabled()) else theme.text_secondary
-        if not self.isEnabled() and not checked:
+        color = theme.text if checked or hover else theme.text_secondary
+        if not self.isEnabled():
             color = theme.text_tertiary
         painter.setFont(font(Type.BODY_STRONG))
         painter.setPen(color)
@@ -474,7 +478,7 @@ class DropOverlay(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         wash = QColor(theme.canvas)
-        wash.setAlphaF(0.82)
+        wash.setAlphaF(0.92)
         painter.fillRect(self.rect(), wash)
         frame = QRectF(self.rect()).adjusted(12, 12, -12, -12)
         painter.setBrush(theme.accent_wash)

@@ -14,7 +14,7 @@ from ..icons import Icon, paint_icon
 from ..model import MARGIN_RANGE, PAGE_SIZES, PDF_DPI_CHOICES, Control, Converting, Options, QueueSummary, \
     controls_for, plural
 from ..theme import RADIUS_SURFACE, Type, current, font
-from ..widgets import Button, Chip, ElidedLabel, Kind, Popover, Segment, Surface, Toggle, Track, label
+from ..widgets import Button, Chip, ElidedLabel, Kind, Popover, Segment, Surface, Toggle, Track, label, shortcut_text
 
 FEATURED = (OutputFormat.PDF, OutputFormat.JPEG, OutputFormat.PNG, OutputFormat.WEBP, OutputFormat.HEIC)
 PAGE_DETAILS = {PageSize.A4: "210 × 297 mm", PageSize.LETTER: "8.5 × 11 in", PageSize.ORIGINAL: "Each image's own size"}
@@ -24,7 +24,6 @@ DPI_NOTE = "For pages of PDFs and notebooks turned into images."
 NAME_NOTE = "Pages follow the order of the list."
 KEEPS_ALPHA_NOTE = "Transparency is preserved."
 LOSES_ALPHA_NOTE = "Transparent areas become white."
-CONVERT_HINT = "⌘↩"
 
 
 def display_path(path: Path) -> str:
@@ -152,7 +151,6 @@ class PagePopover(Popover):
         self.margin.setRange(*MARGIN_RANGE)
         self.margin.setDecimals(0)
         self.margin.setSuffix(" mm")
-        self.margin.setButtonSymbols(QDoubleSpinBox.ButtonSymbols.NoButtons)
         self.margin.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.margin.setFixedWidth(88)
         self.margin.valueChanged.connect(on_margin)
@@ -261,7 +259,7 @@ class DestinationChip(Chip):
 
     def sizeHint(self) -> QSize:
         hint = super().sizeHint()
-        return QSize(min(hint.width(), 260), hint.height())
+        return QSize(min(hint.width(), 280), hint.height())
 
     def minimumSizeHint(self) -> QSize:
         return QSize(96, self._height)
@@ -379,7 +377,7 @@ class Dock(Surface):
         self.formats.chosen.connect(lambda fmt: self._edit(format=fmt))
         self.action_row.addWidget(self.formats)
         self.action_row.addStretch(1)
-        self.convert_button = Button("Convert", kind=Kind.PRIMARY, hint=CONVERT_HINT, height=32)
+        self.convert_button = Button("Convert", kind=Kind.PRIMARY, hint=shortcut_text("Ctrl+Return"), height=32)
         self.convert_button.clicked.connect(self.convertRequested)
         self.action_row.addWidget(self.convert_button)
         column.addLayout(self.action_row)
@@ -431,7 +429,8 @@ class Dock(Surface):
         self.convert_button.set_text(f"Convert to {options.format.label}")
         self.convert_button.setEnabled(blocker is None)
         files = plural(queue.count, "file")
-        self.convert_button.setToolTip(blocker or f"Convert {files} to {options.format.label} (⌘↩)")
+        self.convert_button.setToolTip(blocker or f"Convert {files} to {options.format.label} "
+                                                  f"({shortcut_text('Ctrl+Return')})")
 
     def _show(self, options: Options, queue: QueueSummary, compact: bool) -> None:
         self._options, self._queue = options, queue

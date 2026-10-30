@@ -6,8 +6,8 @@ from pathlib import Path
 
 from PySide6.QtCore import QEvent, QSettings, QStandardPaths, Qt, QThread
 from PySide6.QtGui import QAction, QImage, QKeySequence
-from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QFileDialog, QLineEdit, QMainWindow, QMessageBox,
-                               QStackedWidget, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QFileDialog, QHBoxLayout, QLineEdit, QMainWindow,
+                               QMessageBox, QStackedWidget, QVBoxLayout, QWidget)
 
 from converter import INPUT_EXTENSIONS, ConversionReport, OutputFormat, is_supported
 from utils.app_info import APP_NAME, __version__
@@ -30,6 +30,7 @@ CONVERT_SHORTCUTS = (QKeySequence("Ctrl+Return"), QKeySequence("Ctrl+Enter"))
 CANCEL_SHORTCUTS = (QKeySequence(Qt.Key.Key_Escape), QKeySequence("Ctrl+."))
 DEFAULT_SIZE = (760, 560)
 MINIMUM_SIZE = (640, 480)
+MAXIMUM_CONTENT_WIDTH = 980
 
 
 @dataclass(frozen=True)
@@ -63,7 +64,12 @@ class MainWindow(QMainWindow):
         self._canvas = QWidget()
         self._canvas.setObjectName("Canvas")
         self._canvas.setFocusPolicy(Qt.FocusPolicy.ClickFocus)  # clicking empty space leaves text fields
-        column = QVBoxLayout(self._canvas)
+        centered = QHBoxLayout(self._canvas)
+        centered.setContentsMargins(0, 0, 0, 0)
+        body = QWidget()
+        body.setMaximumWidth(MAXIMUM_CONTENT_WIDTH)  # a maximised window keeps rows and the dock readable
+        centered.addWidget(body)
+        column = QVBoxLayout(body)
         column.setContentsMargins(0, 0, 0, 0)
         column.setSpacing(0)
         self._pages = QStackedWidget()

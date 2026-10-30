@@ -45,8 +45,8 @@ def human_size(num_bytes: int) -> str:
 class FolderProblem(Enum):
     """Why converted files can't be saved in a folder: (short line for the folder row, explanation)."""
 
-    MISSING = ("Folder not found — choose another", "The Save to folder no longer exists. Choose another folder.")
-    NOT_WRITABLE = ("This folder isn't writable", "Papyr can't save files in this folder. Choose another folder.")
+    MISSING = ("Folder not found", "The Save to folder no longer exists. Choose another folder.")
+    NOT_WRITABLE = ("Folder isn't writable", "Papyr can't save files in this folder. Choose another folder.")
 
     def __init__(self, short: str, explanation: str):
         self.short = short
