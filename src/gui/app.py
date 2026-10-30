@@ -11,7 +11,7 @@ from utils.app_info import APP_NAME
 from utils.resources import asset_path
 
 from .main_window import MainWindow
-from .style import is_dark, stylesheet
+from .theme import app_font, stylesheet, system_is_dark, current
 
 PathHandler = Callable[[list[Path]], None]
 
@@ -41,10 +41,10 @@ class Application(QApplication):
         self._apply_style()
 
     def _apply_style(self) -> None:
-        dark = is_dark(self.palette())
+        dark = system_is_dark()
         if dark != self._dark:
             self._dark = dark
-            self.setStyleSheet(stylesheet(self.palette()))
+            self.setStyleSheet(stylesheet(current()))
 
     def set_path_handler(self, handler: PathHandler | None) -> None:
         self._open_paths = handler
@@ -71,6 +71,7 @@ class Application(QApplication):
 
 def create_app(argv: list[str]) -> Application:
     app = Application(argv)
+    app.setFont(app_font())
     app.setApplicationName(APP_NAME)
     app.setOrganizationName(APP_NAME)
     app.setWindowIcon(QIcon(str(asset_path("icon.png"))))

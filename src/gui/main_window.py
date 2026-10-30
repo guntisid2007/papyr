@@ -1,236 +1,182 @@
-from dataclasses import dataclass
+"""Papyr's window. It is always in one AppState (Welcome, Workspace, Converting, or Done), and set_state() is the
+only place that decides what the window shows and which actions are available."""
+from dataclasses import dataclass, replace
 from functools import partial
 from pathlib import Path
 
-from PySide6.QtCore import QEvent, QPointF, QSettings, QStandardPaths, Qt, QThread, QTimer
-from PySide6.QtGui import QAction, QIcon, QImage, QKeySequence
-from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QFileDialog, QFrame, QHBoxLayout, QLabel, QLineEdit,
-                               QMainWindow, QMessageBox, QProgressBar, QPushButton, QSizePolicy, QStackedWidget,
-                               QVBoxLayout, QWidget)
+from PySide6.QtCore import QEvent, QSettings, QStandardPaths, Qt, QThread
+from PySide6.QtGui import QAction, QImage, QKeySequence
+from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QFileDialog, QLineEdit, QMainWindow, QMessageBox,
+                               QStackedWidget, QVBoxLayout, QWidget)
 
-from converter import (INPUT_EXTENSIONS, ConversionReport, OutputFormat, convert_images, convert_individual,
-                       convert_merged, is_supported)
+from converter import INPUT_EXTENSIONS, ConversionReport, OutputFormat, is_supported
 from utils.app_info import APP_NAME, __version__
 from utils.errors import friendly_error
-from utils.filenames import sanitize_pdf_name
-from utils.files import FolderProblem, collect_images, folder_problem
-from utils.resources import asset_path
+from utils.files import collect_images, folder_problem
 from utils.reveal import REVEAL_LABEL, reveal
 
-from .file_queue import FileQueue, FileState, summary_text
-from .save_animation import SaveAnimation
-from .settings_panel import SettingsPanel
-from .widgets import ElidedLabel, EmptyState, dropped_paths, secondary_label
+from .model import AppState, Converting, Done, Options, RunResult, Welcome, Workspace, plan_job, plural
+from .views.controls import Dock
+from .views.done import DoneView
+from .views.welcome import WelcomeView
+from .views.workspace import WorkspaceView
+from .widgets import DropOverlay, crossfade, dropped_paths
 from .workers import ConversionWorker, ThumbnailLoader
 
 FILE_FILTER = "Images, PDFs, and notebooks ({})".format(" ".join(f"*{ext}" for ext in sorted(INPUT_EXTENSIONS)))
-THUMBNAIL_SIZE = 112
-SUBTITLE = "Convert photos, PDFs, and Jupyter notebooks to PDF, JPEG, PNG, WebP, and more."
-ORDER_HINT = "Drag to reorder. Pages follow this order."
-UNSUPPORTED = "this file format isn't supported."
+THUMBNAIL_SIZE = 96
+UNSUPPORTED = "this format isn't supported"
 CONVERT_SHORTCUTS = (QKeySequence("Ctrl+Return"), QKeySequence("Ctrl+Enter"))
-DETAILS_LIMIT = 15
+CANCEL_SHORTCUTS = (QKeySequence(Qt.Key.Key_Escape), QKeySequence("Ctrl+."))
+DEFAULT_SIZE = (760, 560)
+MINIMUM_SIZE = (640, 480)
 
 
-def plural(count: int, noun: str) -> str:
-    return f"{count} {noun}{'s' if count != 1 else ''}"
-
-
-@dataclass
-class Run:
-    """One conversion. The report arrives when it finishes, and the run is kept until the queue changes."""
+@dataclass(frozen=True)
+class RunSpec:
+    """What a running conversion was asked to do, kept to describe its result."""
 
     sources: list[Path]
-    combined: bool
-    report: ConversionReport | None = None
-
-
-def outcome(run: Run) -> tuple[str, str]:
-    """The status line for a finished run, and its kind: "success", "error", or "" for neutral."""
-    report = run.report
-    if report.cancelled:
-        kept = f" {plural(len(report.outputs), 'finished file')} kept." if report.outputs else ""
-        return f"Conversion cancelled.{kept}", ""
-    if report.outputs and not report.failures:
-        if run.combined:
-            return f"✓ Saved {report.outputs[0].name}", "success"
-        return f"✓ {plural(len(run.sources), 'file')} converted successfully", "success"
-    if report.outputs:
-        rest = f"The rest were saved in {report.outputs[0].name}." if run.combined else \
-            "The remaining files were saved."
-        return f"Conversion failed for {plural(len(report.failures), 'file')}. {rest}", "error"
-    reasons = {friendly_error(raw) for _, raw in report.failures}
-    if len(reasons) == 1:
-        return f"Conversion failed. {reasons.pop()}", "error"
-    return "Conversion failed. None of the files could be converted.", "error"
+    format: OutputFormat
+    merged: bool
+    destination: Path
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle(APP_NAME)
-        self.setMinimumSize(760, 520)
-        self.resize(1000, 660)
+        self.setMinimumSize(*MINIMUM_SIZE)
+        self.resize(*DEFAULT_SIZE)
         self.setAcceptDrops(True)
         self._settings = QSettings()
+        self._options = Options.load(self._settings)
+        self._output_dir = self._saved_output_dir()
+        self._state: AppState = Welcome()
         self._thread: QThread | None = None
         self._worker: ConversionWorker | None = None
-        self._run: Run | None = None
-        self._output_dir = Path.home()
+        self._run: RunSpec | None = None
         self._thumbnails = ThumbnailLoader(THUMBNAIL_SIZE, self)
         self._thumbnails.loaded.connect(self._on_thumbnail)
         self._thumbnails.failed.connect(self._on_thumbnail_failed)
 
-        root = QWidget()
-        root.setFocusPolicy(Qt.FocusPolicy.ClickFocus)  # clicking empty space leaves text fields
-        layout = QVBoxLayout(root)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
-        content = QVBoxLayout()
-        content.setContentsMargins(20, 16, 20, 16)
-        content.setSpacing(14)
-        layout.addLayout(content, 1)
-        content.addWidget(self._build_header())
-        body = QHBoxLayout()
-        body.setSpacing(14)
-        content.addLayout(body, 1)
-        body.addWidget(self._build_workspace(), 1)
-        self._panel = SettingsPanel()
-        self._panel.changed.connect(self._refresh)
-        self._panel.destination.changeRequested.connect(self._choose_output_dir)
-        body.addWidget(self._panel)
-        layout.addWidget(self._build_action_bar())
-        self.setCentralWidget(root)
+        self._canvas = QWidget()
+        self._canvas.setObjectName("Canvas")
+        self._canvas.setFocusPolicy(Qt.FocusPolicy.ClickFocus)  # clicking empty space leaves text fields
+        column = QVBoxLayout(self._canvas)
+        column.setContentsMargins(0, 0, 0, 0)
+        column.setSpacing(0)
+        self._pages = QStackedWidget()
+        column.addWidget(self._pages, 1)
+
+        self.welcome = WelcomeView()
+        self.welcome.browseFiles.connect(self._browse_files)
+        self.welcome.browseFolder.connect(self._browse_folder)
+        self.workspace = WorkspaceView()
+        self.workspace.addFiles.connect(self._browse_files)
+        self.workspace.addFolder.connect(self._browse_folder)
+        self.workspace.clearAll.connect(self._clear)
+        self.workspace.banner.revealRequested.connect(self._reveal_output)
+        self.workspace.banner.dismissed.connect(lambda: self.set_state(Workspace()))
+        self.queue = self.workspace.queue
+        self.queue.changed.connect(self._on_queue_changed)
+        self.queue.itemSelectionChanged.connect(self._update_actions)
+        self.queue.focusMoved.connect(self._update_actions)
+        self.done = DoneView()
+        self.done.revealRequested.connect(self._reveal_output)
+        self.done.retryRequested.connect(self._retry_failed)
+        self.done.convertMore.connect(self._clear)
+        self.done.backRequested.connect(lambda: self.set_state(Workspace()))
+        for page in (self.welcome, self.workspace, self.done):
+            self._pages.addWidget(page)
+
+        self.dock = Dock()
+        self.dock.edited.connect(self._on_options)
+        self.dock.convertRequested.connect(self._convert)
+        self.dock.cancelRequested.connect(self._cancel)
+        self.dock.destinationRequested.connect(self._choose_output_dir)
+        dock_margin = QVBoxLayout()
+        dock_margin.setContentsMargins(12, 8, 12, 12)
+        dock_margin.addWidget(self.dock)
+        column.addLayout(dock_margin)
+        self._drop_overlay = DropOverlay(self._canvas)
+        self.setCentralWidget(self._canvas)
+
         self._build_menus()
-        self._restore_settings()
         self._set_tab_order()
-        QApplication.instance().focusChanged.connect(self._update_actions)
-        self._refresh()
-        root.setFocus()  # nothing shows a focus ring until the keyboard is used
+        self.set_state(Welcome())
+        self._canvas.setFocus()  # nothing shows a focus ring until the keyboard is used
 
-    # Layout
+    # The state machine
 
-    def _build_header(self) -> QWidget:
-        header = QWidget()
-        row = QHBoxLayout(header)
-        row.setContentsMargins(0, 0, 0, 0)
-        row.setSpacing(10)
-        icon = QLabel()
-        icon.setPixmap(QIcon(str(asset_path("icon.png"))).pixmap(32, 32))
-        row.addWidget(icon)
-        text = QVBoxLayout()
-        text.setSpacing(0)
-        row.addLayout(text, 1)
-        title = QLabel(APP_NAME)
-        title.setObjectName("Title")
-        subtitle = QLabel(SUBTITLE)
-        subtitle.setObjectName("Subtitle")
-        text.addWidget(title)
-        text.addWidget(subtitle)
-        return header
+    def state(self) -> AppState:
+        return self._state
 
-    def _build_workspace(self) -> QWidget:
-        self._workspace = QFrame()
-        self._workspace.setObjectName("Workspace")
-        frame = QVBoxLayout(self._workspace)
-        frame.setContentsMargins(0, 0, 0, 0)
-        self._stack = QStackedWidget()
-        frame.addWidget(self._stack)
+    def set_state(self, state: AppState) -> None:
+        page = {Welcome: self.welcome, Workspace: self.workspace, Converting: self.workspace,
+                Done: self.done}[type(state)]
+        if page is not self._pages.currentWidget() or type(state) is not type(self._state):
+            crossfade(self._canvas)
+        self._state = state
+        self._pages.setCurrentWidget(page)
+        self._render()
 
-        self._empty = EmptyState()
-        self._empty.browseFiles.connect(self._browse_files)
-        self._empty.browseFolder.connect(self._browse_folder)
-        self._stack.addWidget(self._empty)
+    def _render(self) -> None:
+        state, queue, options = self._state, self.queue.summary(), self._options
+        problem = folder_problem(self._output_dir)
+        self.dock.set_destination(self._output_dir, problem)
+        self.dock.setVisible(not isinstance(state, Done))
+        match state:
+            case Welcome(notice=notice, error=error):
+                self.welcome.show_notice(notice, error)
+                self.dock.show_welcome(options)
+            case Workspace():
+                self.workspace.show_queue(queue, options.merges(queue), busy=False)
+                self.workspace.banner.show_notice(state)
+                self.dock.show_workspace(options, queue, self._convert_blocker(queue.count, problem))
+            case Converting():
+                self.workspace.show_queue(queue, options.merges(queue), busy=True)
+                self.workspace.banner.hide()
+                self.queue.show_active(state.done)
+                self.dock.show_progress(state)
+            case Done(result=result):
+                self.done.show_result(result, retryable=any(p.is_file() for p in result.failed_sources))
+        self._update_actions()
 
-        page = QFrame()
-        page.setObjectName("Card")
-        column = QVBoxLayout(page)
-        column.setContentsMargins(12, 12, 12, 10)
-        column.setSpacing(6)
-        toolbar = QHBoxLayout()
-        toolbar.setContentsMargins(4, 0, 0, 0)
-        toolbar.setSpacing(8)
-        column.addLayout(toolbar)
-        self._summary_label = ElidedLabel()
-        self._summary_label.setObjectName("Section")
-        toolbar.addWidget(self._summary_label, 1)
-        self._add_files_button = QPushButton("Add Files…")
-        self._add_files_button.setToolTip("Add photos, PDFs, or notebooks")
-        self._add_files_button.clicked.connect(self._browse_files)
-        self._add_folder_button = QPushButton("Add Folder…")
-        self._add_folder_button.setToolTip("Add every supported file in a folder")
-        self._add_folder_button.clicked.connect(self._browse_folder)
-        self._clear_button = QPushButton("Clear All")
-        self._clear_button.setToolTip("Remove every file from the list")
-        self._clear_button.clicked.connect(self._clear)
-        for button in (self._add_files_button, self._add_folder_button, self._clear_button):
-            button.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-            toolbar.addWidget(button)
+    def _update_actions(self, *_) -> None:
+        state = self._state
+        editing = isinstance(state, Workspace)
+        selected = editing and bool(self.queue.selectedItems())
+        self._add_files_action.setEnabled(not isinstance(state, Converting))
+        self._add_folder_action.setEnabled(not isinstance(state, Converting))
+        self._convert_action.setEnabled(editing and self.dock.convert_button.isEnabled())
+        self._cancel_action.setEnabled(isinstance(state, Converting) and not state.cancelling)
+        self._reveal_action.setEnabled(bool(self._revealable()))
+        self._select_all_action.setEnabled(editing)
+        self._remove_action.setEnabled(selected and self.queue.hasFocus())
+        self._move_up_action.setEnabled(selected and self.queue.count() > 1)
+        self._move_down_action.setEnabled(selected and self.queue.count() > 1)
+        self._clear_action.setEnabled(editing)
 
-        self._queue = FileQueue()
-        self._queue.changed.connect(self._on_queue_changed)
-        self._queue.itemSelectionChanged.connect(self._update_actions)
-        column.addWidget(self._queue, 1)
-        self._order_hint = secondary_label(ORDER_HINT)
-        self._order_hint.setContentsMargins(4, 0, 0, 0)
-        column.addWidget(self._order_hint)
-        self._stack.addWidget(page)
-        return self._workspace
+    def _convert_blocker(self, count: int, problem) -> str | None:
+        """Why Convert can't run right now, or None when it can."""
+        if not count:
+            return "Add files to convert."
+        return problem.explanation if problem else None
 
-    def _build_action_bar(self) -> QWidget:
-        bar = QFrame()
-        bar.setObjectName("ActionBar")
-        row = QHBoxLayout(bar)
-        row.setContentsMargins(20, 12, 20, 14)
-        row.setSpacing(10)
-        status_column = QVBoxLayout()
-        status_column.setSpacing(6)
-        status_column.addSpacing(10)  # balances the progress bar's reserved space so the status line is centred
-        row.addLayout(status_column, 1)
-        status_row = QHBoxLayout()
-        status_row.setSpacing(6)
-        status_column.addLayout(status_row)
-        self._status = ElidedLabel()
-        self._status.setObjectName("Status")
-        self._details_button = QPushButton("Details…")
-        self._details_button.setObjectName("Link")
-        self._details_button.setToolTip("See why each file wasn't converted")
-        self._details_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._details_button.clicked.connect(self._show_details)
-        self._details_button.hide()
-        status_row.addWidget(self._status)
-        status_row.addWidget(self._details_button)
-        status_row.addStretch()
-        self._progress = QProgressBar()
-        self._progress.setTextVisible(False)
-        self._progress.setAccessibleName("Conversion progress")
-        policy = self._progress.sizePolicy()
-        policy.setRetainSizeWhenHidden(True)
-        self._progress.setSizePolicy(policy)
-        self._progress.hide()
-        status_column.addWidget(self._progress)
+    def _revealable(self) -> list[Path]:
+        match self._state:
+            case Done(result=result):
+                return list(result.outputs)
+            case Workspace(kept=kept):
+                return list(kept)
+        return []
 
-        self._cancel_button = QPushButton("Cancel")
-        self._cancel_button.setToolTip("Stop after the current file. Finished files are kept.")
-        self._cancel_button.clicked.connect(self._cancel)
-        self._cancel_button.hide()
-        self._reveal_button = QPushButton(REVEAL_LABEL)
-        self._reveal_button.setToolTip("Show the converted files")
-        self._reveal_button.clicked.connect(self._reveal_output)
-        self._reveal_button.hide()
-        self._convert_button = QPushButton()
-        self._convert_button.setObjectName("Primary")
-        self._convert_button.setMinimumWidth(150)
-        self._convert_button.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        self._convert_button.clicked.connect(self._convert)
-        for button in (self._cancel_button, self._reveal_button, self._convert_button):
-            row.addWidget(button, 0, Qt.AlignmentFlag.AlignVCenter)
-        return bar
+    # Menus and keyboard
 
-    def _action(self, menu, text: str, slot, shortcuts=(), tip: str = "") -> QAction:
+    def _action(self, menu, text: str, slot, shortcuts=()) -> QAction:
         action = QAction(text, self)
         action.setShortcuts([QKeySequence(s) for s in shortcuts])
-        action.setStatusTip(tip)
         action.triggered.connect(slot)
         menu.addAction(action)
         return action
@@ -243,6 +189,7 @@ class MainWindow(QMainWindow):
         self._add_folder_action = self._action(file_menu, "Add Folder…", self._browse_folder, ["Ctrl+Shift+O"])
         file_menu.addSeparator()
         self._convert_action = self._action(file_menu, "Convert", self._convert, CONVERT_SHORTCUTS)
+        self._cancel_action = self._action(file_menu, "Cancel Conversion", self._cancel, CANCEL_SHORTCUTS)
         self._reveal_action = self._action(file_menu, REVEAL_LABEL, self._reveal_output)
         file_menu.addSeparator()
         self._close_action = self._action(file_menu, "Close Window", self.close, [QKeySequence.StandardKey.Close])
@@ -252,15 +199,15 @@ class MainWindow(QMainWindow):
         edit_menu = bar.addMenu("&Edit")
         self._select_all_action = self._action(edit_menu, "Select All", self._select_all,
                                                [QKeySequence.StandardKey.SelectAll])
-        self._remove_action = self._action(edit_menu, "Remove Selected", self._remove_selected,
+        self._remove_action = self._action(edit_menu, "Remove Selected", self.queue.remove_selected,
                                            [QKeySequence(Qt.Key.Key_Backspace), QKeySequence(Qt.Key.Key_Delete)])
-        # Only while the list has focus, so Backspace in the PDF name field still deletes text.
+        # Only while the list has focus, so Backspace in a text field still deletes text.
         self._remove_action.setShortcutContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
-        self._queue.addAction(self._remove_action)
+        self.queue.addAction(self._remove_action)
         edit_menu.addSeparator()
-        self._move_up_action = self._action(edit_menu, "Move Up", partial(self._queue.move_selected, -1),
+        self._move_up_action = self._action(edit_menu, "Move Up", partial(self.queue.move_selected, -1),
                                             ["Ctrl+Alt+Up"])
-        self._move_down_action = self._action(edit_menu, "Move Down", partial(self._queue.move_selected, 1),
+        self._move_down_action = self._action(edit_menu, "Move Down", partial(self.queue.move_selected, 1),
                                               ["Ctrl+Alt+Down"])
         edit_menu.addSeparator()
         self._clear_action = self._action(edit_menu, "Clear All", self._clear)
@@ -270,17 +217,36 @@ class MainWindow(QMainWindow):
         self._about_action.setMenuRole(QAction.MenuRole.AboutRole)
 
     def _set_tab_order(self) -> None:
-        chain = [self._empty.browse_button, self._empty.folder_button, self._add_files_button,
-                 self._add_folder_button, self._clear_button, self._queue, *self._panel.focus_chain(),
-                 self._details_button, self._cancel_button, self._reveal_button, self._convert_button]
+        chain = [self.welcome.browse_button, self.welcome.folder_button, self.workspace.add_files_button,
+                 self.workspace.add_folder_button, self.workspace.clear_button, self.queue,
+                 *self.dock.focus_chain(), self.dock.cancel_button, self.done.back_button, self.done.failures,
+                 self.done.retry_button, self.done.more_button, self.done.reveal_button]
         for first, second in zip(chain, chain[1:]):
             QWidget.setTabOrder(first, second)
 
-    # State
+    def _select_all(self) -> None:
+        focus = QApplication.focusWidget()
+        if isinstance(focus, (QLineEdit, QAbstractSpinBox)):
+            focus.selectAll()
+            return
+        self.queue.selectAll()
+        self.queue.setFocus()
 
-    @property
-    def _converting(self) -> bool:
-        return self._thread is not None
+    # Settings and the Save to folder
+
+    def _saved_output_dir(self) -> Path:
+        documents = Path(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DocumentsLocation)
+                         or Path.home())
+        saved = Path(str(self._settings.value("output_dir", documents)))
+        return saved if saved.is_dir() else documents if documents.is_dir() else Path.home()
+
+    def options(self) -> Options:
+        return self._options
+
+    def _on_options(self, options: Options) -> None:
+        self._options = options
+        options.save(self._settings)
+        self._render()
 
     def output_dir(self) -> Path:
         return self._output_dir
@@ -288,123 +254,62 @@ class MainWindow(QMainWindow):
     def set_output_dir(self, folder: Path) -> None:
         self._output_dir = folder
         self._settings.setValue("output_dir", str(folder))
-        self._refresh()
+        self._render()
 
-    def _convert_blocker(self, count: int, problem: FolderProblem | None) -> str | None:
-        """Why Convert can't run right now, or None when it can."""
-        if self._converting:
-            return "A conversion is in progress."
-        if not count:
-            return "Add files to convert."
-        if problem:
-            return problem.explanation
-        return None
-
-    def _refresh(self) -> None:
-        summary = self._queue.summary()
-        busy = self._converting
-        self._stack.setCurrentIndex(1 if summary.count else 0)
-        self._summary_label.setText(summary_text(summary))
-        self._panel.update_for(summary, busy)
-        problem = folder_problem(self._output_dir)
-        self._panel.show_destination(self._output_dir, problem.short if problem else None)
-        fmt = self._panel.output_format()
-        self._convert_button.setText(f"Convert to {fmt.label}")
-        blocker = self._convert_blocker(summary.count, problem)
-        self._convert_button.setEnabled(blocker is None)
-        shortcut = CONVERT_SHORTCUTS[0].toString(QKeySequence.SequenceFormat.NativeText)
-        self._convert_button.setToolTip(blocker or f"Convert {plural(summary.count, 'file')} to {fmt.label} "
-                                                   f"({shortcut})")
-        self._order_hint.setVisible(self._panel.combine())
-        self._queue.setEnabled(not busy)
-        for button in (self._add_files_button, self._add_folder_button, self._clear_button,
-                       self._empty.browse_button, self._empty.folder_button):
-            button.setEnabled(not busy)
-        self._update_actions()
-
-    def _update_actions(self, *_) -> None:
-        busy = self._converting
-        count = self._queue.count()
-        selected = bool(self._queue.selectedItems()) and not busy
-        self._add_files_action.setEnabled(not busy)
-        self._add_folder_action.setEnabled(not busy)
-        self._convert_action.setEnabled(self._convert_button.isEnabled())
-        self._reveal_action.setEnabled(bool(self._run and self._run.report and self._run.report.outputs))
-        self._remove_action.setEnabled(selected and self._queue.hasFocus())
-        self._move_up_action.setEnabled(selected and count > 1)
-        self._move_down_action.setEnabled(selected and count > 1)
-        self._clear_action.setEnabled(count > 0 and not busy)
-
-    def _restore_settings(self) -> None:
-        documents = Path(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DocumentsLocation)
-                         or Path.home())
-        saved = Path(str(self._settings.value("output_dir", documents)))
-        self._output_dir = saved if saved.is_dir() else documents if documents.is_dir() else Path.home()
-        self._panel.restore(self._settings)
-
-    def _save_settings(self) -> None:
-        self._settings.setValue("output_dir", str(self._output_dir))
-        self._panel.save(self._settings)
-
-    def _set_status(self, text: str, kind: str = "") -> None:
-        self._status.setText(text)
-        self._status.setProperty("kind", kind)
-        self._status.style().unpolish(self._status)
-        self._status.style().polish(self._status)
-
-    def _forget_run(self) -> None:
-        self._run = None
-        self._set_status("")
-        self._details_button.hide()
-        self._reveal_button.hide()
+    def _choose_output_dir(self) -> None:
+        start = self._output_dir if self._output_dir.is_dir() else Path.home()
+        folder = QFileDialog.getExistingDirectory(self, "Choose Where to Save", str(start))
+        if folder:
+            self.set_output_dir(Path(folder))
 
     # Adding and removing files
 
     def add_paths(self, paths: list[Path]) -> None:
-        if self._converting:
+        """Files from a dialog, a drop, Finder, or the command line. After a finished run they start a new batch."""
+        if isinstance(self._state, Converting):
             return
         unsupported = sum(1 for p in paths if p.is_file() and not is_supported(p))
         found = collect_images(paths)
-        existing = {p.resolve() for p in self._queue.paths()}
+        fresh = isinstance(self._state, Done)
+        existing = set() if fresh else {p.resolve() for p in self.queue.paths()}
         new = [p for p in found if p.resolve() not in existing]
-        self._queue.add_files(new)
+        if fresh and new:
+            self.queue.replace_files(new)
+        else:
+            self.queue.add_files(new)
         for path in new:
             self._thumbnails.request(path)
 
-        skipped = f"{plural(unsupported, 'file')} skipped — {UNSUPPORTED}" if unsupported else ""
+        skipped = f"{plural(unsupported, 'file')} skipped because {UNSUPPORTED}." if unsupported else ""
         if new:
-            self._set_status(" ".join(filter(None, [f"Added {plural(len(new), 'file')}.", skipped])))
+            notice, error = skipped, False
         elif found:
-            self._set_status(" ".join(filter(None, ["Those files are already in the list.", skipped])))
+            notice, error = " ".join(filter(None, ["Those files are already in the list.", skipped])), False
         elif unsupported:
-            self._set_status(skipped, "error")
+            notice, error = skipped, True
         elif paths:
-            self._set_status("No supported files found there.", "error")
+            notice, error = "No supported files found there.", True
+        else:
+            return
+        if self.queue.count():
+            self.set_state(Workspace(notice, error))
+        elif notice:
+            self.set_state(Welcome(notice, error))
 
     def _on_queue_changed(self) -> None:
-        self._forget_run()
-        self._refresh()
+        if isinstance(self._state, Converting):
+            return
+        self.set_state(Workspace() if self.queue.count() else Welcome())
 
     def _on_thumbnail(self, path: str, image: QImage) -> None:
-        self._queue.set_thumbnail(path, image)
+        self.queue.set_thumbnail(path, image)
 
     def _on_thumbnail_failed(self, path: str, error: str) -> None:
-        self._queue.mark(path, FileState.UNREADABLE, friendly_error(error))
-        self._refresh()
-
-    def _remove_selected(self) -> None:
-        self._queue.remove_selected()
-
-    def _select_all(self) -> None:
-        focus = QApplication.focusWidget()
-        if isinstance(focus, (QLineEdit, QAbstractSpinBox)):
-            focus.selectAll()
-            return
-        self._queue.selectAll()
-        self._queue.setFocus()
+        self.queue.mark_unreadable(path, friendly_error(error))
+        self._render()
 
     def _clear(self) -> None:
-        self._queue.clear()
+        self.queue.clear()
 
     def _browse_files(self) -> None:
         start = str(self._settings.value("input_dir", Path.home()))
@@ -420,75 +325,66 @@ class MainWindow(QMainWindow):
             self._settings.setValue("input_dir", folder)
             self.add_paths([Path(folder)])
 
-    def _choose_output_dir(self) -> None:
-        start = self._output_dir if self._output_dir.is_dir() else Path.home()
-        folder = QFileDialog.getExistingDirectory(self, "Choose Where to Save", str(start))
-        if folder:
-            self.set_output_dir(Path(folder))
-
     # Dropping files anywhere on the window
 
-    def _set_dragging(self, dragging: bool) -> None:
-        self._workspace.setProperty("dragging", dragging)
-        self._workspace.style().unpolish(self._workspace)
-        self._workspace.style().polish(self._workspace)
+    def _show_drop_target(self, shown: bool) -> None:
+        if isinstance(self._state, Welcome):
+            self.welcome.tile.set_active(shown)
+        elif shown:
+            self._drop_overlay.show_message("Drop to start a new batch" if isinstance(self._state, Done)
+                                            else "Drop to add to the list")
+        if not shown:
+            self._drop_overlay.hide()
+            self.welcome.tile.set_active(False)
 
     def dragEnterEvent(self, event) -> None:
-        if event.mimeData().hasUrls() and not self._converting:
+        if event.mimeData().hasUrls() and not isinstance(self._state, Converting):
             event.acceptProposedAction()
-            self._set_dragging(True)
+            self._show_drop_target(True)
         else:
             event.ignore()
 
     def dragMoveEvent(self, event) -> None:
-        if event.mimeData().hasUrls() and not self._converting:
+        if event.mimeData().hasUrls() and not isinstance(self._state, Converting):
             event.acceptProposedAction()
 
     def dragLeaveEvent(self, event) -> None:
-        self._set_dragging(False)
+        self._show_drop_target(False)
 
     def dropEvent(self, event) -> None:
-        self._set_dragging(False)
+        self._show_drop_target(False)
         event.acceptProposedAction()
         self.add_paths(dropped_paths(event))
 
     def changeEvent(self, event) -> None:
         super().changeEvent(event)
         if event.type() == QEvent.Type.ActivationChange and self.isActiveWindow():
-            self._refresh()  # the Save to folder may have been renamed or removed while Papyr was in the background
+            self._render()  # the Save to folder may have been renamed or removed while Papyr was in the background
 
-    # Conversion
+    # Converting
 
     def _convert(self) -> None:
-        if self._converting:
+        if not isinstance(self._state, Workspace):
             return
-        sources = self._queue.paths()
+        queue = self.queue.summary()
         problem = folder_problem(self._output_dir)
         if problem:
-            self._set_status(problem.explanation, "error")
-        if problem or not sources:
-            self._refresh()
+            self.set_state(Workspace(problem.explanation, True))
             return
-        self._save_settings()
-        fmt = self._panel.output_format()
-        combined = self._panel.combine()
-        if fmt is not OutputFormat.PDF:
-            job = partial(convert_images, sources, self._output_dir, self._panel.image_settings())
-        elif combined:
-            merged_path = self._output_dir / sanitize_pdf_name(self._panel.merged_name() or "Combined", "Combined")
-            if merged_path.exists() and QMessageBox.question(
-                    self, "Replace File?", f"“{merged_path.name}” already exists in this folder. Replace it?"
+        if not queue.count:
+            return
+        sources = self.queue.paths()
+        merged = self._options.merges(queue)
+        if merged:
+            target = self._output_dir / self._options.merged_file_name()
+            if target.exists() and QMessageBox.question(
+                    self, "Replace File?", f"“{target.name}” already exists in this folder. Replace it?"
             ) != QMessageBox.StandardButton.Yes:
                 return
-            job = partial(convert_merged, sources, merged_path, self._panel.pdf_settings())
-        else:
-            job = partial(convert_individual, sources, self._output_dir, self._panel.pdf_settings())
-        self._start(ConversionWorker(job), Run(sources, combined))
+        self._run = RunSpec(sources, self._options.format, merged, self._output_dir)
+        self._start(ConversionWorker(plan_job(self._options, queue, sources, self._output_dir)), len(sources))
 
-    def _start(self, worker: ConversionWorker, run: Run) -> None:
-        self._forget_run()
-        self._run = run
-        self._queue.reset_failures()
+    def _start(self, worker: ConversionWorker, total: int) -> None:
         self._thread = QThread(self)
         self._worker = worker
         worker.moveToThread(self._thread)
@@ -498,78 +394,60 @@ class MainWindow(QMainWindow):
         worker.finished.connect(self._thread.quit)
         self._thread.finished.connect(worker.deleteLater)
         self._thread.finished.connect(self._thread.deleteLater)
-        self._progress.setRange(0, len(run.sources))
-        self._progress.setValue(0)
-        self._progress.show()
-        self._cancel_button.show()
-        self._cancel_button.setEnabled(True)
-        self._set_status("Starting…")
+        self.set_state(Converting(total))
         self._thread.start()
-        self._refresh()
+
+    def is_converting(self) -> bool:
+        return isinstance(self._state, Converting)
 
     def _cancel(self) -> None:
-        if self._worker is not None:
+        if isinstance(self._state, Converting) and self._worker is not None:
             self._worker.cancel()
-            self._cancel_button.setEnabled(False)
-            self._set_status("Cancelling…")
+            self.set_state(replace(self._state, cancelling=True))
 
     def _on_progress(self, done: int, total: int, name: str) -> None:
-        self._progress.setValue(done)
-        if done < total:
-            self._set_status(f"Converting {done + 1} of {total} — {name}")
+        if isinstance(self._state, Converting):
+            self.set_state(replace(self._state, done=done, total=total, current=name if done < total else ""))
 
     def _on_finished(self, report: ConversionReport) -> None:
         self._thread = None
         self._worker = None
-        self._progress.hide()
-        self._cancel_button.hide()
         run = self._run
-        run.report = report
-        queued = {str(source) for source in run.sources}
-        for path, raw in report.failures:
-            if str(path) in queued:
-                self._queue.mark(str(path), FileState.FAILED, friendly_error(raw))
-        self._set_status(*outcome(run))
-        self._details_button.setVisible(bool(report.failures))
-        self._reveal_button.setVisible(bool(report.outputs))
-        if report.outputs and not report.cancelled:
-            QTimer.singleShot(0, self, partial(self._play_save_animation, len(report.outputs)))
-        self._refresh()
+        result = RunResult.from_report(report, run.sources, run.format, run.merged, run.destination)
+        if report.cancelled:
+            kept = f" {plural(len(report.outputs), 'finished file')} kept." if report.outputs else ""
+            self.set_state(Workspace(f"Conversion cancelled.{kept}", False, tuple(report.outputs)))
+        else:
+            self.set_state(Done(result))
 
-    def _show_details(self) -> None:
-        failures = self._run.report.failures
-        lines = [f"• {path.name}: {friendly_error(raw)}" for path, raw in failures[:DETAILS_LIMIT]]
-        if len(failures) > DETAILS_LIMIT:
-            lines.append(f"…and {len(failures) - DETAILS_LIMIT} more.")
-        box = QMessageBox(QMessageBox.Icon.Warning, "Conversion Details",
-                          f"{plural(len(failures), 'file')} couldn't be converted.",
-                          QMessageBox.StandardButton.Ok, self)
-        box.setInformativeText("\n".join(lines))
-        box.setDetailedText("\n".join(f"{path}: {raw}" for path, raw in failures))
-        box.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-        box.open()
+    def _retry_failed(self) -> None:
+        if not isinstance(self._state, Done):
+            return
+        failed = self._state.result.failed_sources
+        present = [path for path in failed if path.is_file()]
+        if not present:
+            return
+        self.queue.replace_files(present)
+        for path in present:
+            self._thumbnails.request(path)
+        missing = len(failed) - len(present)
+        if missing:
+            self.set_state(Workspace(f"{plural(missing, 'file')} that failed could not be found and "
+                                     f"{'was' if missing == 1 else 'were'} left out.", True))
 
     def _reveal_output(self) -> None:
-        reveal(self._run.report.outputs[0])
+        targets = self._revealable()
+        if targets:
+            reveal(targets[0])
 
     def _about(self) -> None:
         QMessageBox.about(self, f"About {APP_NAME}",
                           f"<b>{APP_NAME} {__version__}</b><p>A free, offline converter for photos, PDFs, "
                           f"and Jupyter notebooks.</p><p>Your files never leave this computer.</p>")
 
-    def _save_animation_endpoints(self) -> tuple[QPointF, QPointF]:
-        canvas = self.centralWidget()
-        start = self._stack.mapTo(canvas, self._stack.rect().center())
-        target = self._reveal_button.mapTo(canvas, self._reveal_button.rect().center())
-        return QPointF(start), QPointF(target) - QPointF(self._reveal_button.width() / 2 + 52, 0)
-
-    def _play_save_animation(self, count: int) -> SaveAnimation:
-        animation = SaveAnimation(self.centralWidget(), self._save_animation_endpoints, count)
-        animation.start()
-        return animation
-
     def closeEvent(self, event) -> None:
-        self._save_settings()
+        self._settings.setValue("output_dir", str(self._output_dir))
+        self._options.save(self._settings)
         if self._worker is not None:
             self._worker.cancel()
         if self._thread is not None:
