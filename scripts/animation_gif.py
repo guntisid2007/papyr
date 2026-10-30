@@ -8,11 +8,11 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from PIL import Image
-from PySide6.QtCore import QBuffer, QIODevice, QThreadPool
+from PySide6.QtCore import QBuffer, QIODevice, Qt, QThreadPool
 
 from gui.app import create_app
 from gui.main_window import MainWindow
-from screenshots import isolate_settings, sample_photo
+from screenshots import TYPICAL_FOLDER, isolate_settings, sample_photo
 
 FRAMES = 42
 
@@ -28,6 +28,7 @@ def to_pil(pixmap) -> Image.Image:
 def main() -> None:
     isolate_settings()
     app = create_app(sys.argv[:1])
+    app.styleHints().setColorScheme(Qt.ColorScheme.Light)
     with tempfile.TemporaryDirectory() as tmp:
         paths = []
         for i, colors in enumerate([((135, 190, 235), (70, 130, 80), (255, 210, 90)),
@@ -37,14 +38,16 @@ def main() -> None:
             sample_photo(path, (1600, 1200), *colors)
             paths.append(path)
         window = MainWindow()
-        window.resize(1040, 660)
+        window.menuBar().hide()
+        window.resize(1000, 660)
         window.show()
         window.add_paths(paths)
         QThreadPool.globalInstance().waitForDone()
         for _ in range(20):
             app.processEvents()
-        window._set_status("✓ Created 3 PDFs in PDFs.", "success")
-        window._open_button.show()
+        window._panel.show_destination(TYPICAL_FOLDER, None)
+        window._set_status("✓ 3 files converted successfully", "success")
+        window._reveal_button.show()
         app.processEvents()
 
         animation = window._play_save_animation(3)
