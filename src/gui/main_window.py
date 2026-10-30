@@ -19,7 +19,7 @@ from .save_animation import SaveAnimation
 from .widgets import DropZone, ImageList
 from .workers import ConversionWorker, ThumbnailLoader
 
-FILE_FILTER = "Images and PDFs ({})".format(" ".join(f"*{ext}" for ext in sorted(INPUT_EXTENSIONS)))
+FILE_FILTER = "Images, PDFs, and notebooks ({})".format(" ".join(f"*{ext}" for ext in sorted(INPUT_EXTENSIONS)))
 THUMBNAIL_SIZE = 112
 PDF_DPI_CHOICES = (100, 150, 200, 300)
 
@@ -68,7 +68,7 @@ class MainWindow(QMainWindow):
         text.setSpacing(0)
         title = QLabel(APP_NAME)
         title.setObjectName("Title")
-        subtitle = QLabel("Convert photos and PDFs between HEIC, JPEG, PNG, WebP, PDF, and more. "
+        subtitle = QLabel("Convert photos, PDFs, and Jupyter notebooks to PDF, JPEG, PNG, WebP, and more. "
                           "Everything stays on this computer.")
         subtitle.setObjectName("Muted")
         text.addWidget(title)
@@ -344,7 +344,7 @@ class MainWindow(QMainWindow):
         elif found:
             self._set_status("Those files are already in the list.")
         elif paths:
-            self._set_status("No supported images or PDFs found there.", "error")
+            self._set_status("No supported files found there.", "error")
         self._open_button.hide()
         self._refresh()
 

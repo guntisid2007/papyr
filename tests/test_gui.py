@@ -1,24 +1,11 @@
-import os
 import time
 
 import pytest
+from PySide6.QtCore import QSettings, Qt, QThreadPool
+from pypdf import PdfReader
 
-os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
-
-from PySide6.QtCore import QSettings, Qt, QThreadPool  # noqa: E402
-from pypdf import PdfReader  # noqa: E402
-
-from converter import OutputFormat, PageSize  # noqa: E402
-from gui.app import create_app  # noqa: E402
-from gui.main_window import MainWindow  # noqa: E402
-
-
-@pytest.fixture(scope="module")
-def app(tmp_path_factory):
-    QSettings.setDefaultFormat(QSettings.Format.IniFormat)
-    QSettings.setPath(QSettings.Format.IniFormat, QSettings.Scope.UserScope,
-                      str(tmp_path_factory.mktemp("settings")))  # never touch the real preferences
-    return create_app(["test"])
+from converter import OutputFormat, PageSize
+from gui.main_window import MainWindow
 
 
 @pytest.fixture

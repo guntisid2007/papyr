@@ -27,7 +27,7 @@ class DropZone(QFrame):
         glyph.setObjectName("DropGlyph")
         title = QLabel("Drop photos, PDFs, or folders here")
         title.setObjectName("DropTitle")
-        hint = QLabel("HEIC, JPEG, PNG, WebP, AVIF, TIFF, BMP, GIF, and PDF")
+        hint = QLabel("HEIC, JPEG, PNG, WebP, AVIF, TIFF, BMP, GIF, PDF, and Jupyter notebooks")
         hint.setObjectName("Muted")
         for label in (glyph, title, hint):
             label.setAlignment(Qt.AlignmentFlag.AlignCenter)

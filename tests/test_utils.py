@@ -53,3 +53,11 @@ def test_collect_images_expands_folders_naturally_and_dedupes(tmp_path):
 @pytest.mark.parametrize("size, text", [(500, "500 B"), (2048, "2.0 KB"), (5 * 1024 ** 2, "5.0 MB")])
 def test_human_size(size, text):
     assert human_size(size) == text
+
+
+def test_collect_images_skips_hidden_folders_such_as_notebook_checkpoints(tmp_path):
+    for name in ["analysis.ipynb", ".ipynb_checkpoints/analysis-checkpoint.ipynb", ".git/x.png"]:
+        (tmp_path / name).parent.mkdir(exist_ok=True)
+        (tmp_path / name).write_bytes(b"x")
+    found = collect_images([tmp_path])
+    assert [p.relative_to(tmp_path).as_posix() for p in found] == ["analysis.ipynb"]

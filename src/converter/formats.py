@@ -2,8 +2,12 @@ from dataclasses import dataclass
 from enum import Enum
 
 INPUT_EXTENSIONS = frozenset({".heic", ".heif", ".jpg", ".jpeg", ".png", ".webp", ".tif", ".tiff",
-                              ".bmp", ".gif", ".avif", ".pdf"})
+                              ".bmp", ".gif", ".avif", ".pdf", ".ipynb"})
 LOSSLESS_INPUTS = frozenset({".png", ".tif", ".tiff", ".bmp", ".gif"})
+
+
+class ImageLoadError(Exception):
+    pass
 
 
 class OutputFormat(Enum):

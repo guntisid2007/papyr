@@ -12,8 +12,8 @@ import pypdf
 
 from utils.filenames import individual_output_paths, unique_path
 
-from .formats import ImageSettings
-from .images import ImageLoadError, encode_for_pdf, is_lossless_source, is_pdf, iter_pages, save_image
+from .formats import ImageLoadError, ImageSettings
+from .images import document_pdf, encode_for_pdf, is_document, is_lossless_source, iter_pages, save_image
 from .layout import PdfSettings, compute_placement
 from .pdf_writer import PdfWriter
 
@@ -72,8 +72,9 @@ def _encoded_pages(source: Path, settings: PdfSettings, cancelled: CancelCheck) 
         yield encoded, compute_placement(encoded.width, encoded.height, settings)
 
 
-def _read_pdf(source: Path) -> pypdf.PdfReader:
-    reader = pypdf.PdfReader(source)
+def _read_document(source: Path, settings: PdfSettings) -> pypdf.PdfReader:
+    pdf = document_pdf(source, settings)
+    reader = pypdf.PdfReader(io.BytesIO(pdf) if isinstance(pdf, bytes) else pdf)
     if reader.is_encrypted and reader.decrypt("") == pypdf.PasswordType.NOT_DECRYPTED:
         raise ImageLoadError("PDF is password-protected")
     if not reader.pages:
@@ -83,9 +84,10 @@ def _read_pdf(source: Path) -> pypdf.PdfReader:
 
 def _write_pdf(stream: BinaryIO, sources: list[Path], settings: PdfSettings, report: ConversionReport,
                progress: Callable[[int, Path], None], cancelled: CancelCheck) -> None:
-    """Write every readable source as pages, in order. PDF sources are copied page for page, without
-    re-rendering, so their text stays sharp and searchable. Unreadable sources are skipped and reported."""
-    if not any(is_pdf(s) for s in sources):
+    """Write every readable source as pages, in order. Documents (PDFs, and notebooks laid out on the chosen
+    page size) are copied page for page, without re-rendering, so their text stays sharp and searchable.
+    Unreadable sources are skipped and reported."""
+    if not any(is_document(s) for s in sources):
         writer = PdfWriter(stream)
         for index, source in enumerate(sources):
             _check(cancelled)
@@ -108,8 +110,8 @@ def _write_pdf(stream: BinaryIO, sources: list[Path], settings: PdfSettings, rep
         _check(cancelled)
         progress(index, source)
         try:
-            if is_pdf(source):
-                reader = _read_pdf(source)
+            if is_document(source):
+                reader = _read_document(source, settings)
             else:
                 buffer = io.BytesIO()
                 image_writer = PdfWriter(buffer)

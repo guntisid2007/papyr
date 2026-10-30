@@ -4,8 +4,9 @@ import sys
 def self_test(sample: str) -> int:
     """Headless check used by CI on the packaged app.
 
-    Exercises HEIC decoding, PDF writing, PDF rendering, every image encoder, and the window itself.
+    Exercises HEIC decoding, PDF writing, PDF rendering, notebook layout, every image encoder, and the window itself.
     """
+    import json
     import os
     import tempfile
     from pathlib import Path
@@ -17,6 +18,7 @@ def self_test(sample: str) -> int:
     from gui.app import create_app
     from gui.main_window import MainWindow
 
+    app = create_app([sys.argv[0]])  # notebooks are laid out with Qt, so the app must exist before converting
     problems = []
     with tempfile.TemporaryDirectory() as tmp:
         pdf = Path(tmp) / "self-test.pdf"
@@ -35,7 +37,14 @@ def self_test(sample: str) -> int:
                 continue
             with Image.open(converted.outputs[0]) as image:
                 image.load()
-    app = create_app([sys.argv[0]])
+        notebook = Path(tmp) / "self-test.ipynb"
+        notebook.write_text(json.dumps({"nbformat": 4, "nbformat_minor": 5, "metadata": {}, "cells": [
+            {"cell_type": "code", "execution_count": 1, "metadata": {}, "source": "print('papyr')",
+             "outputs": [{"output_type": "stream", "name": "stdout", "text": "papyr\n"}]}]}))
+        notebook_pdf = Path(tmp) / "notebook.pdf"
+        report = convert_merged([notebook], notebook_pdf, PdfSettings(PageSize.A4, 10))
+        if report.outputs != [notebook_pdf] or report.failures or b"/Count 1" not in notebook_pdf.read_bytes():
+            problems.append(f"Notebook to PDF: {report.failures}")
     window = MainWindow()
     window.show()
     app.processEvents()

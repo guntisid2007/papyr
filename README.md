@@ -2,18 +2,18 @@
 
 <h1 align="center">Papyr</h1>
 
-<p align="center">A free, offline desktop converter for photos and PDFs.<br>
+<p align="center">A free, offline desktop converter for photos, PDFs, and Jupyter notebooks.<br>
 HEIC, JPEG, PNG, WebP, AVIF, TIFF, BMP, GIF, and PDF, from any of them to any of them.</p>
 
 <p align="center"><a href="https://github.com/guntisid2007/papyr/releases/latest"><b>Download the latest version</b></a></p>
 
 ![Papyr with five photos ready to combine into one PDF](docs/screenshots/main-light.png)
 
-Papyr turns iPhone photos (HEIC) into PDFs or JPEGs, PDFs into images, PNGs into WebP, and any other combination of common image formats and PDF. It runs on your computer and never sends your files anywhere. You do not need Python or any other software to use it.
+Papyr turns iPhone photos (HEIC) into PDFs or JPEGs, PDFs into images, PNGs into WebP, Jupyter notebooks into PDFs, and any other combination of common image formats and PDF. It runs on your computer and never sends your files anywhere. You do not need Python or any other software to use it.
 
 ## Features
 
-- **Any to any.** Reads HEIC, HEIF, JPEG, PNG, WebP, AVIF, TIFF, BMP, GIF, and PDF. Writes PDF, JPEG, PNG, HEIC, WebP, AVIF, TIFF, GIF, and BMP.
+- **Any to any.** Reads HEIC, HEIF, JPEG, PNG, WebP, AVIF, TIFF, BMP, GIF, PDF, and Jupyter notebooks (`.ipynb`). Writes PDF, JPEG, PNG, HEIC, WebP, AVIF, TIFF, GIF, and BMP.
 - Drag and drop files or whole folders, or pick them with the Browse button.
 - Thumbnails, names, and sizes for every file. Remove files, reorder them by dragging or with the arrow buttons, or clear the list. Unreadable files are flagged as soon as you add them.
 - **To PDF:**
@@ -21,6 +21,7 @@ Papyr turns iPhone photos (HEIC) into PDFs or JPEGs, PDFs into images, PNGs into
   - Page size: original image size, A4, or US Letter. Pages turn landscape automatically for wide photos.
   - Adjustable margins. Images are scaled to fit without stretching.
   - PDFs you add keep their own pages, and their text stays sharp and searchable, so Papyr also merges PDFs.
+  - Jupyter notebooks are laid out on your page size and margins, with their markdown, code, and saved outputs (printed text, tables, plots, and errors). The text stays searchable. Papyr shows the outputs saved in the file and never runs the notebook.
 - **To an image format:**
   - Adjustable quality for JPEG, HEIC, WebP, and AVIF.
   - Each page of a PDF becomes its own image (`report-page-1.png`, `report-page-2.png`, …), rendered at 100, 150, 200, or 300 DPI.
@@ -81,7 +82,7 @@ The build was made on Ubuntu 22.04 and needs glibc 2.35 or newer plus the usual 
 
 ## How to use
 
-1. Drag photos, PDFs, or folders onto the window, or click **Browse Files…** or **Add Folder…**.
+1. Drag photos, PDFs, notebooks, or folders onto the window, or click **Browse Files…** or **Add Folder…**.
 2. Arrange the list. Drag rows, or select a row and use **↑** and **↓**. Press **Delete** or click **Remove** to drop a file.
 3. Under **Convert to**, pick the format you want.
    - For **PDF**, choose **One PDF per file** or **Combine into one PDF** (type a name), then a page size and margins.
@@ -95,6 +96,7 @@ If a file cannot be read (for example, it is damaged or password-protected), it 
 
 - Everything happens on your computer. The app makes no network connections.
 - No accounts, no telemetry, no analytics, no API keys.
+- Images that a notebook links from the web are not downloaded. Only images saved inside the notebook or next to it on your computer are shown.
 - Photo metadata such as GPS location, camera model, and date is **not** copied into the converted files.
 - The app writes nothing except the files you ask for. Each file is written to a temporary file in the destination folder and renamed when complete, so a cancelled or failed conversion leaves no partial files behind.
 
@@ -107,7 +109,7 @@ If a file cannot be read (for example, it is damaged or password-protected), it 
 | Windows 10 and 11, 64-bit | Built and tested in CI on every release |
 | Linux x86-64 (glibc 2.35+) | Built and tested in CI on every release |
 
-"Tested in CI" means the automated test suite runs on that system, and the packaged app converts HEIC to PDF, PDF to PNG, and PNG to every image format there before the download is published.
+"Tested in CI" means the automated test suite runs on that system, and the packaged app converts HEIC to PDF, PDF to PNG, PNG to every image format, and a notebook to PDF there before the download is published.
 
 ## Known limitations
 
@@ -115,7 +117,8 @@ If a file cannot be read (for example, it is damaged or password-protected), it 
 - Images become image pages in a PDF, so text in photos is not searchable (no OCR). PDFs you add keep their text.
 - Turning a PDF into an image renders it at the DPI you choose; the image has no selectable text.
 - Animated GIF and WebP files, and multi-image HEIC files such as bursts, convert their first image only. Multi-page TIFF files convert every page.
-- In a combined PDF, page size and margins apply to image pages; pages from PDFs keep their original size.
+- In a combined PDF, page size and margins apply to image and notebook pages; pages from PDFs keep their original size.
+- Notebooks have no syntax highlighting. Interactive outputs such as JavaScript widgets and Plotly charts show only the static fallback saved with them, often a line of text. LaTeX math appears as its source, such as `$x^2$`. With "Original image size", or when a notebook becomes images, notebooks use US Letter in the US and A4 elsewhere.
 - Password-protected PDFs are not supported.
 - HDR and wide-gamut detail is converted to standard 8-bit sRGB.
 - Images larger than about 178 megapixels are refused to protect your computer's memory.
@@ -154,7 +157,7 @@ Releases are built by [GitHub Actions](.github/workflows/build.yml). Pushing a t
 
 ```
 src/main.py            entry point and the packaged-app self-test
-src/converter/         decoding, page layout, PDF and image writing (no GUI code)
+src/converter/         decoding, page layout, PDF and image writing, notebook layout (no GUI code)
 src/gui/               Qt window, widgets, save animation, and background workers
 src/utils/             file collection, output names, app name, bundled asset paths
 assets/                app icons
@@ -168,7 +171,7 @@ Bug reports and pull requests are welcome.
 
 1. Open an issue that describes the bug or the change.
 2. Fork the repository and create a branch.
-3. Keep conversion logic in `src/converter/`, with no Qt imports, and add a test for any behaviour change.
+3. Keep conversion logic in `src/converter/`, with no window or widget code, and add a test for any behaviour change. Only the notebook renderer uses Qt, for its text layout and PDF writer.
 4. Run `python -m pytest` and make sure it passes.
 5. Open a pull request. CI builds and tests every platform.
 

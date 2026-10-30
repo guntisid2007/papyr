@@ -2,7 +2,7 @@ import io
 import math
 import threading
 import zlib
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import BinaryIO
 
@@ -10,7 +10,9 @@ import pillow_heif
 import pypdfium2 as pdfium
 from PIL import Image, ImageCms, ImageMath, ImageOps, ImageSequence, UnidentifiedImageError
 
-from .formats import INPUT_EXTENSIONS, LOSSLESS_INPUTS, OutputFormat
+from .formats import INPUT_EXTENSIONS, LOSSLESS_INPUTS, ImageLoadError, OutputFormat
+from .layout import PageSize, PdfSettings
+from .notebook import render_notebook
 from .pdf_writer import EncodedImage
 
 pillow_heif.register_heif_opener()
@@ -18,19 +20,26 @@ pillow_heif.register_heif_opener()
 DEEP_GRAY_MODES = frozenset({"I", "I;16", "I;16B", "I;16L"})
 PDF_EMBED_JPEG_QUALITY = 92
 DEFAULT_PDF_DPI = 200
+NOTEBOOK_IMAGE_SETTINGS = PdfSettings(PageSize.ORIGINAL, 15)
 _PDFIUM_LOCK = threading.Lock()  # PDFium is not thread-safe; thumbnails and conversion use it concurrently
-
-
-class ImageLoadError(Exception):
-    pass
+_DOCUMENTS: dict[str, Callable[[Path, PdfSettings], Path | bytes]] = {
+    ".pdf": lambda path, settings: path,
+    ".ipynb": render_notebook,
+}
 
 
 def is_supported(path: Path) -> bool:
     return path.suffix.lower() in INPUT_EXTENSIONS
 
 
-def is_pdf(path: Path) -> bool:
-    return path.suffix.lower() == ".pdf"
+def is_document(path: Path) -> bool:
+    """A source made of text pages (a PDF, or a notebook rendered to one) rather than a picture."""
+    return path.suffix.lower() in _DOCUMENTS
+
+
+def document_pdf(path: Path, settings: PdfSettings) -> Path | bytes:
+    """The PDF behind a document: the file itself, or the notebook laid out with these page settings."""
+    return _DOCUMENTS[path.suffix.lower()](path, settings)
 
 
 def _to_srgb(image: Image.Image, icc: bytes | None) -> Image.Image:
@@ -113,12 +122,12 @@ def _render_page(document: pdfium.PdfDocument, index: int, dpi: int) -> Image.Im
             page.close()
 
 
-def _pdf_pages(path: Path, dpi: int) -> Iterator[Image.Image]:
+def _pdf_pages(source: Path | bytes, dpi: int) -> Iterator[Image.Image]:
     """Render each page. The PDFium lock is held per call, not across yields, so a long conversion
     never blocks thumbnails."""
     try:
         with _PDFIUM_LOCK:
-            document = pdfium.PdfDocument(path)
+            document = pdfium.PdfDocument(source)
             count = len(document)
     except pdfium.PdfiumError as exc:
         message = "PDF is password-protected" if "password" in str(exc).lower() else f"Could not read PDF: {exc}"
@@ -148,14 +157,14 @@ def _image_pages(path: Path, keep_alpha: bool) -> Iterator[Image.Image]:
 
 
 def iter_pages(path: Path, *, keep_alpha: bool = False, pdf_dpi: int = DEFAULT_PDF_DPI) -> Iterator[Image.Image]:
-    """Yield every page of a file upright in sRGB: each PDF page, each TIFF frame, or the single image.
+    """Yield every page of a file upright in sRGB: each PDF or notebook page, each TIFF frame, or the single image.
 
     Animated GIF, WebP, and multi-image HEIC files yield their first image only.
     """
     if not is_supported(path):
         raise ImageLoadError(f"Unsupported file type: {path.suffix or 'no extension'}")
-    if is_pdf(path):
-        yield from _pdf_pages(path, pdf_dpi)
+    if is_document(path):
+        yield from _pdf_pages(document_pdf(path, NOTEBOOK_IMAGE_SETTINGS), pdf_dpi)
     else:
         yield from _image_pages(path, keep_alpha)
 
@@ -219,8 +228,8 @@ def make_thumbnail(path: Path, max_size: int) -> Image.Image:
     """Square, upright RGBA preview with the image centred."""
     if not is_supported(path):
         raise ImageLoadError(f"Unsupported file type: {path.suffix or 'no extension'}")
-    if is_pdf(path):
-        pages = _pdf_pages(path, dpi=36)
+    if is_document(path):
+        pages = _pdf_pages(document_pdf(path, NOTEBOOK_IMAGE_SETTINGS), dpi=36)
         try:
             image = next(pages).convert("RGBA")
         finally:
