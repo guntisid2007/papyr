@@ -61,9 +61,10 @@ def test_options_round_trip_and_ignore_bad_saved_values(app, tmp_path):
     settings.setValue("pdf_dpi", 123)
     settings.setValue("margin_mm", 400)
     settings.setValue("page_size", "Tabloid")
+    settings.setValue("quality", "high")
     loaded = Options.load(settings)
-    assert (loaded.format, loaded.pdf_dpi, loaded.margin_mm, loaded.page_size) == (OutputFormat.PDF, 200, 50,
-                                                                                    PageSize.A4)
+    assert (loaded.format, loaded.pdf_dpi, loaded.margin_mm, loaded.page_size, loaded.quality) == \
+        (OutputFormat.PDF, 200, 50, PageSize.A4, 90)
 
 
 def result(report: ConversionReport, sources, merged=False) -> RunResult:

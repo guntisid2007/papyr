@@ -89,17 +89,24 @@ class Options:
 
     @classmethod
     def load(cls, settings: QSettings) -> "Options":
+        """Read saved settings. A value that is missing, malformed, or out of range falls back to the default."""
         default = cls()
+
+        def number(key: str, fallback: float, low: float, high: float) -> float:
+            try:
+                return min(max(float(settings.value(key, fallback)), low), high)
+            except (TypeError, ValueError):
+                return fallback
+
         fmt = OutputFormat.__members__.get(str(settings.value("output_format", "PDF")), default.format)
         page = next((size for size in PAGE_SIZES if size.label == settings.value("page_size")), default.page_size)
-        dpi = int(settings.value("pdf_dpi", default.pdf_dpi))
-        low, high = MARGIN_RANGE
+        dpi = int(number("pdf_dpi", default.pdf_dpi, 0, 10_000))
         return cls(format=fmt,
                    merge=settings.value("mode") == "merged",
                    merged_name=str(settings.value("merged_name", "")),
                    page_size=page,
-                   margin_mm=min(max(float(settings.value("margin_mm", default.margin_mm)), low), high),
-                   quality=min(max(int(settings.value("quality", default.quality)), 1), 100),
+                   margin_mm=number("margin_mm", default.margin_mm, *MARGIN_RANGE),
+                   quality=int(number("quality", default.quality, 1, 100)),
                    pdf_dpi=dpi if dpi in PDF_DPI_CHOICES else default.pdf_dpi)
 
     def save(self, settings: QSettings) -> None:
