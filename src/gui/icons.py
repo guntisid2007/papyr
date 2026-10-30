@@ -171,29 +171,54 @@ def paint_icon(painter: QPainter, icon: Icon, rect: QRectF, color: QColor, strok
     painter.restore()
 
 
-def paint_mark(painter: QPainter, rect: QRectF, theme: Theme) -> None:
-    """The Papyr mark: a sheet of paper with its corner folded over in coral, on a graphite tile."""
+MARK_PAPER, MARK_CORAL, MARK_CORAL_SOFT = QColor("#f5f2ec"), QColor("#e2553d"), QColor("#eba393")
+MARK_SCALE = 0.7  # the prism spans 70% of the tile, the same proportion as the app icon
+
+
+def paint_prism(painter: QPainter, rect: QRectF) -> None:
+    """The Papyr prism on a 64-unit grid: a white beam enters and leaves as coral that breaks into pixels.
+    scripts/make_icons.py paints the app icon with this too."""
     side = min(rect.width(), rect.height())
-    s = side / 64
     painter.save()
     painter.setRenderHint(QPainter.RenderHint.Antialiasing)
     painter.translate(rect.center().x() - side / 2, rect.center().y() - side / 2)
-    painter.scale(s, s)
+    painter.scale(side / 64, side / 64)
     painter.setPen(Qt.PenStyle.NoPen)
-    painter.setBrush(QColor("#2a2a2f") if not theme.dark else QColor("#34343a"))
-    painter.drawRoundedRect(QRectF(0, 0, 64, 64), 15, 15)
-    fold = 13.0
-    sheet = _path((17, 12), (47 - fold, 12), (47, 12 + fold), (47, 52), (17, 52))
-    sheet.closeSubpath()
-    painter.setBrush(theme.paper if theme.dark else QColor("#fbfaf7"))
-    painter.drawPath(sheet)
-    corner = _path((47 - fold, 12), (47 - fold, 12 + fold), (47, 12 + fold))
-    corner.closeSubpath()
-    painter.setBrush(theme.accent)
-    painter.drawPath(corner)
-    painter.setBrush(QColor(26, 26, 29, 46))
-    for y, width in ((32, 20), (38, 20), (44, 12)):
-        painter.drawRoundedRect(QRectF(22, y, width, 2.6), 1.3, 1.3)
-    painter.setBrush(theme.accent)
-    painter.drawRoundedRect(QRectF(22, 21, 9, 5), 1.5, 1.5)
+    painter.setBrush(MARK_PAPER)
+    painter.drawRect(QRectF(4, 30, 16, 4))
+    ray = QColor(MARK_PAPER)
+    ray.setAlphaF(0.5)
+    painter.setPen(QPen(ray, 2, Qt.PenStyle.SolidLine, Qt.PenCapStyle.FlatCap))
+    painter.drawLine(QPointF(20, 32), QPointF(39.5, 30))
+    painter.setPen(Qt.PenStyle.NoPen)
+    for color, fan, pixels in (
+        (MARK_CORAL_SOFT, ((37.4, 26), (39.5, 30), (52, 30.5), (52, 20)), ((54, 19, 4), (54, 25, 4), (59.5, 22.5, 3))),
+        (MARK_CORAL, ((39.5, 30), (41.5, 34), (52, 42), (52, 30.5)),
+         ((54, 32, 4), (54, 38, 4), (59.5, 35.5, 3), (59.5, 42, 2))),
+    ):
+        painter.setBrush(color)
+        painter.drawPath(_path(*fan))
+        for x, y, size in pixels:
+            painter.drawRect(QRectF(x, y, size, size))
+    pen = QPen(MARK_PAPER, 4)
+    pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+    painter.setPen(pen)
+    painter.setBrush(Qt.BrushStyle.NoBrush)
+    prism = _path((30, 12), (48, 46), (12, 46))
+    prism.closeSubpath()
+    painter.drawPath(prism)
     painter.restore()
+
+
+def paint_mark(painter: QPainter, rect: QRectF, theme: Theme) -> None:
+    """The Papyr mark as the window shows it: the prism on a graphite tile."""
+    side = min(rect.width(), rect.height())
+    tile = QRectF(rect.center().x() - side / 2, rect.center().y() - side / 2, side, side)
+    painter.save()
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    painter.setPen(Qt.PenStyle.NoPen)
+    painter.setBrush(QColor("#34343a") if theme.dark else QColor("#2a2a2f"))
+    painter.drawRoundedRect(tile, side * 15 / 64, side * 15 / 64)
+    painter.restore()
+    inner = side * MARK_SCALE
+    paint_prism(painter, QRectF(tile.center().x() - inner / 2, tile.center().y() - inner / 2, inner, inner))

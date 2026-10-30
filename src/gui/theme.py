@@ -48,7 +48,6 @@ class Theme:
     warning_wash: QColor
     danger: QColor
     danger_wash: QColor
-    paper: QColor  # the sheet in the Papyr mark
 
 
 LIGHT = Theme(
@@ -79,7 +78,6 @@ LIGHT = Theme(
     warning_wash=_rgba("#c27a00", 0.12),
     danger=QColor("#b02c25"),
     danger_wash=_rgba("#b02c25", 0.09),
-    paper=QColor("#ffffff"),
 )
 
 DARK = Theme(
@@ -110,7 +108,6 @@ DARK = Theme(
     warning_wash=_rgba("#f0b45a", 0.12),
     danger=QColor("#ff7b72"),
     danger_wash=_rgba("#ff7b72", 0.12),
-    paper=QColor("#f4f1ec"),
 )
 
 
