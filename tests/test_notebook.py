@@ -1,6 +1,7 @@
 import base64
 import io
 import json
+import os
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -231,7 +232,7 @@ def test_rendering_without_a_qt_application_is_a_clear_error(tmp_path):
               "except ImageLoadError as exc: print('refused:', exc)\n")
     src = Path(__file__).parents[1] / "src"
     result = subprocess.run([sys.executable, "-c", script, str(source)], capture_output=True, text=True,
-                            env={"PYTHONPATH": str(src), "QT_QPA_PLATFORM": "offscreen"}, timeout=60)
+                            env={**os.environ, "PYTHONPATH": str(src)}, timeout=60)
     assert result.stdout.startswith("refused:"), result.stderr
 
 
