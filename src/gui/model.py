@@ -183,11 +183,11 @@ class RunResult:
 
     @property
     def failed_sources(self) -> tuple[Path, ...]:
-        """The queued files that were not converted, in queue order. A failure that names no queued file (the
-        merged PDF could not be written, or the job itself broke) leaves every file unconverted."""
-        named = {failure.path for failure in self.failures}
-        if not self.outputs and named - set(self.sources):
+        """The queued files that were not converted, in queue order. A run that saved nothing converted none of
+        them, even when its failure names only the merged PDF or the job itself."""
+        if self.failures and not self.outputs:
             return self.sources
+        named = {failure.path for failure in self.failures}
         return tuple(source for source in self.sources if source in named)
 
     @property

@@ -91,5 +91,13 @@ def test_a_run_level_failure_leaves_every_file_unconverted():
     assert broken.failures[0].reason == "There isn't enough free space on the disk."
 
 
+def test_a_merged_pdf_that_overwrites_a_queued_file_and_fails_leaves_every_file_unconverted():
+    combined, photo = Path("/out/Combined.pdf"), Path("/out/photo.png")
+    failed = result(ConversionReport(failures=[(combined, "[Errno 1] Operation not permitted")]),
+                    [combined, photo], merged=True)
+    assert failed.failed_sources == (combined, photo)
+    assert failed.converted_count == 0
+
+
 def test_converting_counts_what_is_left():
     assert Converting(total=10, done=3).remaining == 7
