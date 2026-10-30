@@ -19,7 +19,7 @@ def reveal_command(path: Path, platform: str = sys.platform) -> list[str] | None
 
 
 def reveal(path: Path) -> None:
-    command = reveal_command(path)
+    command = reveal_command(path) if path.exists() else None
     if command is None:
         QDesktopServices.openUrl(QUrl.fromLocalFile(str(path.parent)))
     else:
