@@ -8,7 +8,6 @@ from enum import Enum
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QFont, QFontDatabase, QGuiApplication, QPalette
 
-SPACE = 4  # every margin and gap is a multiple of this
 RADIUS_CONTROL = 7
 RADIUS_ROW = 9
 RADIUS_SURFACE = 14
@@ -49,7 +48,6 @@ class Theme:
     warning_wash: QColor
     danger: QColor
     danger_wash: QColor
-    shadow: QColor
     paper: QColor  # the sheet in the Papyr mark
 
 
@@ -81,7 +79,6 @@ LIGHT = Theme(
     warning_wash=_rgba("#c27a00", 0.12),
     danger=QColor("#b02c25"),
     danger_wash=_rgba("#b02c25", 0.09),
-    shadow=_rgba("#000000", 0.10),
     paper=QColor("#ffffff"),
 )
 
@@ -113,7 +110,6 @@ DARK = Theme(
     warning_wash=_rgba("#f0b45a", 0.12),
     danger=QColor("#ff7b72"),
     danger_wash=_rgba("#ff7b72", 0.12),
-    shadow=_rgba("#000000", 0.45),
     paper=QColor("#f4f1ec"),
 )
 

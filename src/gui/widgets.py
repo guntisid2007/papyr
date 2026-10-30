@@ -2,9 +2,8 @@
 from enum import Enum
 from pathlib import Path
 
-from PySide6.QtCore import (QEasingCurve, QEvent, QPoint, QPointF, QRect, QRectF, QSize, Qt, QVariantAnimation,
-                            Signal)
-from PySide6.QtGui import QColor, QFontMetrics, QKeySequence, QPainter, QPainterPath, QPen, QPixmap
+from PySide6.QtCore import QEasingCurve, QEvent, QPoint, QRectF, QSize, Qt, QVariantAnimation
+from PySide6.QtGui import QColor, QFontMetrics, QKeySequence, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import QAbstractButton, QFrame, QLabel, QSizePolicy, QVBoxLayout, QWidget
 
 from . import motion
@@ -82,29 +81,25 @@ class Button(QAbstractButton):
         self._keyboard_focus = False
         super().mousePressEvent(event)
 
-    def _colors(self, theme: Theme) -> tuple[QColor, QColor, QColor]:
-        """(fill, text, border) for the current state."""
-        enabled, down, hover = self.isEnabled(), self.isDown(), self.underMouse()
+    def _colors(self, theme: Theme) -> tuple[QColor, QColor]:
+        """(fill, text) for the current state."""
+        enabled, down, hover = self.isEnabled(), self.isDown(), self.underMouse() and self.isEnabled()
+        if not enabled:
+            fill = theme.control if self._kind is not Kind.GHOST else QColor(Qt.GlobalColor.transparent)
+            return fill, theme.text_tertiary
         if self._kind is Kind.PRIMARY:
-            if not enabled:
-                return theme.control, theme.text_tertiary, QColor(Qt.GlobalColor.transparent)
-            fill = theme.accent_pressed if down else theme.accent_hover if hover else theme.accent
-            return fill, theme.on_accent, QColor(Qt.GlobalColor.transparent)
-        text = theme.text if enabled else theme.text_tertiary
+            return theme.accent_pressed if down else theme.accent_hover if hover else theme.accent, theme.on_accent
         if self._kind is Kind.GHOST:
-            fill = theme.control_pressed if down else theme.control if hover and enabled else \
-                QColor(Qt.GlobalColor.transparent)
-            return fill, text if enabled and (hover or down) else theme.text_secondary if enabled else text, \
-                QColor(Qt.GlobalColor.transparent)
-        fill = theme.control_pressed if down else theme.control_hover if hover and enabled else theme.control
-        return fill, text, QColor(Qt.GlobalColor.transparent)
+            fill = theme.control_pressed if down else theme.control if hover else QColor(Qt.GlobalColor.transparent)
+            return fill, theme.text if hover or down else theme.text_secondary
+        return theme.control_pressed if down else theme.control_hover if hover else theme.control, theme.text
 
     def paintEvent(self, event) -> None:
         theme = current()
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         rect = QRectF(self.rect())
-        fill, text_color, _ = self._colors(theme)
+        fill, text_color = self._colors(theme)
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(fill)
         painter.drawRoundedRect(rect, RADIUS_CONTROL, RADIUS_CONTROL)
@@ -175,7 +170,7 @@ class Chip(Button):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         rect = QRectF(self.rect())
-        fill, text_color, _ = self._colors(theme)
+        fill, text_color = self._colors(theme)
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(fill)
         painter.drawRoundedRect(rect, RADIUS_CONTROL, RADIUS_CONTROL)
@@ -216,7 +211,7 @@ class Toggle(Button):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         rect = QRectF(self.rect())
-        fill, text_color, _ = self._colors(theme)
+        fill, text_color = self._colors(theme)
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(fill)
         painter.drawRoundedRect(rect, RADIUS_CONTROL, RADIUS_CONTROL)
@@ -496,25 +491,3 @@ class DropOverlay(QWidget):
         painter.setPen(theme.text)
         painter.drawText(QRectF(frame.left(), disc.bottom() + 12, frame.width(), 24), Qt.AlignmentFlag.AlignCenter,
                          self._message)
-
-
-def rounded_pixmap(pixmap: QPixmap, size: QSize, radius: float) -> QPixmap:
-    """pixmap cropped to fill size, with rounded corners, at the pixmap's own pixel density."""
-    ratio = pixmap.devicePixelRatio()
-    result = QPixmap(size * ratio)
-    result.setDevicePixelRatio(ratio)
-    result.fill(Qt.GlobalColor.transparent)
-    painter = QPainter(result)
-    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-    painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
-    clip = QPainterPath()
-    clip.addRoundedRect(QRectF(0, 0, size.width(), size.height()), radius, radius)
-    painter.setClipPath(clip)
-    source = QSize(pixmap.width(), pixmap.height())
-    scaled = source.scaled(size * ratio, Qt.AspectRatioMode.KeepAspectRatioByExpanding)
-    target = QRect(QPoint(0, 0), scaled / ratio)
-    target.moveCenter(QRect(QPoint(0, 0), size).center())
-    painter.drawPixmap(target, pixmap)
-    painter.end()
-    return result
-
