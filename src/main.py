@@ -6,18 +6,20 @@ def self_test(sample: str) -> int:
 
     Exercises HEIC decoding, PDF writing, PDF rendering, notebook layout, every image encoder, and the window itself.
     """
+    import base64
+    import io
     import json
-    import os
     import tempfile
     from pathlib import Path
 
-    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    import pypdfium2 as pdfium
     from PIL import Image
 
     from converter import ImageSettings, OutputFormat, PageSize, PdfSettings, convert_images, convert_merged
-    from gui.app import create_app
+    from gui.app import create_app, use_headless_platform
     from gui.main_window import MainWindow
 
+    use_headless_platform()
     app = create_app([sys.argv[0]])  # notebooks are laid out with Qt, so the app must exist before converting
     problems = []
     with tempfile.TemporaryDirectory() as tmp:
@@ -37,14 +39,25 @@ def self_test(sample: str) -> int:
                 continue
             with Image.open(converted.outputs[0]) as image:
                 image.load()
+        wide_figure = io.BytesIO()
+        Image.new("RGB", (4000, 400), "green").save(wide_figure, "PNG")
         notebook = Path(tmp) / "self-test.ipynb"
         notebook.write_text(json.dumps({"nbformat": 4, "nbformat_minor": 5, "metadata": {}, "cells": [
             {"cell_type": "code", "execution_count": 1, "metadata": {}, "source": "print('papyr')",
-             "outputs": [{"output_type": "stream", "name": "stdout", "text": "papyr\n"}]}]}))
+             "outputs": [{"output_type": "stream", "name": "stdout", "text": "papyr\n"},
+                         {"output_type": "display_data", "metadata": {},
+                          "data": {"image/png": base64.b64encode(wide_figure.getvalue()).decode()}}]}]}))
         notebook_pdf = Path(tmp) / "notebook.pdf"
         report = convert_merged([notebook], notebook_pdf, PdfSettings(PageSize.A4, 10))
-        if report.outputs != [notebook_pdf] or report.failures or b"/Count 1" not in notebook_pdf.read_bytes():
+        if report.outputs != [notebook_pdf] or report.failures:
             problems.append(f"Notebook to PDF: {report.failures}")
+        else:
+            page = pdfium.PdfDocument(notebook_pdf.read_bytes())[0]
+            if "papyr" not in page.get_textpage().get_text_range():
+                problems.append("Notebook to PDF: text is not searchable")
+            figures = [obj.get_bounds() for obj in page.get_objects() if obj.type == pdfium.raw.FPDF_PAGEOBJ_IMAGE]
+            if len(figures) != 1 or figures[0][2] - figures[0][0] > page.get_width():
+                problems.append(f"Notebook to PDF: figure drawn at {figures}")
     window = MainWindow()
     window.show()
     app.processEvents()

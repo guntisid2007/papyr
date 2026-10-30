@@ -1,3 +1,4 @@
+import os
 import sys
 
 from PySide6.QtGui import QIcon
@@ -30,6 +31,13 @@ QPushButton#Primary:disabled { background: palette(mid); color: palette(placehol
 QProgressBar { border: none; border-radius: 3px; background: palette(mid); }
 QProgressBar::chunk { border-radius: 3px; background: #e5534b; }
 """
+
+
+def use_headless_platform() -> None:
+    """Offscreen Qt shares the system fonts on macOS and Linux, but on Windows it ships none and draws every glyph
+    as a box. The native Windows platform needs no display server, so headless runs keep it there."""
+    if sys.platform != "win32":
+        os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 
 def create_app(argv: list[str]) -> QApplication:
