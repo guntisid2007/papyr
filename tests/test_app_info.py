@@ -50,5 +50,5 @@ def test_finder_can_open_every_input_type_without_papyr_becoming_the_default(mon
 def test_reveal_selects_the_file_in_the_platform_file_manager():
     path = Path("/Users/me/Documents/Trip Photos.pdf")
     assert reveal_command(path, "darwin") == ["open", "-R", str(path)]
-    assert reveal_command(path, "win32") == ["explorer", f"/select,{path}"]
+    assert reveal_command(path, "win32") == ["explorer", "/select,", str(path)]
     assert reveal_command(path, "linux") is None

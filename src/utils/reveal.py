@@ -14,7 +14,7 @@ def reveal_command(path: Path, platform: str = sys.platform) -> list[str] | None
     if platform == "darwin":
         return ["open", "-R", str(path)]
     if platform == "win32":
-        return ["explorer", f"/select,{path}"]
+        return ["explorer", "/select,", str(path)]
     return None
 
 
