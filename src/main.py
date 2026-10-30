@@ -72,7 +72,7 @@ def self_test(sample: str) -> int:
         else:
             page = pdfium.PdfDocument(notebook_pdf.read_bytes())[0]
             text_page = page.get_textpage()
-            found = text_page.get_text_range().find("papyr")
+            found = text_page.get_text_range().rfind("papyr")  # the printed output, in ink rather than syntax colors
             if found < 0:
                 problems.append("Notebook to PDF: text is not searchable")
             else:

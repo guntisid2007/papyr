@@ -11,7 +11,7 @@ import pypdfium2 as pdfium
 import pytest
 from PIL import Image
 from pypdf import PdfReader
-from PySide6.QtGui import QColor, QPalette
+from PySide6.QtGui import QColor, QFontDatabase, QPalette
 
 from converter import ImageLoadError, PageSize, PdfSettings, convert_individual
 from converter.notebook import render_notebook
@@ -75,6 +75,21 @@ def test_markdown_headings_lists_links_and_tables_are_readable_in_order():
     positions = [text.find(part) for part in order]
     assert -1 not in positions, dict(zip(order, positions))
     assert positions == sorted(positions)
+
+
+def test_ligatures_do_not_hide_words_from_search(monkeypatch):
+    if not QFontDatabase.hasFamily("Helvetica"):
+        pytest.skip("needs a font with an fi ligature")
+    system_font = QFontDatabase.systemFont
+
+    def helvetica(kind):
+        font = system_font(kind)
+        font.setFamilies(["Helvetica"])
+        return font
+
+    monkeypatch.setattr(QFontDatabase, "systemFont", helvetica)
+    [text] = page_texts(render("markdown-only"))
+    assert "first step" in text
 
 
 def text_lines(page) -> dict[str, float]:

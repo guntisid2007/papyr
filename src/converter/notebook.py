@@ -557,6 +557,9 @@ def render_notebook(path: Path, settings: PdfSettings) -> bytes:
     doc.setDefaultTextOption(option)
     font = QFontDatabase.systemFont(QFontDatabase.SystemFont.GeneralFont)
     font.setPointSizeF(_BODY_PT)
+    # An "fi" ligature is one glyph, so in fonts such as Helvetica and DejaVu Sans "first" could not be searched for
+    for tag in ("liga", "clig"):
+        font.setFeature(QFont.Tag(tag), 0)
     doc.setDefaultFont(font)
     try:
         widths = _build(doc, notebook)
