@@ -49,6 +49,13 @@ def test_gif_shows_animation_settings_only_when_there_is_something_to_animate():
     assert controls_for(gif.with_(gif_mode=GifMode.SEPARATE), WITH_PDF) == (Control.GIF_MODE, Control.PDF_DPI)
 
 
+def test_a_tiff_may_hold_pages_so_gif_offers_animation_settings():
+    tiff = QueueSummary(count=1, has_tiff=True)
+    gif = Options(OutputFormat.GIF)
+    assert controls_for(gif, tiff) == (Control.GIF_MODE, *TIMING)
+    assert controls_for(gif.with_(gif_mode=GifMode.SEPARATE), tiff) == (Control.GIF_MODE,)
+
+
 def test_gif_mode_picks_the_engine_call(tmp_path):
     sources = [tmp_path / "a.pdf", tmp_path / "b.png"]
     gif = Options(OutputFormat.GIF, merged_name="Story", frame_ms=250, plays=3,
@@ -110,6 +117,10 @@ def test_options_round_trip_and_ignore_bad_saved_values(app, tmp_path):
         (OutputFormat.PDF, 200, 50, PageSize.A4, 90)
     assert (loaded.gif_mode, loaded.frame_ms, loaded.plays, loaded.gif_resolution) == \
         (GifMode.ANIMATE_EACH, 20, 0, GifResolution.BALANCED)
+    for key in ("gif_plays", "gif_frame_ms", "quality", "margin_mm"):
+        settings.setValue(key, "nan")
+    loaded = Options.load(settings)
+    assert (loaded.plays, loaded.frame_ms, loaded.quality, loaded.margin_mm) == (0, 1000, 90, 10)
     settings.setValue("gif_frame_ms", "333")
     assert Options.load(settings).frame_ms == 330 and isinstance(Options.load(settings).frame_ms, int)
 

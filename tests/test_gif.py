@@ -227,3 +227,39 @@ def test_cancelling_while_combining_writes_nothing(make, tmp_path):
     out = tmp_path / "out"
     report = convert_combined_gif([make("a.png"), make("b.png")], out / "a.gif", GifSettings(), cancelled=lambda: True)
     assert report.cancelled and report.outputs == [] and not out.exists()
+
+
+def test_a_transparent_picture_after_an_opaque_one_stays_transparent(make, tmp_path):
+    clear = Image.new("RGBA", (200, 200), (0, 0, 0, 0))
+    clear.paste((0, 0, 255, 255), (50, 50, 150, 150))
+    clear.save(tmp_path / "clear.png")
+    opaque = make("opaque.png", (200, 200), "red")
+    report = convert_combined_gif([tmp_path / "clear.png", opaque, tmp_path / "clear.png"], tmp_path / "out" / "a.gif",
+                                  GifSettings())
+    corners = [frame.getpixel((5, 5)) for frame, _ in gif_frames(report.outputs[0])]
+    assert corners == [(0, 0, 0, 0), (255, 0, 0, 255), (0, 0, 0, 0)]
+
+
+def test_a_rotated_multipage_tiff_is_measured_upright(tmp_path):
+    exif = Image.Exif()
+    exif[274] = 6
+    pages = [Image.new("RGB", (100, 50), color) for color in ("red", "blue")]
+    pages[0].save(tmp_path / "scan.tif", save_all=True, append_images=pages[1:], exif=exif.tobytes())
+    report = convert_animated_gifs([tmp_path / "scan.tif"], tmp_path / "out", GifSettings())
+    frames = gif_frames(report.outputs[0])
+    assert len(frames) == 2 and {frame.size for frame, _ in frames} == {(50, 100)}
+    assert all(frame.getpixel((0, 0))[:3] != (255, 255, 255) for frame, _ in frames), "pages fill the frame"
+
+
+def test_cancelling_during_the_last_frame_discards_the_animation(tmp_path):
+    source = colored_pdf(tmp_path / "two.pdf", TWELVE_COLORS[:2])
+    checks = []
+
+    def cancelled():
+        checks.append(None)
+        return len(checks) > 4  # the run's start, the file, then each of the two frames
+
+    out = tmp_path / "out"
+    out.mkdir()
+    report = convert_animated_gifs([source], out, GifSettings(), cancelled=cancelled)
+    assert report.cancelled and report.outputs == [] and out_names(out) == []

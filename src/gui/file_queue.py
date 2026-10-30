@@ -118,10 +118,12 @@ class FileQueue(QListWidget):
 
     def summary(self) -> QueueSummary:
         items = [self.item(i) for i in range(self.count())]
+        paths = [Path(item.data(Role.PATH)) for item in items]
         return QueueSummary(len(items),
                             sum(item.data(Role.STATE) == FileState.UNREADABLE.value for item in items),
-                            any(is_document(Path(item.data(Role.PATH))) for item in items),
-                            sum(item.data(Role.SIZE) for item in items))
+                            any(is_document(path) for path in paths),
+                            sum(item.data(Role.SIZE) for item in items),
+                            any(path.suffix.lower() in (".tif", ".tiff") for path in paths))
 
     def mark_unreadable(self, path: str, reason: str) -> None:
         for i in range(self.count()):

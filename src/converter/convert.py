@@ -232,6 +232,7 @@ def _write_animation(stream: BinaryIO, sources: list[FrameSource], settings: Gif
             report.failures.append((source.path, str(exc)))
     if not writer.frame_count:
         raise _NothingReadable
+    _check(cancelled)
     writer.close()
 
 

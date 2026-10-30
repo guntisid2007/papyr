@@ -3,6 +3,7 @@
 The window is always in exactly one AppState. Options holds every conversion setting the user can change, and
 FORMAT_CONTROLS says which of those settings each output format uses.
 """
+import math
 from collections.abc import Callable
 from dataclasses import dataclass, replace
 from enum import Enum, auto
@@ -43,6 +44,11 @@ class QueueSummary:
     unreadable: int = 0
     has_document: bool = False
     total_bytes: int = 0
+    has_tiff: bool = False
+
+    @property
+    def may_have_pages(self) -> bool:
+        return self.has_document or self.has_tiff
 
 
 # Conversion settings
@@ -113,7 +119,7 @@ class Options:
     def animates(self, queue: QueueSummary) -> bool:
         """The output can have more than one frame, so timing and frame size mean something."""
         return self.format is OutputFormat.GIF and (
-            self.merges(queue) or (self.gif_mode is not GifMode.SEPARATE and queue.has_document))
+            self.merges(queue) or (self.gif_mode is not GifMode.SEPARATE and queue.may_have_pages))
 
     def pdf_settings(self) -> PdfSettings:
         return PdfSettings(self.page_size, self.margin_mm)
@@ -137,9 +143,10 @@ class Options:
 
         def number(key: str, fallback: float, low: float, high: float) -> float:
             try:
-                return min(max(float(settings.value(key, fallback)), low), high)
+                value = float(settings.value(key, fallback))
             except (TypeError, ValueError):
                 return fallback
+            return min(max(value, low), high) if math.isfinite(value) else fallback
 
         fmt = OutputFormat.__members__.get(str(settings.value("output_format", "PDF")), default.format)
         page = next((size for size in PAGE_SIZES if size.label == settings.value("page_size")), default.page_size)
@@ -179,7 +186,7 @@ _NEEDS: dict[Control, Callable[[Options, QueueSummary], bool]] = {
     Control.MERGE: lambda options, queue: queue.count >= 2,
     Control.MERGED_NAME: lambda options, queue: options.merges(queue),
     Control.PDF_DPI: lambda options, queue: queue.has_document and not options.animates(queue),
-    Control.GIF_MODE: lambda options, queue: queue.count >= 2 or queue.has_document,
+    Control.GIF_MODE: lambda options, queue: queue.count >= 2 or queue.may_have_pages,
     Control.FRAME_MS: Options.animates,
     Control.PLAYS: Options.animates,
     Control.GIF_RESOLUTION: Options.animates,

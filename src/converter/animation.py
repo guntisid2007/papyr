@@ -36,7 +36,7 @@ def measure(path: Path) -> FrameSource:
     try:
         with Image.open(path) as image:
             frames = ImageSequence.Iterator(image) if image.format == "TIFF" else [image]
-            sizes = tuple(_upright(frame.size, frame.getexif().get(_ORIENTATION)) for frame in frames)
+            sizes = tuple(_upright(frame) for frame in frames)
     except Image.DecompressionBombError as exc:
         raise ImageLoadError("Image is too large to convert safely") from exc
     except (UnidentifiedImageError, OSError, SyntaxError, ValueError, EOFError) as exc:
@@ -44,8 +44,10 @@ def measure(path: Path) -> FrameSource:
     return FrameSource(path, sizes)
 
 
-def _upright(size: Size, orientation: int | None) -> Size:
-    return (size[1], size[0]) if orientation in _QUARTER_TURNS else size
+def _upright(frame: Image.Image) -> Size:
+    """The frame's size once its EXIF orientation is applied. Pillow opens a TIFF with that already done."""
+    turned = frame.format != "TIFF" and frame.getexif().get(_ORIENTATION) in _QUARTER_TURNS
+    return (frame.height, frame.width) if turned else frame.size
 
 
 def _fit(size: tuple[float, float], box: Size, upscale: bool) -> Size:
@@ -103,7 +105,9 @@ class GifWriter:
         self.frame_count = 0
 
     def add(self, frame: Image.Image) -> None:
-        paletted = to_gif_palette(frame)
+        # Every frame reserves a transparent index, even an opaque one. Disposal 2 then clears to transparency, so
+        # an opaque page never shows through the clear areas of a transparent picture after it.
+        paletted = to_gif_palette(frame.convert("RGBA"))
         palette = paletted.getpalette() or []
         paletted.putpalette(palette + [0] * (768 - len(palette)))
         params = {"duration": self._settings.frame_ms, "disposal": 2}
