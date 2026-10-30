@@ -166,7 +166,7 @@ class ElidedLabel(QLabel):
             self._elide()
 
     def _elide(self) -> None:
-        super().setText(self.fontMetrics().elidedText(self._full, self._mode, max(self.width(), 0)))
+        super().setText(self.fontMetrics().elidedText(self._full, self._mode, self.width()))
 
 
 def _arrow_color(widget: QWidget) -> QColor:

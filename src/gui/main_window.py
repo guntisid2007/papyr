@@ -550,8 +550,7 @@ class MainWindow(QMainWindow):
         box.open()
 
     def _reveal_output(self) -> None:
-        if self._run and self._run.report and self._run.report.outputs:
-            reveal(self._run.report.outputs[0])
+        reveal(self._run.report.outputs[0])
 
     def _about(self) -> None:
         QMessageBox.about(self, f"About {APP_NAME}",
