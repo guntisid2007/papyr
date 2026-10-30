@@ -1,10 +1,15 @@
 # PyInstaller spec. Build with: pyinstaller papyr.spec
+import os
 import sys
 
 from PyInstaller.utils.hooks import collect_dynamic_libs
 
-APP_NAME = "Papyr"
-VERSION = "2.1.0"
+sys.path.insert(0, os.path.join(SPECPATH, "src"))
+from utils.app_info import APP_NAME, __version__ as VERSION  # noqa: E402
+
+# Every file type Papyr reads, so Finder offers it in "Open With" and accepts drops on the Dock icon.
+# Rank Alternate keeps Papyr from ever becoming the default app for these files.
+INPUT_EXTENSIONS = ["avif", "bmp", "gif", "heic", "heif", "ipynb", "jpeg", "jpg", "pdf", "png", "tif", "tiff", "webp"]
 icon = "assets/icon.icns" if sys.platform == "darwin" else "assets/icon.ico"
 
 a = Analysis(
@@ -36,11 +41,20 @@ if sys.platform == "darwin":
             "LSMinimumSystemVersion": "14.4",
             "NSRequiresAquaSystemAppearance": False,
             "CFBundleDocumentTypes": [{
-                "CFBundleTypeName": "Image or PDF",
+                "CFBundleTypeName": "Images, PDFs, and notebooks",
                 "CFBundleTypeRole": "Viewer",
-                "LSItemContentTypes": ["public.heic", "public.heif", "public.jpeg", "public.png", "org.webmproject.webp",
-                                       "public.avif", "public.tiff", "com.microsoft.bmp", "com.compuserve.gif",
-                                       "com.adobe.pdf"],
+                "LSHandlerRank": "Alternate",
+                "LSItemContentTypes": ["public.image", "com.adobe.pdf", "public.heic", "public.heif", "public.avif",
+                                       "public.folder", "org.jupyter.ipynb"],
+                "CFBundleTypeExtensions": INPUT_EXTENSIONS,
+            }],
+            # macOS ignores CFBundleTypeExtensions once LSItemContentTypes is set, and has no built-in type for
+            # notebooks, so declare one to make .ipynb files match.
+            "UTImportedTypeDeclarations": [{
+                "UTTypeIdentifier": "org.jupyter.ipynb",
+                "UTTypeDescription": "Jupyter Notebook",
+                "UTTypeConformsTo": ["public.json"],
+                "UTTypeTagSpecification": {"public.filename-extension": ["ipynb"]},
             }],
         },
     )
