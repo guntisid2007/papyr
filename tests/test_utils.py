@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from utils.filenames import individual_output_paths, sanitize_pdf_name, unique_path
+from utils.filenames import individual_output_paths, sanitize_name, unique_path
 from utils.files import FolderProblem, collect_images, folder_problem, human_size
 
 
@@ -19,12 +19,12 @@ from utils.files import FolderProblem, collect_images, folder_problem, human_siz
     ("CON", "Converted.pdf"),
     ("photo.heic", "photo.heic.pdf"),
 ])
-def test_sanitize_pdf_name(raw, expected):
-    assert sanitize_pdf_name(raw) == expected
+def test_sanitize_name(raw, expected):
+    assert sanitize_name(raw, ".pdf") == expected
 
 
 def test_sanitize_truncates_long_names():
-    assert len(sanitize_pdf_name("x" * 500)) == 204
+    assert len(sanitize_name("x" * 500, ".pdf")) == 204
 
 
 def test_unique_path_skips_existing(tmp_path):

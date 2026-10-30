@@ -11,15 +11,24 @@ from pathlib import Path
 
 from PySide6.QtCore import QSettings
 
-from converter import (ConversionReport, ImageSettings, OutputFormat, PageSize, PdfSettings, convert_images,
-                       convert_individual, convert_merged)
+from converter import (ConversionReport, GifResolution, GifSettings, ImageSettings, OutputFormat, PageSize,
+                       PdfSettings, convert_animated_gifs, convert_combined_gif, convert_images, convert_individual,
+                       convert_merged)
 from utils.errors import friendly_error
-from utils.filenames import sanitize_pdf_name
+from utils.filenames import sanitize_name
 
 PDF_DPI_CHOICES = (100, 150, 200, 300)
+FRAME_MS_CHOICES = (250, 500, 1000, 2000)
+FRAME_MS_RANGE = (20, 60_000)  # GIF stores hundredths of a second, and most viewers slow anything under 20 ms
+PLAYS_RANGE = (2, 999)
 PAGE_SIZES = (PageSize.A4, PageSize.LETTER, PageSize.ORIGINAL)
 MARGIN_RANGE = (0, 50)
 DEFAULT_MERGED_NAME = "Combined"
+
+
+def round_frame_ms(ms: float) -> int:
+    """GIF stores hundredths of a second, so show and save the duration the file will really have."""
+    return int(round(ms, -1))
 
 
 def plural(count: int, noun: str) -> str:
@@ -47,6 +56,23 @@ class Control(Enum):
     MARGINS = auto()
     QUALITY = auto()
     PDF_DPI = auto()
+    GIF_MODE = auto()
+    FRAME_MS = auto()
+    PLAYS = auto()
+    GIF_RESOLUTION = auto()
+
+
+class GifMode(Enum):
+    """What GIF output does with pages and files: (label, short label for the dock, detail)."""
+
+    ANIMATE_EACH = ("Animated GIF", "Animated", "A file's pages become one animation")
+    COMBINE = ("Combine into one GIF", "Combined", "Every file, in list order")
+    SEPARATE = ("Separate static GIFs", "Separate", "One GIF per page")
+
+    def __init__(self, label: str, short: str, detail: str):
+        self.label = label
+        self.short = short
+        self.detail = detail
 
 
 def _image_controls(fmt: OutputFormat) -> tuple[Control, ...]:
@@ -55,6 +81,8 @@ def _image_controls(fmt: OutputFormat) -> tuple[Control, ...]:
 
 FORMAT_CONTROLS: dict[OutputFormat, tuple[Control, ...]] = {
     fmt: (Control.MERGE, Control.MERGED_NAME, Control.PAGE_SIZE, Control.MARGINS) if fmt is OutputFormat.PDF
+    else (Control.GIF_MODE, Control.MERGED_NAME, Control.FRAME_MS, Control.PLAYS, Control.GIF_RESOLUTION,
+          Control.PDF_DPI) if fmt is OutputFormat.GIF
     else _image_controls(fmt)
     for fmt in OutputFormat
 }
@@ -68,13 +96,24 @@ class Options:
     margin_mm: float = 10.0
     quality: int = 90
     pdf_dpi: int = 200
+    gif_mode: GifMode = GifMode.ANIMATE_EACH
+    frame_ms: int = 1000
+    plays: int = 0  # 0 plays forever
+    gif_resolution: GifResolution = GifResolution.BALANCED
 
     def with_(self, **changes) -> "Options":
         return replace(self, **changes)
 
     def merges(self, queue: QueueSummary) -> bool:
-        """Merging into one PDF is on and means something for these files."""
-        return self.merge and Control.MERGE in controls_for(self, queue)
+        """Every file goes into one output: a merged PDF, or a combined animated GIF."""
+        if self.format is OutputFormat.GIF:
+            return self.gif_mode is GifMode.COMBINE and queue.count >= 2
+        return self.format is OutputFormat.PDF and self.merge and queue.count >= 2
+
+    def animates(self, queue: QueueSummary) -> bool:
+        """The output can have more than one frame, so timing and frame size mean something."""
+        return self.format is OutputFormat.GIF and (
+            self.merges(queue) or (self.gif_mode is not GifMode.SEPARATE and queue.has_document))
 
     def pdf_settings(self) -> PdfSettings:
         return PdfSettings(self.page_size, self.margin_mm)
@@ -82,8 +121,12 @@ class Options:
     def image_settings(self) -> ImageSettings:
         return ImageSettings(self.format, self.quality, self.pdf_dpi)
 
+    def gif_settings(self) -> GifSettings:
+        return GifSettings(self.frame_ms, self.plays, self.gif_resolution)
+
     def merged_file_name(self) -> str:
-        return sanitize_pdf_name(self.merged_name or DEFAULT_MERGED_NAME, DEFAULT_MERGED_NAME)
+        extension = OutputFormat.GIF.extension if self.format is OutputFormat.GIF else OutputFormat.PDF.extension
+        return sanitize_name(self.merged_name or DEFAULT_MERGED_NAME, extension, DEFAULT_MERGED_NAME)
 
     # Remembered between launches, under the keys Papyr 1 used
 
@@ -101,13 +144,19 @@ class Options:
         fmt = OutputFormat.__members__.get(str(settings.value("output_format", "PDF")), default.format)
         page = next((size for size in PAGE_SIZES if size.label == settings.value("page_size")), default.page_size)
         dpi = int(number("pdf_dpi", default.pdf_dpi, 0, 10_000))
+        plays = int(number("gif_plays", default.plays, 0, PLAYS_RANGE[1]))
         return cls(format=fmt,
                    merge=settings.value("mode") == "merged",
                    merged_name=str(settings.value("merged_name", "")),
                    page_size=page,
                    margin_mm=number("margin_mm", default.margin_mm, *MARGIN_RANGE),
                    quality=int(number("quality", default.quality, 1, 100)),
-                   pdf_dpi=dpi if dpi in PDF_DPI_CHOICES else default.pdf_dpi)
+                   pdf_dpi=dpi if dpi in PDF_DPI_CHOICES else default.pdf_dpi,
+                   gif_mode=GifMode.__members__.get(str(settings.value("gif_mode")), default.gif_mode),
+                   frame_ms=round_frame_ms(number("gif_frame_ms", default.frame_ms, *FRAME_MS_RANGE)),
+                   plays=plays,
+                   gif_resolution=GifResolution.__members__.get(str(settings.value("gif_resolution")),
+                                                                default.gif_resolution))
 
     def save(self, settings: QSettings) -> None:
         settings.setValue("output_format", self.format.name)
@@ -117,14 +166,23 @@ class Options:
         settings.setValue("margin_mm", self.margin_mm)
         settings.setValue("quality", self.quality)
         settings.setValue("pdf_dpi", self.pdf_dpi)
+        settings.setValue("gif_mode", self.gif_mode.name)
+        settings.setValue("gif_frame_ms", self.frame_ms)
+        settings.setValue("gif_plays", self.plays)
+        settings.setValue("gif_resolution", self.gif_resolution.name)
 
 
 # Some settings only mean something for certain files or choices: merging needs two files, the merged file's
-# name needs merging on, and the page resolution only applies to PDFs and notebooks being turned into images.
+# name needs merging on, and the page resolution only applies to PDFs and notebooks being turned into still images.
+# A GIF's animation choice needs pages or files to animate, and its timing and frame size need an animation.
 _NEEDS: dict[Control, Callable[[Options, QueueSummary], bool]] = {
     Control.MERGE: lambda options, queue: queue.count >= 2,
-    Control.MERGED_NAME: lambda options, queue: options.merge and queue.count >= 2,
-    Control.PDF_DPI: lambda options, queue: queue.has_document,
+    Control.MERGED_NAME: lambda options, queue: options.merges(queue),
+    Control.PDF_DPI: lambda options, queue: queue.has_document and not options.animates(queue),
+    Control.GIF_MODE: lambda options, queue: queue.count >= 2 or queue.has_document,
+    Control.FRAME_MS: Options.animates,
+    Control.PLAYS: Options.animates,
+    Control.GIF_RESOLUTION: Options.animates,
 }
 
 
@@ -138,6 +196,11 @@ Job = Callable[..., ConversionReport]
 
 def plan_job(options: Options, queue: QueueSummary, sources: list[Path], destination: Path) -> Job:
     """The engine call for these files and settings. It takes (progress, cancelled) and returns a report."""
+    if options.format is OutputFormat.GIF and options.gif_mode is not GifMode.SEPARATE:
+        if options.merges(queue):
+            return partial(convert_combined_gif, sources, destination / options.merged_file_name(),
+                           options.gif_settings())
+        return partial(convert_animated_gifs, sources, destination, options.gif_settings())
     if options.format is not OutputFormat.PDF:
         return partial(convert_images, sources, destination, options.image_settings())
     if options.merges(queue):

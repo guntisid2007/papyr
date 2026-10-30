@@ -27,7 +27,7 @@ def headline(result: RunResult) -> tuple[str, str]:
     saved = plural(len(result.outputs), kind)
     match result.outcome:
         case Outcome.SUCCESS if result.merged:
-            return f"Saved “{result.outputs[0].name}”", f"{files} merged into one PDF in {where}"
+            return f"Saved “{result.outputs[0].name}”", f"{files} {_merged_into(result)} in {where}"
         case Outcome.SUCCESS:
             return f"{files} converted", f"{saved} saved to {where}"
         case Outcome.PARTIAL if result.merged:
@@ -40,6 +40,10 @@ def headline(result: RunResult) -> tuple[str, str]:
         case _:
             reasons = {failure.reason for failure in result.failures}
             return "Nothing was converted", reasons.pop() if len(reasons) == 1 else "None of the files could be converted."
+
+
+def _merged_into(result: RunResult) -> str:
+    return "combined into one animated GIF" if result.format is OutputFormat.GIF else "merged into one PDF"
 
 
 class StatusBadge(QWidget):

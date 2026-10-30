@@ -15,7 +15,8 @@ def self_test(sample: str) -> int:
     import pypdfium2 as pdfium
     from PIL import Image
 
-    from converter import ImageSettings, OutputFormat, PageSize, PdfSettings, convert_images, convert_merged
+    from converter import (GifSettings, ImageSettings, OutputFormat, PageSize, PdfSettings, convert_combined_gif,
+                           convert_images, convert_merged)
     from gui.app import create_app, use_headless_platform
     from gui.main_window import MainWindow
 
@@ -39,6 +40,14 @@ def self_test(sample: str) -> int:
                 continue
             with Image.open(converted.outputs[0]) as image:
                 image.load()
+        animation = Path(tmp) / "animation.gif"
+        report = convert_combined_gif([pdf, pdf], animation, GifSettings(frame_ms=500))
+        if report.outputs != [animation] or report.failures:
+            problems.append(f"PDF to animated GIF: {report.failures}")
+        else:
+            with Image.open(animation) as image:
+                if image.n_frames != 2 or image.info.get("loop") != 0 or image.info.get("duration") != 500:
+                    problems.append(f"PDF to animated GIF: {image.n_frames} frames, {image.info}")
         wide_figure = io.BytesIO()
         Image.new("RGB", (4000, 400), "green").save(wide_figure, "PNG")
         notebook = Path(tmp) / "self-test.ipynb"

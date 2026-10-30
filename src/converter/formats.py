@@ -36,3 +36,27 @@ class ImageSettings:
     format: OutputFormat = OutputFormat.JPEG
     quality: int = 90
     pdf_dpi: int = 200
+
+
+class GifResolution(Enum):
+    """How large animation frames may be: (label, longest side in pixels)."""
+
+    HIGH = ("High quality", 1600)
+    BALANCED = ("Balanced", 1000)
+    SMALL = ("Smaller file", 500)
+
+    def __init__(self, label: str, long_side: int):
+        self.label = label
+        self.long_side = long_side
+
+
+@dataclass(frozen=True)
+class GifSettings:
+    frame_ms: int = 1000
+    plays: int = 0  # 0 plays forever
+    resolution: GifResolution = GifResolution.BALANCED
+
+    @property
+    def loop(self) -> int | None:
+        """The GIF loop field: 0 repeats forever, n repeats n more times, and None (no field) plays once."""
+        return None if self.plays == 1 else max(self.plays - 1, 0)

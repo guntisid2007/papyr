@@ -11,12 +11,13 @@ from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QToolTip
 from pypdf import PdfReader
 
-from converter import ConversionReport, OutputFormat, PageSize
+from conftest import FIXTURES
+from converter import ConversionReport, GifResolution, OutputFormat, PageSize
 from gui.file_queue import FileState, QueueDelegate
 from gui.main_window import MainWindow, RunSpec
-from gui.model import Converting, Done, Outcome, Welcome, Workspace
+from gui.model import Converting, Done, GifMode, Outcome, Welcome, Workspace
 from gui.workers import ConversionWorker
-from pdf_samples import text_pdf
+from pdf_samples import TWELVE_COLORS, colored_pdf, text_pdf
 
 
 @pytest.fixture
@@ -308,7 +309,8 @@ def engine(monkeypatch):
             return ConversionReport(outputs=[target])
         return run
 
-    for name in ("convert_images", "convert_merged", "convert_individual"):
+    for name in ("convert_images", "convert_merged", "convert_individual", "convert_animated_gifs",
+                 "convert_combined_gif"):
         monkeypatch.setattr(f"gui.model.{name}", fake(name))
     return calls
 
@@ -365,7 +367,9 @@ def test_the_dock_shows_exactly_the_controls_for_the_format(window, make, tmp_pa
     to_pdf = fmt is OutputFormat.PDF
     assert shown(window, dock.merge) == to_pdf and shown(window, dock.page_chip) == to_pdf
     assert shown(window, dock.quality_chip) == fmt.has_quality
-    assert shown(window, dock.dpi_chip) == (not to_pdf)
+    to_gif = fmt is OutputFormat.GIF
+    assert shown(window, dock.dpi_chip) == (not to_pdf and not to_gif), "an animated GIF sizes frames instead"
+    assert shown(window, dock.gif_mode_chip) == to_gif and shown(window, dock.animation_chip) == to_gif
     assert dock.convert_button.text() == f"Convert to {fmt.label}"
     if not to_pdf:
         expected = "Transparency is preserved." if fmt.keeps_alpha else "Transparent areas become white."
@@ -533,6 +537,94 @@ def test_launch_falls_back_to_documents_when_the_saved_folder_is_gone(app, tmp_p
     win = MainWindow()
     assert win.output_dir() == (documents if documents.is_dir() else Path.home())
     win.deleteLater()
+
+
+def test_each_gif_control_reaches_the_engine(app, window, make, engine, tmp_path):
+    files = [make("a.png"), make("b.png")]
+    window.add_paths(files)
+    choose_format(window, OutputFormat.GIF)
+    dock = window.dock
+    assert not shown(window, dock.animation_chip), "nothing animates until files are combined"
+    assert run_once(app, window, engine)[0] == "convert_animated_gifs"
+
+    dock.gif_mode_chip.click()
+    dock.gif_mode_popover.choices[GifMode.COMBINE].click()
+    dock.gif_mode_popover.close()
+    assert shown(window, dock.animation_chip) and shown(window, dock.name_chip)
+    assert dock.name_chip.value() == "Combined.gif"
+    dock.animation_chip.click()
+    popover = dock.animation_popover
+    popover.durations[250].click()
+    popover.play_once.click()
+    popover.sizes[GifResolution.SMALL].click()
+    popover.close()
+    assert dock.animation_chip.value() == "250 ms · Plays once"
+    name, sources, target, settings = run_once(app, window, engine)
+    assert (name, sources, target) == ("convert_combined_gif", files, tmp_path / "out" / "Combined.gif")
+    assert (settings.frame_ms, settings.plays, settings.resolution) == (250, 1, GifResolution.SMALL)
+
+    dock.animation_chip.click()
+    popover.custom_ms.setValue(333)
+    popover.custom_plays.setValue(4)
+    popover.close()
+    assert dock.animation_chip.value() == "330 ms · Plays 4×", "GIF keeps hundredths of a second"
+    settings = run_once(app, window, engine)[3]
+    assert (settings.frame_ms, settings.plays) == (330, 4)
+
+    dock.gif_mode_chip.click()
+    dock.gif_mode_popover.choices[GifMode.SEPARATE].click()
+    dock.gif_mode_popover.close()
+    assert not shown(window, dock.animation_chip)
+    name, _, _, settings = run_once(app, window, engine)
+    assert name == "convert_images" and settings.format is OutputFormat.GIF
+
+
+def test_combine_is_unavailable_for_one_file(app, window, tmp_path):
+    window.add_paths([colored_pdf(tmp_path / "doc.pdf", TWELVE_COLORS[:2])])
+    choose_format(window, OutputFormat.GIF)
+    window.dock.gif_mode_chip.click()
+    assert not window.dock.gif_mode_popover.choices[GifMode.COMBINE].isEnabled()
+    window.dock.gif_mode_popover.close()
+
+
+def test_a_twelve_page_pdf_converts_to_one_animated_gif_in_the_window(app, window, tmp_path):
+    window.add_paths([FIXTURES / "twelve-pages.pdf"])
+    choose_format(window, OutputFormat.GIF)
+    convert(app, window)
+    assert outputs(tmp_path) == ["twelve-pages.gif"]
+    with Image.open(tmp_path / "out" / "twelve-pages.gif") as gif:
+        assert gif.n_frames == 12 and gif.info["loop"] == 0
+    assert window.done.subtitle.text() == f"1 GIF file saved to {tmp_path / 'out'}"
+
+
+def test_combined_gif_says_so_when_done(app, window, make, tmp_path):
+    window.add_paths([make("a.png", color="red"), make("b.png", color="blue")])
+    choose_format(window, OutputFormat.GIF)
+    window.dock.gif_mode_chip.click()
+    window.dock.gif_mode_popover.choices[GifMode.COMBINE].click()
+    window.dock.gif_mode_popover.close()
+    assert window.queue.numbered and shown(window, window.workspace.hint), "rows show the frame order"
+    convert(app, window)
+    assert outputs(tmp_path) == ["Combined.gif"]
+    with Image.open(tmp_path / "out" / "Combined.gif") as gif:
+        assert gif.n_frames == 2
+    assert window.done.title.text() == "Saved “Combined.gif”"
+    assert window.done.subtitle.text() == f"2 files combined into one animated GIF in {tmp_path / 'out'}"
+
+
+def test_replacing_an_existing_combined_gif_asks_first(app, window, make, tmp_path, monkeypatch):
+    from PySide6.QtWidgets import QMessageBox
+
+    (tmp_path / "out" / "Combined.gif").write_bytes(b"keep me")
+    window.add_paths([make("a.png"), make("b.png")])
+    choose_format(window, OutputFormat.GIF)
+    window.dock.gif_mode_chip.click()
+    window.dock.gif_mode_popover.choices[GifMode.COMBINE].click()
+    window.dock.gif_mode_popover.close()
+    monkeypatch.setattr("gui.main_window.QMessageBox.question", lambda *a: QMessageBox.StandardButton.No)
+    window.dock.convert_button.click()
+    assert not window.is_converting()
+    assert (tmp_path / "out" / "Combined.gif").read_bytes() == b"keep me"
 
 
 def test_replacing_an_existing_merged_pdf_asks_first(app, window, make, tmp_path, monkeypatch):

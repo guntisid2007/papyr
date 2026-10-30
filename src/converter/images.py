@@ -104,12 +104,12 @@ def _flatten(image: Image.Image) -> Image.Image:
     return background
 
 
-def _render_page(document: pdfium.PdfDocument, index: int, dpi: int) -> Image.Image:
+def _render_page(document: pdfium.PdfDocument, index: int, dpi: float, fit: tuple[int, int] | None) -> Image.Image:
     with _PDFIUM_LOCK:
         page = document[index]
         try:
             width, height = page.get_size()
-            scale = dpi / 72
+            scale = min(fit[0] / width, fit[1] / height) if fit else dpi / 72
             pixels = width * height * scale * scale
             if pixels > Image.MAX_IMAGE_PIXELS:
                 scale *= math.sqrt(Image.MAX_IMAGE_PIXELS / pixels)
@@ -122,21 +122,40 @@ def _render_page(document: pdfium.PdfDocument, index: int, dpi: int) -> Image.Im
             page.close()
 
 
-def _pdf_pages(source: Path | bytes, dpi: int) -> Iterator[Image.Image]:
-    """Render each page. The PDFium lock is held per call, not across yields, so a long conversion
-    never blocks thumbnails."""
+def _open_pdf(source: Path | bytes) -> pdfium.PdfDocument:
+    """Open a PDF. Call with the PDFium lock held."""
     try:
-        with _PDFIUM_LOCK:
-            document = pdfium.PdfDocument(source)
-            count = len(document)
+        return pdfium.PdfDocument(source)
     except pdfium.PdfiumError as exc:
         message = "PDF is password-protected" if "password" in str(exc).lower() else f"Could not read PDF: {exc}"
         raise ImageLoadError(message) from exc
+
+
+def pdf_page_sizes(source: Path | bytes) -> list[tuple[float, float]]:
+    """Each page's width and height in points, without rendering anything."""
+    with _PDFIUM_LOCK:
+        document = _open_pdf(source)
+        try:
+            sizes = [document.get_page_size(index) for index in range(len(document))]
+        finally:
+            document.close()
+    if not sizes:
+        raise ImageLoadError("PDF has no pages")
+    return sizes
+
+
+def pdf_pages(source: Path | bytes, dpi: float = DEFAULT_PDF_DPI,
+              fit: tuple[int, int] | None = None) -> Iterator[Image.Image]:
+    """Render each page at dpi, or as large as fits inside fit. The PDFium lock is held per call, not across
+    yields, so a long conversion never blocks thumbnails."""
+    with _PDFIUM_LOCK:
+        document = _open_pdf(source)
+        count = len(document)
     try:
         if count == 0:
             raise ImageLoadError("PDF has no pages")
         for index in range(count):
-            yield _render_page(document, index, dpi)
+            yield _render_page(document, index, dpi, fit)
     finally:
         with _PDFIUM_LOCK:
             document.close()
@@ -164,7 +183,7 @@ def iter_pages(path: Path, *, keep_alpha: bool = False, pdf_dpi: int = DEFAULT_P
     if not is_supported(path):
         raise ImageLoadError(f"Unsupported file type: {path.suffix or 'no extension'}")
     if is_document(path):
-        yield from _pdf_pages(document_pdf(path, NOTEBOOK_IMAGE_SETTINGS), pdf_dpi)
+        yield from pdf_pages(document_pdf(path, NOTEBOOK_IMAGE_SETTINGS), pdf_dpi)
     else:
         yield from _image_pages(path, keep_alpha)
 
@@ -209,11 +228,11 @@ def save_image(image: Image.Image, stream: BinaryIO, fmt: OutputFormat, quality:
     elif fmt is OutputFormat.TIFF:
         options = {"compression": "tiff_adobe_deflate"}
     elif fmt is OutputFormat.GIF and image.mode in ("RGB", "RGBA", "LA"):
-        image = _to_gif_palette(image)
+        image = to_gif_palette(image)
     image.save(stream, fmt.pillow_format, **options)
 
 
-def _to_gif_palette(image: Image.Image) -> Image.Image:
+def to_gif_palette(image: Image.Image) -> Image.Image:
     """Quantize to 255 colours and reserve index 255 for fully transparent pixels."""
     if "A" not in image.getbands():
         return image.convert("RGB").quantize(256, dither=Image.Dither.FLOYDSTEINBERG)
@@ -229,7 +248,7 @@ def make_thumbnail(path: Path, max_size: int) -> Image.Image:
     if not is_supported(path):
         raise ImageLoadError(f"Unsupported file type: {path.suffix or 'no extension'}")
     if is_document(path):
-        pages = _pdf_pages(document_pdf(path, NOTEBOOK_IMAGE_SETTINGS), dpi=36)
+        pages = pdf_pages(document_pdf(path, NOTEBOOK_IMAGE_SETTINGS), dpi=36)
         try:
             image = next(pages).convert("RGBA")
         finally:

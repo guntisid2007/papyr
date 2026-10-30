@@ -12,7 +12,8 @@ import pypdf
 
 from utils.filenames import individual_output_paths, unique_path
 
-from .formats import ImageLoadError, ImageSettings
+from .animation import FrameSource, GifWriter, canvas_size, frames, measure
+from .formats import GifSettings, ImageLoadError, ImageSettings, OutputFormat
 from .images import document_pdf, encode_for_pdf, is_document, is_lossless_source, iter_pages, save_image
 from .layout import PdfSettings, compute_placement
 from .pdf_writer import PdfWriter
@@ -192,7 +193,8 @@ def convert_images(sources: list[Path], output_dir: Path, settings: ImageSetting
                 all_pages = itertools.chain([first] if second is None else [first, second], pages)
                 for number, page in enumerate(all_pages, start=1):
                     _check(cancelled)
-                    name = f"{source.stem}-page-{number}{ext}" if numbered else f"{source.stem}{ext}"
+                    name = f"{source.stem}-page-{_page_label(number, settings.format)}{ext}" if numbered \
+                        else f"{source.stem}{ext}"
                     destination = unique_path(output_dir / name, taken)
                     taken.add(destination)
                     with _atomic_file(destination) as stream:
@@ -204,5 +206,92 @@ def convert_images(sources: list[Path], output_dir: Path, settings: ImageSetting
                 pages.close()
     except _Cancelled:
         report.cancelled = True
+    progress(len(sources), len(sources), sources[-1] if sources else Path())
+    return report
+
+
+def _page_label(number: int, fmt: OutputFormat) -> str:
+    """Separate GIF pages are zero-padded so they sort in page order; other formats keep their Papyr 2 names."""
+    return f"{number:03d}" if fmt is OutputFormat.GIF else str(number)
+
+
+def _write_animation(stream: BinaryIO, sources: list[FrameSource], settings: GifSettings, report: ConversionReport,
+                     progress: Callable[[int, Path], None], cancelled: CancelCheck) -> None:
+    """Write every page of every source as one frame, in order. A source that fails while decoding is reported
+    and the animation goes on without its remaining pages."""
+    canvas = canvas_size(sources, settings.resolution.long_side)
+    writer = GifWriter(stream, settings)
+    for index, source in enumerate(sources):
+        _check(cancelled)
+        progress(index, source.path)
+        try:
+            for frame in frames(source, canvas):
+                _check(cancelled)
+                writer.add(frame)
+        except _ERRORS as exc:
+            report.failures.append((source.path, str(exc)))
+    if not writer.frame_count:
+        raise _NothingReadable
+    writer.close()
+
+
+def convert_animated_gifs(sources: list[Path], output_dir: Path, settings: GifSettings,
+                          progress: ProgressCallback = _noop, cancelled: CancelCheck = _never
+                          ) -> ConversionReport:
+    """Write one GIF per source, named after it. Every page of a PDF, notebook, or multi-page TIFF becomes a
+    frame of one animation; a single picture becomes a still GIF at its own size."""
+    report = ConversionReport()
+    destinations = individual_output_paths(sources, output_dir, OutputFormat.GIF.extension)
+    try:
+        for index, (source, destination) in enumerate(zip(sources, destinations)):
+            _check(cancelled)
+            progress(index, len(sources), source)
+            try:
+                measured = measure(source)
+                with _atomic_file(destination) as stream:
+                    if measured.is_still:
+                        pages = iter_pages(source, keep_alpha=True)
+                        try:
+                            save_image(next(pages), stream, OutputFormat.GIF, 0)
+                        finally:
+                            pages.close()
+                    else:
+                        _write_animation(stream, [measured], settings, report, lambda *_: None, cancelled)
+                report.outputs.append(destination)
+            except _NothingReadable:
+                pass  # _write_animation already recorded why this source failed
+            except _ERRORS as exc:
+                report.failures.append((source, str(exc)))
+    except _Cancelled:
+        report.cancelled = True
+    progress(len(sources), len(sources), sources[-1] if sources else Path())
+    return report
+
+
+def convert_combined_gif(sources: list[Path], destination: Path, settings: GifSettings,
+                         progress: ProgressCallback = _noop, cancelled: CancelCheck = _never) -> ConversionReport:
+    """Write every page of every readable source into one animated GIF, in queue order. Unreadable files are
+    skipped and reported."""
+    report = ConversionReport()
+    measured = []
+    try:
+        for source in sources:
+            _check(cancelled)
+            try:
+                measured.append(measure(source))
+            except _ERRORS as exc:
+                report.failures.append((source, str(exc)))
+        if not measured:
+            raise _NothingReadable
+        with _atomic_file(destination) as stream:
+            _write_animation(stream, measured, settings, report,
+                             lambda index, path: progress(sources.index(path), len(sources), path), cancelled)
+        report.outputs.append(destination)
+    except _Cancelled:
+        report.cancelled = True
+    except _NothingReadable:
+        report.failures.append((destination, "None of the files could be read"))
+    except _ERRORS as exc:
+        report.failures.append((destination, str(exc)))
     progress(len(sources), len(sources), sources[-1] if sources else Path())
     return report

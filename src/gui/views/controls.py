@@ -5,15 +5,15 @@ from pathlib import Path
 
 from PySide6.QtCore import QRectF, QSize, Qt, Signal
 from PySide6.QtGui import QFontMetrics, QPainter
-from PySide6.QtWidgets import (QAbstractButton, QButtonGroup, QDoubleSpinBox, QHBoxLayout, QLineEdit, QMenu, QSlider,
-                               QStackedWidget, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QButtonGroup, QDoubleSpinBox, QHBoxLayout, QLineEdit, QMenu, QSizePolicy,
+                               QSlider, QStackedWidget, QVBoxLayout, QWidget)
 
-from converter import OutputFormat, PageSize
+from converter import GifResolution, OutputFormat, PageSize
 from utils.files import FolderProblem
 
 from ..icons import Icon, paint_icon
-from ..model import MARGIN_RANGE, PAGE_SIZES, PDF_DPI_CHOICES, Control, Converting, Options, QueueSummary, \
-    controls_for, plural
+from ..model import FRAME_MS_CHOICES, FRAME_MS_RANGE, MARGIN_RANGE, PAGE_SIZES, PDF_DPI_CHOICES, PLAYS_RANGE, Control, \
+    Converting, GifMode, Options, QueueSummary, controls_for, plural, round_frame_ms
 from ..theme import RADIUS_SURFACE, Type, current, font
 from ..widgets import Button, Chip, ElidedLabel, Kind, Popover, Segment, Surface, Toggle, Track, label, shortcut_text
 
@@ -23,6 +23,8 @@ PAGE_NOTE = "Wide photos get landscape pages. PDFs keep their own pages and text
 QUALITY_NOTE = "Higher quality makes larger files."
 DPI_NOTE = "For pages of PDFs and notebooks turned into images."
 NAME_NOTE = "Pages follow the order of the list."
+GIF_MODE_NOTE = "Combined frames follow the order of the list."
+ANIMATION_NOTE = "Pages of different sizes are centred on one frame size."
 KEEPS_ALPHA_NOTE = "Transparency is preserved."
 LOSES_ALPHA_NOTE = "Transparent areas become white."
 
@@ -121,6 +123,10 @@ class Choice(QAbstractButton):
                        theme.accent_text, 1.8)
 
 
+def merged_name_label(options: Options) -> str:
+    return "Combined GIF name" if options.format is OutputFormat.GIF else "Merged PDF name"
+
+
 def _section(text: str):
     return label(text.upper(), Type.LABEL, "secondary")
 
@@ -171,7 +177,7 @@ class PagePopover(Popover):
         self.body.addLayout(row)
         self.body.addWidget(_note(PAGE_NOTE))
 
-    def show_options(self, options: Options) -> None:
+    def show_options(self, options: Options, queue: QueueSummary) -> None:
         self.choices[options.page_size].setChecked(True)
         self.margin.blockSignals(True)
         self.margin.setValue(options.margin_mm)
@@ -198,7 +204,7 @@ class QualityPopover(Popover):
         self.note = _note(QUALITY_NOTE)
         self.body.addWidget(self.note)
 
-    def show_options(self, options: Options) -> None:
+    def show_options(self, options: Options, queue: QueueSummary) -> None:
         self.slider.blockSignals(True)
         self.slider.setValue(options.quality)
         self.slider.blockSignals(False)
@@ -219,14 +225,15 @@ class ResolutionPopover(Popover):
             self.body.addWidget(choice)
         self.body.addWidget(_note(DPI_NOTE))
 
-    def show_options(self, options: Options) -> None:
+    def show_options(self, options: Options, queue: QueueSummary) -> None:
         self.choices[options.pdf_dpi].setChecked(True)
 
 
 class NamePopover(Popover):
     def __init__(self, parent, on_name):
         super().__init__(parent)
-        self.body.addWidget(_section("Merged PDF name"))
+        self.title = _section("Merged PDF name")
+        self.body.addWidget(self.title)
         row = QHBoxLayout()
         row.setSpacing(6)
         self.edit = QLineEdit()
@@ -237,13 +244,130 @@ class NamePopover(Popover):
         self.edit.textEdited.connect(on_name)
         self.edit.returnPressed.connect(self.close)
         row.addWidget(self.edit)
-        row.addWidget(label(".pdf", Type.BODY, "secondary"))
+        self.extension = label(".pdf", Type.BODY, "secondary")
+        row.addWidget(self.extension)
         self.body.addLayout(row)
         self.body.addWidget(_note(NAME_NOTE))
 
-    def show_options(self, options: Options) -> None:
+    def show_options(self, options: Options, queue: QueueSummary) -> None:
+        name = merged_name_label(options)
+        self.title.setText(name.upper())
+        self.edit.setAccessibleName(name)
+        self.extension.setText(".gif" if options.format is OutputFormat.GIF else ".pdf")
         if self.edit.text() != options.merged_name:
             self.edit.setText(options.merged_name)
+
+
+def _number(range_: tuple[int, int], suffix: str, name: str, on_value) -> QDoubleSpinBox:
+    spin = QDoubleSpinBox()
+    spin.setAccessibleName(name)
+    spin.setRange(*range_)
+    spin.setDecimals(0)
+    spin.setSuffix(suffix)
+    spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    spin.setFixedWidth(96)
+    spin.setKeyboardTracking(False)  # report the number once it is typed, not after every digit
+    spin.valueChanged.connect(lambda value: on_value(int(value)))
+    return spin
+
+
+def _set_quietly(spin: QDoubleSpinBox, value: int) -> None:
+    spin.blockSignals(True)
+    spin.setValue(value)
+    spin.blockSignals(False)
+
+
+def frame_ms_text(ms: int) -> str:
+    return f"{ms / 1000:g} s" if ms % 100 == 0 else f"{ms} ms"
+
+
+def plays_text(plays: int) -> str:
+    return {0: "Loops", 1: "Plays once"}.get(plays, f"Plays {plays}×")
+
+
+class GifModePopover(Popover):
+    """Whether pages and files become animations or still GIFs."""
+
+    def __init__(self, parent, on_mode):
+        super().__init__(parent)
+        self.body.addWidget(_section("Animation"))
+        group = QButtonGroup(self)
+        self.choices: dict[GifMode, Choice] = {}
+        for mode in GifMode:
+            choice = Choice(mode.label, mode.detail)
+            choice.clicked.connect(lambda _=False, m=mode: on_mode(m))
+            group.addButton(choice)
+            self.choices[mode] = choice
+            self.body.addWidget(choice)
+        self.body.addWidget(_note(GIF_MODE_NOTE))
+
+    def show_options(self, options: Options, queue: QueueSummary) -> None:
+        self.choices[GifMode.COMBINE].setEnabled(queue.count >= 2)
+        self.choices[options.gif_mode].setChecked(True)
+
+
+class AnimationPopover(Popover):
+    """How long each frame shows, how many times the animation plays, and how large its frames are."""
+
+    def __init__(self, parent, on_frame_ms, on_plays, on_resolution):
+        super().__init__(parent)
+        self.body.addWidget(_section("Frame duration"))
+        self.durations: dict[int, Choice] = {}
+        for ms in FRAME_MS_CHOICES:
+            choice = Choice(f"{ms} ms", {1000: "Default"}.get(ms, ""))
+            choice.clicked.connect(lambda _=False, m=ms: on_frame_ms(m))
+            self.durations[ms] = choice
+            self.body.addWidget(choice)
+        self.custom_ms = _number(FRAME_MS_RANGE, " ms", "Custom frame duration",
+                                 lambda ms: on_frame_ms(round_frame_ms(ms)))
+        self.custom_ms.setSingleStep(10)
+        self.custom_ms_choice = Choice("Custom")
+        self.custom_ms_choice.clicked.connect(lambda: on_frame_ms(round_frame_ms(self.custom_ms.value())))
+        self.body.addLayout(self._row(self.custom_ms_choice, self.custom_ms))
+
+        self.body.addSpacing(4)
+        self.body.addWidget(_section("Looping"))
+        self.loop_forever = Choice("Loop forever", "Default")
+        self.loop_forever.clicked.connect(lambda: on_plays(0))
+        self.play_once = Choice("Play once")
+        self.play_once.clicked.connect(lambda: on_plays(1))
+        for choice in (self.loop_forever, self.play_once):
+            self.body.addWidget(choice)
+        self.custom_plays = _number(PLAYS_RANGE, " times", "Number of plays", on_plays)
+        self.custom_plays_choice = Choice("Play")
+        self.custom_plays_choice.clicked.connect(lambda: on_plays(int(self.custom_plays.value())))
+        self.body.addLayout(self._row(self.custom_plays_choice, self.custom_plays))
+
+        self.body.addSpacing(4)
+        self.body.addWidget(_section("Frame size"))
+        group = QButtonGroup(self)
+        self.sizes: dict[GifResolution, Choice] = {}
+        for resolution in GifResolution:
+            choice = Choice(resolution.label, f"Up to {resolution.long_side} px")
+            choice.clicked.connect(lambda _=False, r=resolution: on_resolution(r))
+            group.addButton(choice)
+            self.sizes[resolution] = choice
+            self.body.addWidget(choice)
+        self.body.addWidget(_note(ANIMATION_NOTE))
+
+    @staticmethod
+    def _row(choice: Choice, spin: QDoubleSpinBox) -> QHBoxLayout:
+        row = QHBoxLayout()
+        row.setSpacing(8)
+        row.addWidget(choice, 1)
+        row.addWidget(spin)
+        return row
+
+    def show_options(self, options: Options, queue: QueueSummary) -> None:
+        for ms, choice in self.durations.items():
+            choice.setChecked(ms == options.frame_ms)
+        self.custom_ms_choice.setChecked(options.frame_ms not in FRAME_MS_CHOICES)
+        _set_quietly(self.custom_ms, options.frame_ms)
+        self.loop_forever.setChecked(options.plays == 0)
+        self.play_once.setChecked(options.plays == 1)
+        self.custom_plays_choice.setChecked(options.plays >= PLAYS_RANGE[0])
+        _set_quietly(self.custom_plays, max(options.plays, PLAYS_RANGE[0]))
+        self.sizes[options.gif_resolution].setChecked(True)
 
 
 class DestinationChip(Chip):
@@ -350,14 +474,25 @@ class Dock(Surface):
         self.quality_chip.setToolTip("Image quality")
         self.dpi_chip = Chip("PDF pages")
         self.dpi_chip.setToolTip("Resolution of images made from PDF and notebook pages")
+        self.gif_mode_chip = Chip()
+        self.gif_mode_chip.setAccessibleName("GIF animation")
+        self.gif_mode_chip.setToolTip("Animate pages, combine files, or save still GIFs")
+        self.animation_chip = Chip("Frames")
+        self.animation_chip.setToolTip("Frame duration, looping, and frame size")
         self.note = ElidedLabel(style=Type.CAPTION)
         self.note.setProperty("tone", "secondary")
+        self.note.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)  # chips keep their room
         self._chips: dict[Control, QWidget] = {Control.MERGE: self.merge, Control.MERGED_NAME: self.name_chip,
                                                Control.PAGE_SIZE: self.page_chip, Control.MARGINS: self.page_chip,
-                                               Control.QUALITY: self.quality_chip, Control.PDF_DPI: self.dpi_chip}
-        for widget in (self.merge, self.name_chip, self.page_chip, self.quality_chip, self.dpi_chip, self.note):
+                                               Control.QUALITY: self.quality_chip, Control.PDF_DPI: self.dpi_chip,
+                                               Control.GIF_MODE: self.gif_mode_chip,
+                                               Control.FRAME_MS: self.animation_chip, Control.PLAYS: self.animation_chip,
+                                               Control.GIF_RESOLUTION: self.animation_chip}
+        for widget in (self.merge, self.gif_mode_chip, self.name_chip, self.page_chip, self.quality_chip,
+                       self.animation_chip, self.dpi_chip):
             options.addWidget(widget)
-        options.addStretch(1)
+        options.addWidget(self.note, 1)
+        options.addStretch(0)  # takes the spare room only while the note is hidden
         self.destination = DestinationChip()
         self.destination.clicked.connect(self.destinationRequested)
         options.addWidget(self.destination)
@@ -368,8 +503,14 @@ class Dock(Surface):
         self.quality_popover = QualityPopover(self, lambda value: self._edit(quality=value))
         self.dpi_popover = ResolutionPopover(self, lambda dpi: self._edit(pdf_dpi=dpi))
         self.name_popover = NamePopover(self, lambda text: self._edit(merged_name=text))
-        for chip, popover in ((self.page_chip, self.page_popover), (self.quality_chip, self.quality_popover),
-                              (self.dpi_chip, self.dpi_popover), (self.name_chip, self.name_popover)):
+        self.gif_mode_popover = GifModePopover(self, lambda mode: self._edit(gif_mode=mode))
+        self.animation_popover = AnimationPopover(self, lambda ms: self._edit(frame_ms=ms),
+                                                  lambda plays: self._edit(plays=plays),
+                                                  lambda resolution: self._edit(gif_resolution=resolution))
+        self._popovers = ((self.page_chip, self.page_popover), (self.quality_chip, self.quality_popover),
+                          (self.dpi_chip, self.dpi_popover), (self.name_chip, self.name_popover),
+                          (self.gif_mode_chip, self.gif_mode_popover), (self.animation_chip, self.animation_popover))
+        for chip, popover in self._popovers:
             chip.clicked.connect(lambda _=False, c=chip, p=popover: self._open(p, c))
 
         self.action_row = QHBoxLayout()
@@ -413,7 +554,7 @@ class Dock(Surface):
         return page
 
     def _open(self, popover: Popover, chip: QWidget) -> None:
-        popover.show_options(self._options)
+        popover.show_options(self._options, self._queue)
         popover.open_at(chip)
 
     def _edit(self, **changes) -> None:
@@ -445,6 +586,11 @@ class Dock(Surface):
         self.merge.setChecked(options.merge)
         self.merge.blockSignals(False)
         self.name_chip.set_value(options.merged_file_name())
+        self.name_chip.setAccessibleName(merged_name_label(options))
+        self.name_chip.setToolTip(f"Name the {'combined GIF' if options.format is OutputFormat.GIF else 'merged PDF'}")
+        self.gif_mode_chip.set_value(options.gif_mode.short)
+        self.animation_chip.set_value(f"{frame_ms_text(options.frame_ms)} · {plays_text(options.plays)}")
+        self.animation_chip.setToolTip(f"Frame duration, looping, and frame size ({options.gif_resolution.label})")
         page = "Original" if options.page_size is PageSize.ORIGINAL else options.page_size.label
         self.page_chip.set_value(f"{page} · {options.margin_mm:g} mm")
         self.quality_chip.set_value(f"{options.quality}%")
@@ -452,9 +598,9 @@ class Dock(Surface):
         if options.format is not OutputFormat.PDF:
             self.note.setText(KEEPS_ALPHA_NOTE if options.format.keeps_alpha else LOSES_ALPHA_NOTE)
         self.note.setVisible(options.format is not OutputFormat.PDF)
-        for popover in (self.page_popover, self.quality_popover, self.dpi_popover, self.name_popover):
+        for _, popover in self._popovers:
             if popover.isVisible():
-                popover.show_options(options)
+                popover.show_options(options, queue)
         self.formats.show_format(options.format)
         self.options_row.setVisible(not compact)
         self.caption.setVisible(compact)
@@ -483,7 +629,8 @@ class Dock(Surface):
         self.cancel_button.setEnabled(not state.cancelling)
 
     def focus_chain(self) -> list[QWidget]:
-        return [self.merge, self.name_chip, self.page_chip, self.quality_chip, self.dpi_chip, self.destination,
+        return [self.merge, self.gif_mode_chip, self.name_chip, self.page_chip, self.quality_chip,
+                self.animation_chip, self.dpi_chip, self.destination,
                 *self.formats.buttons.values(), self.formats.more, self.convert_button]
 
     def options(self) -> Options:

@@ -17,10 +17,6 @@ def sanitize_name(name: str, extension: str, fallback: str = "Converted") -> str
     return f"{stem[:200]}{extension}"
 
 
-def sanitize_pdf_name(name: str, fallback: str = "Converted") -> str:
-    return sanitize_name(name, ".pdf", fallback)
-
-
 def unique_path(path: Path, taken: set[Path] = frozenset()) -> Path:
     """Return path, or 'name (n).pdf' if it exists on disk or is already taken in this batch."""
     candidate, n = path, 1
