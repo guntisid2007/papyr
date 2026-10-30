@@ -1,3 +1,4 @@
+import logging
 import threading
 from collections.abc import Callable
 from pathlib import Path
@@ -69,5 +70,6 @@ class ConversionWorker(QObject):
             report = self._job(lambda done, total, path: self.progress.emit(done, total, path.name),
                                self._cancel.is_set)
         except Exception as exc:  # the window waits on finished, so it must always be emitted
+            logging.getLogger("papyr.convert").exception("Conversion stopped unexpectedly")
             report = ConversionReport(failures=[(Path("Conversion"), f"Unexpected error: {exc}")])
         self.finished.emit(report)

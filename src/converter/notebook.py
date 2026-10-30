@@ -1,37 +1,56 @@
 """Render a Jupyter notebook (nbformat 4) to PDF bytes with Qt's text engine, entirely offline.
 
-QTextDocument loads images only from resources registered here and from local files next to the
-notebook. It has no network access, so a notebook that links to the web cannot make Papyr fetch anything.
+Only the saved outputs are drawn; no cell is ever run. The document loads images only from resources registered
+here, inline data, and files inside the notebook's own folder. It has no network access, so a notebook that links
+to the web cannot make Papyr fetch anything.
 """
 
 import base64
 import json
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from PySide6.QtCore import QBuffer, QByteArray, QCoreApplication, QIODevice, QLocale, QMarginsF, QRectF, QSizeF, QUrl
-from PySide6.QtGui import (QColor, QFont, QFontDatabase, QFontInfo, QGuiApplication, QImage, QPageLayout, QPageSize,
-                           QPainter, QPdfWriter, QTextBlockFormat, QTextCharFormat, QTextCursor, QTextDocument,
-                           QTextDocumentFragment, QTextFrameFormat, QTextImageFormat)
+from pygments.lexers import TextLexer, get_lexer_by_name
+from pygments.styles import get_style_by_name
+from pygments.token import _TokenType
+from pygments.util import ClassNotFound
+from PySide6.QtCore import (QBuffer, QByteArray, QCoreApplication, QIODevice, QLocale, QMarginsF, QRectF, QSizeF, Qt,
+                            QUrl)
+from PySide6.QtGui import (QAbstractTextDocumentLayout, QColor, QFont, QFontDatabase, QFontInfo, QGuiApplication,
+                           QImage, QPageLayout, QPageSize, QPainter, QPalette, QPdfWriter, QTextBlockFormat,
+                           QTextCharFormat, QTextCursor, QTextDocument, QTextDocumentFragment,
+                           QTextFragment, QTextFrameFormat, QTextImageFormat, QTextOption)
 
 from .formats import ImageLoadError
 from .layout import PageSize, PdfSettings
+from .notebook_media import Picture, math_link, math_name, prepare_markdown, render_math, render_svg
 
 ERROR = "error"
-MIME_PRIORITY = ("image/png", "image/jpeg", "text/html", "text/markdown", "text/plain")
+NOTE = "note"  # an output Papyr can't draw, named so the reader knows something was there
+MIME_PRIORITY = ("image/png", "image/jpeg", "image/svg+xml", "text/html", "text/markdown", "text/latex",
+                 "text/plain")
+_IMAGE_MIMES = ("image/png", "image/jpeg")
 _ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+_SCRIPT = re.compile(r"<(script|style)\b.*?</\1\s*>", re.IGNORECASE | re.DOTALL)
+_TAG = re.compile(r"<(?!img\b)[^>]*>", re.IGNORECASE)
 _CSS_DPI = 96  # Jupyter shows an image pixel as one CSS pixel; the PDF writer also works in CSS pixels
 _BODY_PT = 10.5
 _CODE_PT = 9
 _CELL_GAP = 10
+_INK = QColor("#1f2328")
+_LINK = QColor("#0b5cad")
+_MUTED = QColor("#8a8a8a")
+_ERROR_INK = QColor("#a31515")
+_CODE_STYLE = get_style_by_name("default")
 
 
 @dataclass(frozen=True)
 class Output:
-    mime: str  # one of MIME_PRIORITY, or ERROR
-    data: str | bytes  # bytes for images
+    mime: str  # one of MIME_PRIORITY, ERROR, or NOTE
+    data: str | bytes  # bytes for PNG and JPEG
+    width: float | None = None  # display width in CSS pixels, from the output's metadata (retina figures)
 
 
 @dataclass(frozen=True)
@@ -43,6 +62,12 @@ class Cell:
     attachments: dict[str, bytes] = field(default_factory=dict)
 
 
+@dataclass(frozen=True)
+class Notebook:
+    cells: tuple[Cell, ...]
+    language: str  # the kernel's language, for highlighting code cells
+
+
 def _text(value) -> str:
     """nbformat stores multiline strings as a str or a list of str."""
     if isinstance(value, list):
@@ -50,19 +75,44 @@ def _text(value) -> str:
     return value if isinstance(value, str) else ""
 
 
+def _display_width(raw: dict, mime: str) -> float | None:
+    width = ((raw.get("metadata") or {}).get(mime) or {}).get("width")
+    return float(width) if isinstance(width, (int, float)) and width > 0 else None
+
+
+def _shows_something(html: str) -> bool:
+    """Whether HTML has text or an image once scripts are gone. Interactive plots and widgets are an empty element
+    that JavaScript fills, and Papyr runs no JavaScript."""
+    return bool(_TAG.sub("", _SCRIPT.sub("", html)).strip())
+
+
+def _pick_mime(bundle: dict) -> str | None:
+    """The richest format Papyr draws, skipping HTML that would come out empty when a static fallback exists."""
+    available = [mime for mime in MIME_PRIORITY if mime in bundle]
+    for index, mime in enumerate(available):
+        if mime == "text/html" and index + 1 < len(available) and not _shows_something(_text(bundle[mime])):
+            continue
+        return mime
+    return None
+
+
 def _parse_output(raw: dict) -> Output | None:
     kind = raw.get("output_type")
     if kind == "stream":
-        return Output("text/plain", _ANSI.sub("", _text(raw.get("text"))))
+        text = _ANSI.sub("", _text(raw.get("text")))
+        return Output("text/plain", text) if text.strip() else None
     if kind == ERROR:
         traceback = "\n".join(_text(line) for line in raw.get("traceback") or [])
         return Output(ERROR, _ANSI.sub("", traceback or f"{raw.get('ename', 'Error')}: {raw.get('evalue', '')}"))
     if kind in ("execute_result", "display_data"):
         bundle = raw.get("data") or {}
-        for mime in MIME_PRIORITY:
-            if mime in bundle:
-                text = _text(bundle[mime])
-                return Output(mime, base64.b64decode(text) if mime.startswith("image/") else _ANSI.sub("", text))
+        mime = _pick_mime(bundle)
+        if mime is None:
+            return Output(NOTE, f"Output not shown ({', '.join(sorted(bundle))})") if bundle else None
+        text = _text(bundle[mime])
+        if mime in _IMAGE_MIMES:
+            return Output(mime, base64.b64decode(text), _display_width(raw, mime))
+        return Output(mime, text if mime == "image/svg+xml" else _ANSI.sub("", text), _display_width(raw, mime))
     return None
 
 
@@ -83,7 +133,17 @@ def _parse_cell(raw: dict) -> Cell | None:
     return None
 
 
-def parse_notebook(raw: bytes) -> list[Cell]:
+def _language(metadata) -> str:
+    if not isinstance(metadata, dict):
+        return "python"
+    info = metadata.get("language_info") or {}
+    kernel = metadata.get("kernelspec") or {}
+    name = (info.get("name") if isinstance(info, dict) else None) or \
+        (kernel.get("language") if isinstance(kernel, dict) else None)
+    return name if isinstance(name, str) and name else "python"
+
+
+def parse_notebook(raw: bytes) -> Notebook:
     try:
         notebook = json.loads(raw)
     except ValueError as exc:
@@ -93,12 +153,13 @@ def parse_notebook(raw: bytes) -> list[Cell]:
     if not isinstance(notebook.get("cells"), list):
         raise ImageLoadError("Notebook has no list of cells")
     try:
-        cells = [cell for cell in map(_parse_cell, notebook["cells"]) if cell is not None]
+        cells = tuple(cell for cell in map(_parse_cell, notebook["cells"])
+                      if cell is not None and (cell.source.strip() or cell.outputs))
     except (AttributeError, TypeError, ValueError) as exc:
         raise ImageLoadError(f"Notebook is damaged: {exc}") from exc
     if not cells:
-        raise ImageLoadError("Notebook has no cells")
-    return cells
+        raise ImageLoadError("Notebook has no cells with any content")
+    return Notebook(cells, _language(notebook.get("metadata")))
 
 
 def _fixed_font() -> QFont:
@@ -110,39 +171,103 @@ def _fixed_font() -> QFont:
     return font
 
 
-def _prefix_attachment_images(doc: QTextDocument, prefix: str) -> None:
-    """Attachment names are scoped to their cell, so give each cell's references a document-unique name."""
-    found = []
+def _fragments(doc: QTextDocument) -> Iterator[QTextFragment]:
+    """Every run of same-format text in the document, frames and tables included."""
     block = doc.begin()
     while block.isValid():
         fragments = block.begin()
         while not fragments.atEnd():
-            fragment = fragments.fragment()
-            image = fragment.charFormat().toImageFormat()
-            if fragment.charFormat().isImageFormat() and image.name().startswith("attachment:"):
-                found.append((fragment.position(), fragment.length(), image))
+            yield fragments.fragment()
             fragments += 1
         block = block.next()
+
+
+def _set_format(doc: QTextDocument, changes: list[tuple[int, int, QTextCharFormat]]) -> None:
     cursor = QTextCursor(doc)
-    for position, length, image in found:
-        image.setName(prefix + image.name())
+    for position, length, char_format in changes:
         cursor.setPosition(position)
         cursor.setPosition(position + length, QTextCursor.MoveMode.KeepAnchor)
-        cursor.setCharFormat(image)
+        cursor.setCharFormat(char_format)
+
+
+def _scope_images(doc: QTextDocument, prefix: str, display: set[str]) -> None:
+    """Attachment and formula names are scoped to their cell, so give each a document-unique name. Display formulas
+    are centered on their own line; inline ones sit on the middle of the text line."""
+    changes = []
+    cursor = QTextCursor(doc)
+    for fragment in _fragments(doc):
+        image = fragment.charFormat().toImageFormat()
+        name = image.name()
+        if not fragment.charFormat().isImageFormat() or not name.startswith(("attachment:", "math:")):
+            continue
+        if name in display:
+            cursor.setPosition(fragment.position())
+            block_format = cursor.blockFormat()
+            block_format.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+            cursor.setBlockFormat(block_format)
+        elif name.startswith("math:"):
+            image.setVerticalAlignment(QTextCharFormat.VerticalAlignment.AlignMiddle)
+        image.setName(prefix + name)
+        changes.append((fragment.position(), fragment.length(), image))
+    _set_format(doc, changes)
+
+
+def _code_span(text: str) -> str:
+    ticks = "`" * (max((len(run) for run in re.findall("`+", text)), default=0) + 1)
+    return f"{ticks} {text} {ticks}"
+
+
+def _data_image(url: QUrl) -> QImage | None:
+    """Decode an inline data: image here as a QImage. Qt would make a QPixmap, which only the GUI thread may use."""
+    header, _, payload = url.toString(QUrl.ComponentFormattingOption.FullyEncoded).partition(",")
+    try:
+        data = base64.b64decode(payload) if header.endswith(";base64") else \
+            QUrl.fromPercentEncoding(payload.encode()).encode()
+    except ValueError:
+        return None
+    image = QImage.fromData(data)
+    return None if image.isNull() else image
+
+
+class _NotebookDocument(QTextDocument):
+    """Loads registered images and inline data, plus files inside the notebook's folder and nothing else, so a
+    notebook can't pull an unrelated private image from elsewhere on the disk into the PDF."""
+
+    def __init__(self, folder: Path):
+        super().__init__()
+        self._folder = folder.resolve()
+        self.setBaseUrl(QUrl.fromLocalFile(f"{self._folder}/"))
+
+    def loadResource(self, kind: int, url: QUrl):
+        if url.scheme() == "data":
+            return _data_image(url) if kind == QTextDocument.ResourceType.ImageResource else None
+        if url.scheme() not in ("", "file"):
+            return None
+        target = Path(url.toLocalFile() if url.isLocalFile() else url.path())
+        target = (self._folder / target).resolve()
+        if not target.is_relative_to(self._folder) or not target.is_file():
+            return None
+        return super().loadResource(kind, QUrl.fromLocalFile(str(target)))
 
 
 class _Builder:
     """Appends cells to one QTextDocument laid out for the PDF writer."""
 
-    def __init__(self, doc: QTextDocument):
+    def __init__(self, doc: QTextDocument, language: str):
         self.doc = doc
         self.cursor = QTextCursor(doc)
         self.body = QTextCharFormat()
         self.mono = QTextCharFormat()
         self.mono.setFont(_fixed_font())
         self.gap = 0.0  # space before the next block, set at each cell boundary
+        self.widths: dict[str, float] = {}  # natural width in CSS pixels of each image registered here
         self._images = 0
         self._cells = 0
+        try:
+            self._lexer = get_lexer_by_name(language, stripnl=False, ensurenl=False)
+        except ClassNotFound:
+            self._lexer = TextLexer(stripnl=False, ensurenl=False)
+        self._token_formats: dict[_TokenType, QTextCharFormat] = {}
 
     def block(self, top_margin: float = 0, char_format: QTextCharFormat | None = None) -> None:
         block_format = QTextBlockFormat()
@@ -154,39 +279,105 @@ class _Builder:
         else:
             self.cursor.insertBlock(block_format, char_format or self.body)
 
-    def mono_text(self, text: str, color: str | None = None) -> None:
+    def mono_text(self, text: str, color: QColor | None = None) -> None:
         char_format = QTextCharFormat(self.mono)
         if color:
-            char_format.setForeground(QColor(color))
+            char_format.setForeground(color)
         self.block(4, char_format)
-        self.cursor.insertText(text.rstrip("\n"), char_format)
+        self.cursor.insertText(text.rstrip("\n").expandtabs(4), char_format)
+
+    def note(self, text: str) -> None:
+        char_format = QTextCharFormat(self.body)
+        char_format.setForeground(_MUTED)
+        char_format.setFontItalic(True)
+        self.block(4, char_format)
+        self.cursor.insertText(text, char_format)
 
     def markdown(self, text: str, attachments: dict[str, bytes] | None = None) -> None:
+        self._cells += 1
+        prefix = f"cell{self._cells}-"
+        text, formulas = prepare_markdown(text)
+        display = set()
+        for index, formula in enumerate(formulas):
+            name = math_name(index)
+            picture = render_math(formula)
+            if picture is None:
+                text = text.replace(math_link(index), _code_span(formula.latex), 1)
+                continue
+            self.add_picture(prefix + name, picture)
+            if formula.display:
+                display.add(name)
+        for name, data in (attachments or {}).items():
+            self.add_image(f"{prefix}attachment:{name}", data)
         source = QTextDocument()
         source.setMarkdown(text)
-        if attachments:
-            self._cells += 1
-            prefix = f"cell{self._cells}-"
-            for name, data in attachments.items():
-                self.add_image(f"{prefix}attachment:{name}", data)
-            _prefix_attachment_images(source, prefix)
+        _scope_images(source, prefix, display)
         self.block()
         self.cursor.insertFragment(QTextDocumentFragment(source))
 
-    def add_image(self, name: str, data: bytes) -> bool:
+    def add_image(self, name: str, data: bytes, width: float | None = None) -> bool:
         image = QImage.fromData(data)
-        if not image.isNull():
-            self.doc.addResource(QTextDocument.ResourceType.ImageResource, QUrl(name), image)
-        return not image.isNull()
+        if image.isNull():
+            return False
+        self.add_picture(name, Picture(image, width or image.width(), 0))
+        return True
 
-    def image(self, data: bytes) -> None:
+    def add_picture(self, name: str, picture: Picture) -> None:
+        self.doc.addResource(QTextDocument.ResourceType.ImageResource, QUrl(name), picture.image)
+        self.widths[name] = picture.width
+
+    def insert_image(self, name: str) -> None:
+        image_format = QTextImageFormat()
+        image_format.setName(name)
+        self.block(4)
+        self.cursor.insertImage(image_format)
+
+    def output_image(self, output: Output) -> None:
         self._images += 1
         name = f"output:{self._images}"
-        if self.add_image(name, data):
-            image_format = QTextImageFormat()
-            image_format.setName(name)
-            self.block(4)
-            self.cursor.insertImage(image_format)
+        if self.add_image(name, output.data, output.width):
+            self.insert_image(name)
+        else:
+            self.note(f"Image not shown ({output.mime} could not be decoded)")
+
+    def output_svg(self, output: Output) -> None:
+        self._images += 1
+        name = f"output:{self._images}"
+        picture = render_svg(output.data)
+        if picture is None:
+            self.note("Image not shown (image/svg+xml could not be drawn)")
+            return
+        if output.width:
+            picture = Picture(picture.image, output.width, 0)
+        self.add_picture(name, picture)
+        self.insert_image(name)
+
+    def code(self, source: str) -> None:
+        frame = QTextFrameFormat()
+        frame.setBackground(QColor("#f5f6f8"))
+        frame.setBorder(0.75)
+        frame.setBorderStyle(QTextFrameFormat.BorderStyle.BorderStyle_Solid)
+        frame.setBorderBrush(QColor("#dde1e6"))
+        frame.setPadding(6)
+        frame.setTopMargin(2)
+        self.cursor.insertFrame(frame)
+        self.cursor.setBlockCharFormat(self.mono)
+        for token, text in self._lexer.get_tokens(source.rstrip("\n").expandtabs(4)):
+            self.cursor.insertText(text, self._token_format(token))
+        self.cursor.movePosition(QTextCursor.MoveOperation.End)
+
+    def _token_format(self, token: _TokenType) -> QTextCharFormat:
+        """Color and italics from the Jupyter-like default style. Bold is left out because Qt fakes it for a
+        monospace face without a bold weight by drawing each glyph twice, which doubles the words in copied text."""
+        char_format = self._token_formats.get(token)
+        if char_format is None:
+            style = _CODE_STYLE.style_for_token(token)
+            char_format = QTextCharFormat(self.mono)
+            if style["color"]:
+                char_format.setForeground(QColor(f"#{style['color']}"))
+            char_format.setFontItalic(bool(style["italic"]))
+            self._token_formats[token] = char_format
+        return char_format
 
 
 def _markdown_cell(builder: _Builder, cell: Cell) -> None:
@@ -195,43 +386,33 @@ def _markdown_cell(builder: _Builder, cell: Cell) -> None:
 
 def _code_cell(builder: _Builder, cell: Cell) -> None:
     prompt = QTextCharFormat()
-    prompt.setForeground(QColor("#8a8a8a"))
+    prompt.setForeground(_MUTED)
     prompt.setFontPointSize(_CODE_PT - 1)
     builder.block(0, prompt)
     builder.cursor.insertText(f"[{cell.execution_count or ' '}]", prompt)
-    frame = QTextFrameFormat()
-    frame.setBackground(QColor("#f5f6f8"))
-    frame.setBorder(0.75)
-    frame.setBorderStyle(QTextFrameFormat.BorderStyle.BorderStyle_Solid)
-    frame.setBorderBrush(QColor("#dde1e6"))
-    frame.setPadding(6)
-    frame.setTopMargin(2)
-    builder.cursor.insertFrame(frame)
-    builder.cursor.setBlockCharFormat(builder.mono)
-    builder.cursor.insertText(cell.source.rstrip("\n"), builder.mono)
-    builder.cursor.movePosition(QTextCursor.MoveOperation.End)
+    builder.code(cell.source)
     for output in cell.outputs:
-        _OUTPUT_RENDERERS[output.mime](builder, output.data)
+        _OUTPUT_RENDERERS[output.mime](builder, output)
 
 
 def _raw_cell(builder: _Builder, cell: Cell) -> None:
     builder.mono_text(cell.source)
 
 
-def _html(builder: _Builder, html: str) -> None:
+def _html(builder: _Builder, output: Output) -> None:
     builder.block(4)
-    builder.cursor.insertHtml(html)
-
-
-def _markdown(builder: _Builder, text: str) -> None:
-    builder.markdown(text)
+    builder.cursor.insertHtml(output.data)
 
 
 _CELL_RENDERERS: dict[str, Callable[[_Builder, Cell], None]] = {
     "markdown": _markdown_cell, "code": _code_cell, "raw": _raw_cell}
-_OUTPUT_RENDERERS: dict[str, Callable[[_Builder, str | bytes], None]] = {
-    "image/png": _Builder.image, "image/jpeg": _Builder.image, "text/html": _html, "text/markdown": _markdown,
-    "text/plain": _Builder.mono_text, ERROR: lambda builder, text: builder.mono_text(text, "#a31515")}
+_OUTPUT_RENDERERS: dict[str, Callable[[_Builder, Output], None]] = {
+    "image/png": _Builder.output_image, "image/jpeg": _Builder.output_image, "image/svg+xml": _Builder.output_svg,
+    "text/html": _html, "text/markdown": lambda builder, output: builder.markdown(output.data),
+    "text/latex": lambda builder, output: builder.markdown(output.data),
+    "text/plain": lambda builder, output: builder.mono_text(output.data),
+    ERROR: lambda builder, output: builder.mono_text(output.data, _ERROR_INK),
+    NOTE: lambda builder, output: builder.note(output.data)}
 
 
 def _logical_dpi() -> int:
@@ -251,31 +432,35 @@ def _resource_image(doc: QTextDocument, name: str) -> QImage:
     return QImage()
 
 
-def _fit_images(doc: QTextDocument, max_width_in: float) -> None:
-    """Show each image at its natural size, scaled down (never up) to fit the text width."""
+def _finish(doc: QTextDocument, widths: dict[str, float], max_width_in: float, max_height_in: float) -> None:
+    """Show each image at its natural size, scaled down (never up) to fit the text area, so no figure is cut at a
+    page edge. Links get a print color, since Qt colors them from the app's theme, which may be dark."""
     dpi = _logical_dpi()
-    images = []
-    block = doc.begin()
-    while block.isValid():
-        fragments = block.begin()
-        while not fragments.atEnd():
-            fragment = fragments.fragment()
-            if fragment.charFormat().isImageFormat():
-                images.append((fragment.position(), fragment.length(), fragment.charFormat().toImageFormat()))
-            fragments += 1
-        block = block.next()
-    cursor = QTextCursor(doc)
-    for position, length, image_format in images:
+    changes = []
+    for fragment in _fragments(doc):
+        char_format = fragment.charFormat()
+        if char_format.isAnchor() and not char_format.isImageFormat():
+            char_format.setForeground(_LINK)
+            changes.append((fragment.position(), fragment.length(), char_format))
+            continue
+        if not char_format.isImageFormat():
+            continue
+        image_format = char_format.toImageFormat()
         image = _resource_image(doc, image_format.name())
         if image.isNull():
             continue
-        natural_in = image_format.width() / dpi if image_format.width() > 0 else image.width() / _CSS_DPI
-        width_in = min(natural_in, max_width_in)
+        if image_format.name() in widths:
+            natural_in = widths[image_format.name()] / _CSS_DPI
+        elif image_format.width() > 0:
+            natural_in = image_format.width() / dpi
+        else:
+            natural_in = image.width() / _CSS_DPI
+        aspect = image.height() / image.width()
+        width_in = min(natural_in, max_width_in, max_height_in / aspect)
         image_format.setWidth(width_in * dpi)
-        image_format.setHeight(width_in * dpi * image.height() / image.width())
-        cursor.setPosition(position)
-        cursor.setPosition(position + length, QTextCursor.MoveMode.KeepAnchor)
-        cursor.setCharFormat(image_format)
+        image_format.setHeight(width_in * dpi * aspect)
+        changes.append((fragment.position(), fragment.length(), image_format))
+    _set_format(doc, changes)
 
 
 def _page_layout(settings: PdfSettings) -> QPageLayout:
@@ -288,47 +473,74 @@ def _page_layout(settings: PdfSettings) -> QPageLayout:
     if width <= 2 * margin or height <= 2 * margin:
         raise ValueError(f"A {settings.margin_mm:g} mm margin leaves no room on the page")
     return QPageLayout(QPageSize(QSizeF(width, height), QPageSize.Unit.Point, page.label),
-                       QPageLayout.Orientation.Portrait, QMarginsF(margin, margin, margin, margin),
-                       QPageLayout.Unit.Point, QMarginsF())
+                       QPageLayout.Orientation.Portrait, QMarginsF(), QPageLayout.Unit.Point, QMarginsF())
+
+
+def _print_palette() -> QPalette:
+    """Dark text on white paper. Qt otherwise draws a document's text in the app's theme color, which in dark mode
+    is white, and that made every notebook page come out blank."""
+    palette = QPalette()
+    for role in (QPalette.ColorRole.Text, QPalette.ColorRole.WindowText):
+        palette.setColor(role, _INK)
+    palette.setColor(QPalette.ColorRole.Link, _LINK)
+    return palette
+
+
+def _build(doc: QTextDocument, notebook: Notebook) -> dict[str, float]:
+    builder = _Builder(doc, notebook.language)
+    for index, cell in enumerate(notebook.cells):
+        builder.gap = _CELL_GAP if index else 0
+        _CELL_RENDERERS[cell.kind](builder, cell)
+    return builder.widths
 
 
 def render_notebook(path: Path, settings: PdfSettings) -> bytes:
     """Lay out every cell and its saved outputs as searchable text pages. Needs a running QGuiApplication."""
     if not isinstance(QCoreApplication.instance(), QGuiApplication):
         raise ImageLoadError("Notebooks can only be rendered while Papyr is running")
-    cells = parse_notebook(path.read_bytes())
+    notebook = parse_notebook(path.read_bytes())
+    page_layout = _page_layout(settings)
 
     data = QByteArray()
     buffer = QBuffer(data)
     buffer.open(QIODevice.OpenModeFlag.WriteOnly)
     writer = QPdfWriter(buffer)
     writer.setResolution(_CSS_DPI)
-    writer.setPageLayout(_page_layout(settings))
-    body = writer.pageLayout().paintRectPixels(_CSS_DPI)
+    writer.setPageLayout(page_layout)
+    writer.setCreator("Papyr")
+    # Lay out on the whole sheet with the margin inside the document, as QTextDocument.print does, so the first
+    # line of the next page sits a full margin away from this page's edge instead of touching it.
+    paper = writer.pageLayout().fullRectPixels(_CSS_DPI)
+    margin = settings.margin_pt * _CSS_DPI / 72
 
-    doc = QTextDocument()
+    doc = _NotebookDocument(path.parent)
     doc.documentLayout().setPaintDevice(writer)
     doc.setUseDesignMetrics(True)
-    doc.setDocumentMargin(0)
-    doc.setPageSize(QSizeF(body.width(), body.height()))
-    doc.setBaseUrl(QUrl.fromLocalFile(f"{path.parent.resolve()}/"))
+    doc.setDocumentMargin(margin)
+    doc.setPageSize(QSizeF(paper.width(), paper.height()))
+    option = QTextOption()
+    option.setWrapMode(QTextOption.WrapMode.WrapAtWordBoundaryOrAnywhere)
+    doc.setDefaultTextOption(option)
     font = QFontDatabase.systemFont(QFontDatabase.SystemFont.GeneralFont)
     font.setPointSizeF(_BODY_PT)
     doc.setDefaultFont(font)
+    try:
+        widths = _build(doc, notebook)
+        _finish(doc, widths, (paper.width() - 2 * margin) / _CSS_DPI, (paper.height() - 2 * margin) / _CSS_DPI * 0.9)
+    except Exception as exc:  # noqa: BLE001 - notebook content is untrusted, so any layout failure is this file's
+        raise ImageLoadError(f"Notebook could not be laid out: {exc}") from exc
 
-    builder = _Builder(doc)
-    for index, cell in enumerate(cells):
-        builder.gap = _CELL_GAP if index else 0
-        _CELL_RENDERERS[cell.kind](builder, cell)
-    _fit_images(doc, body.width() / _CSS_DPI)
-
+    context = QAbstractTextDocumentLayout.PaintContext()
+    context.palette = _print_palette()
     painter = QPainter(writer)
     for page in range(doc.pageCount()):
         if page:
             writer.newPage()
         painter.save()
-        painter.translate(0, -page * body.height())
-        doc.drawContents(painter, QRectF(0, page * body.height(), body.width(), body.height()))
+        painter.translate(0, -page * paper.height())
+        context.clip = QRectF(0, page * paper.height(), paper.width(), paper.height())
+        painter.setClipRect(context.clip)
+        doc.documentLayout().draw(painter, context)
         painter.restore()
     painter.end()
     buffer.close()

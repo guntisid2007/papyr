@@ -2,7 +2,7 @@
 import os
 import sys
 
-from PyInstaller.utils.hooks import collect_dynamic_libs
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
 
 sys.path.insert(0, os.path.join(SPECPATH, "src"))
 from utils.app_info import APP_NAME, __version__ as VERSION  # noqa: E402
@@ -16,10 +16,12 @@ a = Analysis(
     ["src/main.py"],
     pathex=["src"],
     binaries=collect_dynamic_libs("pillow_heif"),
-    datas=[("assets/icon.png", "assets")],
+    # ziamath and ziafont typeset notebook math with fonts they ship, and latex2mathml reads its symbol table
+    datas=[("assets/icon.png", "assets"), *collect_data_files("ziamath"), *collect_data_files("ziafont"),
+           *collect_data_files("latex2mathml")],
     hiddenimports=["pillow_heif"],
     excludes=["tkinter", "PySide6.QtNetwork", "PySide6.QtQml", "PySide6.QtQuick", "PySide6.QtSql",
-              "PySide6.QtTest", "PySide6.QtOpenGL", "PySide6.QtPdf", "PySide6.QtSvg"],
+              "PySide6.QtTest", "PySide6.QtOpenGL", "PySide6.QtPdf"],
     noarchive=False,
 )
 pyz = PYZ(a.pure)

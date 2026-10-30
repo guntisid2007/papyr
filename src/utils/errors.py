@@ -20,6 +20,7 @@ _RULES: tuple[tuple[tuple[str, ...], str], ...] = (
     (("only jupyter notebooks in format 4",), "This notebook uses an old format that Papyr can't read."),
     (("not a valid notebook",), "This isn't a valid Jupyter notebook."),
     (("notebook is damaged",), "This notebook file is damaged."),
+    (("notebook could not be laid out",), "Papyr read this notebook but couldn't lay out its pages."),
     (("notebook has no list of cells",), "This notebook file is damaged."),
     (("leaves no room on the page",), "The margins are too large for the page."),
     (("none of the files could be read",), "None of the files could be read."),

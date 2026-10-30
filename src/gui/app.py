@@ -8,6 +8,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
 from utils.app_info import APP_NAME
+from utils.log import start_logging
 from utils.resources import asset_path
 
 from .main_window import MainWindow
@@ -88,6 +89,7 @@ def launch(app: Application, argv: list[str]) -> MainWindow:
 
 def run() -> int:
     app = create_app(sys.argv)
+    start_logging()
     window = launch(app, sys.argv)
     code = app.exec()
     app.set_path_handler(None)

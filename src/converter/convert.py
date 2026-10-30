@@ -1,5 +1,6 @@
 import io
 import itertools
+import logging
 import os
 import tempfile
 from collections.abc import Callable, Iterator
@@ -21,6 +22,7 @@ from .pdf_writer import PdfWriter
 ProgressCallback = Callable[[int, int, Path], None]
 CancelCheck = Callable[[], bool]
 _ERRORS = (ImageLoadError, OSError, ValueError, pypdf.errors.PyPdfError)
+log = logging.getLogger("papyr.convert")
 
 
 @dataclass
@@ -50,6 +52,12 @@ def _atomic_file(destination: Path):
     finally:
         if os.path.exists(temp_name):
             os.remove(temp_name)
+
+
+def _fail(report: ConversionReport, path: Path, exc: Exception) -> None:
+    """Record a file that couldn't be converted, and keep the traceback in the local log."""
+    log.warning("Could not convert %s", path, exc_info=exc)
+    report.failures.append((path, str(exc)))
 
 
 def _never() -> bool:
@@ -96,7 +104,7 @@ def _write_pdf(stream: BinaryIO, sources: list[Path], settings: PdfSettings, rep
             try:
                 pages = list(_encoded_pages(source, settings, cancelled))
             except _ERRORS as exc:
-                report.failures.append((source, str(exc)))
+                _fail(report, source, exc)
                 continue
             for encoded, placement in pages:
                 writer.add_page(encoded, placement)
@@ -123,7 +131,7 @@ def _write_pdf(stream: BinaryIO, sources: list[Path], settings: PdfSettings, rep
             for page in reader.pages:
                 combined.add_page(page)
         except _ERRORS as exc:
-            report.failures.append((source, str(exc)))
+            _fail(report, source, exc)
     if not combined.pages:
         raise _NothingReadable
     _check(cancelled)
@@ -147,7 +155,7 @@ def convert_individual(sources: list[Path], output_dir: Path, settings: PdfSetti
             except _NothingReadable:
                 pass  # _write_pdf already recorded why this source failed
             except _ERRORS as exc:
-                report.failures.append((source, str(exc)))
+                _fail(report, source, exc)
     except _Cancelled:
         report.cancelled = True
     progress(len(sources), len(sources), sources[-1] if sources else Path())
@@ -169,7 +177,7 @@ def convert_merged(sources: list[Path], destination: Path, settings: PdfSettings
     except _NothingReadable:
         report.failures.append((destination, "None of the files could be read"))
     except _ERRORS as exc:
-        report.failures.append((destination, str(exc)))
+        _fail(report, destination, exc)
     progress(len(sources), len(sources), sources[-1] if sources else Path())
     return report
 
@@ -201,7 +209,7 @@ def convert_images(sources: list[Path], output_dir: Path, settings: ImageSetting
                         save_image(page, stream, settings.format, settings.quality)
                     report.outputs.append(destination)
             except _ERRORS as exc:
-                report.failures.append((source, str(exc)))
+                _fail(report, source, exc)
             finally:
                 pages.close()
     except _Cancelled:
@@ -229,7 +237,7 @@ def _write_animation(stream: BinaryIO, sources: list[FrameSource], settings: Gif
                 _check(cancelled)
                 writer.add(frame)
         except _ERRORS as exc:
-            report.failures.append((source.path, str(exc)))
+            _fail(report, source.path, exc)
     if not writer.frame_count:
         raise _NothingReadable
     _check(cancelled)
@@ -262,7 +270,7 @@ def convert_animated_gifs(sources: list[Path], output_dir: Path, settings: GifSe
             except _NothingReadable:
                 pass  # _write_animation already recorded why this source failed
             except _ERRORS as exc:
-                report.failures.append((source, str(exc)))
+                _fail(report, source, exc)
     except _Cancelled:
         report.cancelled = True
     progress(len(sources), len(sources), sources[-1] if sources else Path())
@@ -281,7 +289,7 @@ def convert_combined_gif(sources: list[Path], destination: Path, settings: GifSe
             try:
                 measured.append(measure(source))
             except _ERRORS as exc:
-                report.failures.append((source, str(exc)))
+                _fail(report, source, exc)
         if not measured:
             raise _NothingReadable
         with _atomic_file(destination) as stream:
@@ -293,6 +301,6 @@ def convert_combined_gif(sources: list[Path], destination: Path, settings: GifSe
     except _NothingReadable:
         report.failures.append((destination, "None of the files could be read"))
     except _ERRORS as exc:
-        report.failures.append((destination, str(exc)))
+        _fail(report, destination, exc)
     progress(len(sources), len(sources), sources[-1] if sources else Path())
     return report

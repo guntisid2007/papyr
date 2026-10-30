@@ -80,8 +80,9 @@ def test_markdown_code_and_stream_output_become_searchable_text(tmp_path):
     [text] = pdf_text(report.outputs[0])
     assert "Quarterly Results" in text
     assert "Some bold prose." in text
-    assert "total = sum(range(10)) print(total)" in text
-    assert "45" in text.split("print(total)")[1]
+    code_text = text.replace(" ", "")  # highlighted tokens are separate runs, and pypdf spaces them apart
+    assert "total=sum(range(10))print(total)" in code_text
+    assert "45" in code_text.split("print(total)")[1]
 
 
 def test_png_output_is_drawn_as_an_image(tmp_path):
@@ -246,3 +247,24 @@ def test_each_cell_shows_its_own_attachment_when_names_repeat(tmp_path):
     colors = sorted(obj.get_bitmap().to_pil().convert("RGB").getpixel((0, 0))
                     for obj in page.get_objects() if obj.type == pdfium.raw.FPDF_PAGEOBJ_IMAGE)
     assert len(colors) == 2 and colors[0][2] > 200 and colors[1][0] > 200
+
+
+def darkest_ink(pdf: bytes, page: int = 0) -> int:
+    """The darkest gray level drawn on a page, so text that only exists for search but is invisible fails."""
+    return pdfium.PdfDocument(pdf)[page].render(scale=1).to_pil().convert("L").getextrema()[0]
+
+
+def test_text_stays_dark_on_white_when_the_app_uses_a_dark_theme(app, tmp_path):
+    from PySide6.QtGui import QColor, QPalette
+    source = write_notebook(tmp_path / "nb.ipynb", markdown("# Heading\n\nProse with a [link](https://example.com)."),
+                            code("print('hi')", stream("hi\n")))
+    light = app.palette()
+    dark = QPalette(light)
+    for role in (QPalette.ColorRole.Text, QPalette.ColorRole.WindowText, QPalette.ColorRole.Link):
+        dark.setColor(role, QColor(255, 255, 255, 216))
+    app.setPalette(dark)
+    try:
+        pdf = render_notebook(source, A4)
+    finally:
+        app.setPalette(light)
+    assert darkest_ink(pdf) < 80

@@ -14,6 +14,7 @@ def self_test(sample: str) -> int:
 
     import pypdfium2 as pdfium
     from PIL import Image
+    from PySide6.QtGui import QColor, QPalette
 
     from converter import (GifSettings, ImageSettings, OutputFormat, PageSize, PdfSettings, convert_combined_gif,
                            convert_images, convert_merged)
@@ -50,23 +51,48 @@ def self_test(sample: str) -> int:
                     problems.append(f"PDF to animated GIF: {image.n_frames} frames, {image.info}")
         wide_figure = io.BytesIO()
         Image.new("RGB", (4000, 400), "green").save(wide_figure, "PNG")
+        square = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40"/></svg>'
         notebook = Path(tmp) / "self-test.ipynb"
         notebook.write_text(json.dumps({"nbformat": 4, "nbformat_minor": 5, "metadata": {}, "cells": [
-            {"cell_type": "code", "execution_count": 1, "metadata": {}, "source": "print('papyr')",
+            {"cell_type": "markdown", "metadata": {}, "source": "Energy $E = mc^2$"},
+            {"cell_type": "code", "execution_count": 1, "metadata": {}, "source": "print('papyr')  # 1",
              "outputs": [{"output_type": "stream", "name": "stdout", "text": "papyr\n"},
                          {"output_type": "display_data", "metadata": {},
-                          "data": {"image/png": base64.b64encode(wide_figure.getvalue()).decode()}}]}]}))
+                          "data": {"image/png": base64.b64encode(wide_figure.getvalue()).decode()}},
+                         {"output_type": "display_data", "metadata": {}, "data": {"image/svg+xml": square}}]}]}))
         notebook_pdf = Path(tmp) / "notebook.pdf"
+        light = app.palette()
+        dark = QPalette(light)
+        dark.setColor(QPalette.ColorRole.Text, QColor("white"))  # macOS dark mode once made notebook text invisible
+        app.setPalette(dark)
         report = convert_merged([notebook], notebook_pdf, PdfSettings(PageSize.A4, 10))
+        app.setPalette(light)
         if report.outputs != [notebook_pdf] or report.failures:
             problems.append(f"Notebook to PDF: {report.failures}")
         else:
             page = pdfium.PdfDocument(notebook_pdf.read_bytes())[0]
-            if "papyr" not in page.get_textpage().get_text_range():
+            text_page = page.get_textpage()
+            found = text_page.get_text_range().find("papyr")
+            if found < 0:
                 problems.append("Notebook to PDF: text is not searchable")
+            else:
+                left, bottom, right, top = text_page.get_charbox(found)
+                word = page.render(scale=2).to_pil().convert("L").crop(
+                    (int(left * 2), int((page.get_height() - top) * 2), int(right * 2) + 1,
+                     int((page.get_height() - bottom) * 2) + 1))
+                if word.getextrema()[0] > 100:
+                    problems.append("Notebook to PDF: text is invisible")
             figures = [obj.get_bounds() for obj in page.get_objects() if obj.type == pdfium.raw.FPDF_PAGEOBJ_IMAGE]
-            if len(figures) != 1 or figures[0][2] - figures[0][0] > page.get_width():
-                problems.append(f"Notebook to PDF: figure drawn at {figures}")
+            if len(figures) != 3 or max(right - left for left, _, right, _ in figures) > page.get_width():
+                problems.append(f"Notebook to PDF: math, PNG, and SVG drawn as {figures}")
+            colors = set()
+            for obj in page.get_objects():
+                if obj.type == pdfium.raw.FPDF_PAGEOBJ_TEXT:
+                    rgba = [pdfium.raw.c_uint() for _ in range(4)]
+                    pdfium.raw.FPDFPageObj_GetFillColor(obj.raw, *rgba)
+                    colors.add(tuple(c.value for c in rgba))
+            if len(colors) < 4:
+                problems.append(f"Notebook to PDF: code is not highlighted ({len(colors)} text colors)")
     window = MainWindow()
     window.show()
     app.processEvents()
