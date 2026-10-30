@@ -1,5 +1,6 @@
 """The command dock at the bottom of the window: the output format, the settings that format uses, where files
 are saved, and Convert. While converting, the same dock shows real progress and Cancel."""
+import sys
 from pathlib import Path
 
 from PySide6.QtCore import QRectF, QSize, Qt, Signal
@@ -28,7 +29,9 @@ LOSES_ALPHA_NOTE = "Transparent areas become white."
 
 def display_path(path: Path) -> str:
     home = Path.home()
-    return f"~/{path.relative_to(home).as_posix()}" if path.is_relative_to(home) and path != home else str(path)
+    if sys.platform == "win32" or not path.is_relative_to(home) or path == home:
+        return str(path)
+    return f"~/{path.relative_to(home).as_posix()}"
 
 
 class FormatBar(Track):

@@ -1,4 +1,5 @@
 import pytest
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor, QPalette
 
 from gui.theme import DARK, LIGHT, current
@@ -29,6 +30,8 @@ def test_body_text_reads_at_4_5_to_1_on_every_surface(theme):
 
 def test_the_theme_follows_the_system_appearance(app):
     """Offscreen Qt reports no colour scheme, so switch the application palette the way the system does."""
+    if app.styleHints().colorScheme() != Qt.ColorScheme.Unknown:
+        pytest.skip("this platform reports its own appearance, which a test can't switch")
     light = app.palette()
     dark = QPalette(light)
     for role, color in [(QPalette.ColorRole.Window, "#2b2b2b"), (QPalette.ColorRole.WindowText, "#ffffff")]:

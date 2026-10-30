@@ -1,3 +1,4 @@
+import platform
 import re
 import sys
 from pathlib import Path
@@ -19,6 +20,7 @@ def macos_bundle(monkeypatch) -> dict:
 
     bundle: dict = {}
     monkeypatch.setattr(sys, "platform", "darwin")
+    monkeypatch.setattr(platform, "mac_ver", lambda: ("14.4", ("", "", ""), "arm64"))
     monkeypatch.setattr(sys, "path", list(sys.path))
     spec = ROOT / "papyr.spec"
     exec(compile(spec.read_text(), str(spec), "exec"),
@@ -30,7 +32,7 @@ def macos_bundle(monkeypatch) -> dict:
 def test_one_version_everywhere(monkeypatch):
     pyproject = re.search(r'^version = "(.+)"$', (ROOT / "pyproject.toml").read_text(), re.MULTILINE).group(1)
     plist = macos_bundle(monkeypatch)["info_plist"]
-    assert __version__ == "2.2.0"
+    assert __version__ == "2.2.1"
     assert pyproject == plist["CFBundleShortVersionString"] == plist["CFBundleVersion"] == __version__
 
 

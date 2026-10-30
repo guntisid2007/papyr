@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 import pytest
@@ -75,3 +76,12 @@ def test_folder_problem_reads_the_real_filesystem(tmp_path):
         assert folder_problem(tmp_path / "missing") is FolderProblem.MISSING
     finally:
         locked.chmod(0o755)
+
+
+def test_paths_under_home_are_shortened_with_a_tilde_except_on_windows(monkeypatch):
+    from gui.views.controls import display_path
+    folder = Path.home() / "Documents" / "PDFs"
+    monkeypatch.setattr(sys, "platform", "darwin")
+    assert display_path(folder) == "~/Documents/PDFs"
+    monkeypatch.setattr(sys, "platform", "win32")
+    assert display_path(folder) == str(folder)
