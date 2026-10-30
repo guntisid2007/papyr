@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 from PySide6.QtCore import QCoreApplication, QMimeData, QPoint, QPointF, QSettings, Qt, QThreadPool, QUrl
-from PySide6.QtGui import QAction, QDragEnterEvent, QDropEvent, QHelpEvent, QKeySequence
+from PySide6.QtGui import QAction, QDragEnterEvent, QDropEvent, QFileOpenEvent, QHelpEvent, QKeySequence
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QMessageBox, QToolTip
 from pypdf import PdfReader
@@ -559,6 +559,23 @@ def test_select_all_in_a_text_field_selects_its_text(app, window, make):
     window._select_all_action.trigger()
     assert window._panel.name_edit.selectedText() == "Trip Photos"
     assert window._queue.selectedItems() == []
+
+
+def test_finder_open_events_and_command_line_files_are_added(app, make):
+    from gui.app import launch
+
+    QSettings().clear()
+    early = make("early.png")
+    QCoreApplication.sendEvent(app, QFileOpenEvent(str(early)))  # before the window exists
+    win = launch(app, ["papyr", "-psn_0_42", str(make("argv.png"))])
+    try:
+        assert names(win) == ["early.png", "argv.png"]
+        QCoreApplication.sendEvent(app, QFileOpenEvent(str(make("later.png"))))
+        assert names(win) == ["early.png", "argv.png", "later.png"]
+    finally:
+        app.set_path_handler(None)
+        win.close()
+        win.deleteLater()
 
 
 def drag_files(target, paths: list[Path]) -> tuple[QMimeData, QPoint]:
