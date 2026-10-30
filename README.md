@@ -14,8 +14,9 @@ Papyr turns iPhone photos (HEIC) into PDFs or JPEGs, PDFs into images, PNGs into
 ## Features
 
 - **Any to any.** Reads HEIC, HEIF, JPEG, PNG, WebP, AVIF, TIFF, BMP, GIF, PDF, and Jupyter notebooks (`.ipynb`). Writes PDF, JPEG, PNG, HEIC, WebP, AVIF, TIFF, GIF, and BMP.
-- Drag and drop files or whole folders, or pick them with the Browse button.
-- Thumbnails, names, and sizes for every file. Remove files, reorder them by dragging or with the arrow buttons, or clear the list. Unreadable files are flagged as soon as you add them.
+- Drag files or whole folders onto the window or the Dock icon, use **Open With** in Finder, or pick them with **Browse Files…**.
+- A list with a thumbnail, name, type, and size for every file. Reorder it by dragging or with **Edit → Move Up** and **Move Down**, remove a file with its **×** button, or clear the list. Unreadable files are flagged with the reason as soon as you add them, and files in formats Papyr can't read are skipped with a note.
+- The sidebar shows only the settings that apply to your format and files.
 - **To PDF:**
   - One PDF per file, or everything combined into one PDF in list order.
   - Page size: original image size, A4, or US Letter. Pages turn landscape automatically for wide photos.
@@ -29,15 +30,17 @@ Papyr turns iPhone photos (HEIC) into PDFs or JPEGs, PDFs into images, PNGs into
 - Photos taken sideways or upside down come out the right way up.
 - Colours are converted to standard sRGB so they look right everywhere.
 - Never overwrites anything. If a file with the same name exists, Papyr adds a number, such as `photo (1).jpg`.
-- A progress bar and a Cancel button. The window stays responsive while it works.
-- When conversion finishes, the new file flies into a folder, and "Show in Folder" opens the results.
-- Remembers your output folder and settings, and follows your system's light or dark mode.
+- A progress bar that names the file being converted, and a **Cancel** button. The window stays responsive while it works.
+- If some files fail, the rest are still saved. Each failed file is marked in the list with a plain reason, and **Details…** lists them all.
+- When conversion finishes, the new file flies into a folder, and **Show in Finder** (**Show in Explorer** on Windows) selects it.
+- Remembers your output folder and settings, and follows your system's light or dark mode. If the output folder is missing or read-only, Papyr says so before you convert.
+- A full menu bar with standard keyboard shortcuts.
 
 ![The finished file flying into the output folder](docs/screenshots/save-animation.gif)
 
-| Light mode | Dark mode, converting to JPEG |
+| Light mode, before adding files | Dark mode, after converting to JPEG |
 | --- | --- |
-| ![Empty window in light mode](docs/screenshots/empty-light.png) | ![Window set to convert to JPEG in dark mode](docs/screenshots/main-dark.png) |
+| ![Empty window in light mode](docs/screenshots/empty-light.png) | ![Five photos converted to JPEG in dark mode](docs/screenshots/main-dark.png) |
 
 ## Download and install
 
@@ -83,14 +86,30 @@ The build was made on Ubuntu 22.04 and needs glibc 2.35 or newer plus the usual 
 ## How to use
 
 1. Drag photos, PDFs, notebooks, or folders onto the window, or click **Browse Files…** or **Add Folder…**.
-2. Arrange the list. Drag rows, or select a row and use **↑** and **↓**. Press **Delete** or click **Remove** to drop a file.
-3. Under **Convert to**, pick the format you want.
-   - For **PDF**, choose **One PDF per file** or **Combine into one PDF** (type a name), then a page size and margins.
-   - For an image format, set the quality, and the resolution for PDF pages if you added PDFs.
-4. Click **Choose Folder…** to pick where the results go.
-5. Click **Convert**. When it finishes, click **Show in Folder**.
+2. Arrange the list. Drag rows, or select a row and press **⌘⌥↑** or **⌘⌥↓**. To remove a file, click its **×** or press **Delete**.
+3. Under **Convert to**, pick the format you want. The sidebar then shows only the settings that apply.
+   - For **PDF**, set the page size and margins. With two or more files, you can tick **Combine into one PDF** and type a name. The pages follow the list order.
+   - For an image format, set the quality where the format has one. If you added PDFs or notebooks, also set the **PDF page resolution**.
+4. Under **Save to**, click **Change…** to pick where the results go.
+5. Click **Convert to …**. When it finishes, click **Show in Finder**.
 
-If a file cannot be read (for example, it is damaged or password-protected), it is marked in the list. Conversion skips it, carries on with the rest, and tells you which files were skipped.
+The list stays after converting, so you can change a setting and convert again. If a file cannot be read (for example, it is damaged or password-protected), it is marked in the list with the reason. Conversion skips it, carries on with the rest, and **Details…** shows which files were skipped and why.
+
+### Keyboard shortcuts
+
+On Windows and Linux, use **Ctrl** for **⌘** and **Alt** for **⌥**.
+
+| Action | Shortcut |
+| --- | --- |
+| Add files | **⌘O** |
+| Add a folder | **⌘⇧O** |
+| Convert | **⌘↩** |
+| Select every file | **⌘A** |
+| Remove the selected files (while the list has focus) | **Backspace** (⌫) or **Delete** (⌦) |
+| Move the selected files up or down | **⌘⌥↑** or **⌘⌥↓** |
+| Close the window | **⌘W** |
+
+**Show in Finder** is in the **File** menu and **Clear All** is in the **Edit** menu. **About Papyr** is in the **Papyr** menu on a Mac and in the **Help** menu elsewhere.
 
 ## Privacy
 
@@ -158,8 +177,8 @@ Releases are built by [GitHub Actions](.github/workflows/build.yml). Pushing a t
 ```
 src/main.py            entry point and the packaged-app self-test
 src/converter/         decoding, page layout, PDF and image writing, notebook layout (no GUI code)
-src/gui/               Qt window, widgets, save animation, and background workers
-src/utils/             file collection, output names, app name, bundled asset paths
+src/gui/               Qt window, file list, settings sidebar, theme, save animation, and background workers
+src/utils/             file collection, output names, error messages, version, revealing files, asset paths
 assets/                app icons
 tests/                 pytest suite, a sample HEIC file, and PDF builders
 scripts/               regenerate icons, screenshots, the animation GIF, and the sample HEIC
