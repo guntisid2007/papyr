@@ -216,12 +216,13 @@ def test_notebooks_render_on_worker_threads(tmp_path):
 
 
 def test_thumbnail_shows_the_first_page(tmp_path):
-    source = write_notebook(tmp_path / "nb.ipynb", markdown("# Title"))
+    source = write_notebook(tmp_path / "nb.ipynb", markdown("# Title"),
+                            code("plot()", display(image_png=png_b64((600, 300), "black"))))
     thumb = make_thumbnail(source, 64)
     assert thumb.size == (64, 64) and thumb.mode == "RGBA"
     page = [thumb.getpixel((x, y)) for x in range(64) for y in range(64) if thumb.getpixel((x, y))[3] == 255]
     assert page and max(page) == (255, 255, 255, 255)
-    assert min(page)[0] < 128  # the heading's dark text
+    assert min(page)[:3] == (0, 0, 0)
 
 
 def test_rendering_without_a_qt_application_is_a_clear_error(tmp_path):
