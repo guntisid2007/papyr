@@ -1,16 +1,32 @@
-"""Regenerate assets/icon.png, icon.icns, and icon.ico: a sheet of paper with a coral folded corner on a
-graphite tile. The geometry matches the mark the window draws (gui.icons.paint_mark) on its 64-unit grid."""
+"""Regenerate assets/icon.png, icon.icns, and icon.ico: the Papyr prism on a graphite tile.
+The prism is painted by gui.icons.paint_prism, the same code the window uses, so the two cannot drift."""
+import os
+import sys
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFilter
 
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "src"))
+from PySide6.QtCore import QRectF  # noqa: E402
+from PySide6.QtGui import QGuiApplication, QImage, QPainter  # noqa: E402
+
+from gui.icons import MARK_SCALE, paint_prism  # noqa: E402
+
 SIZE = 1024
 SUPERSAMPLE = 4
-ASSETS = Path(__file__).resolve().parent.parent / "assets"
+ASSETS = ROOT / "assets"
 TILE_TOP, TILE_BOTTOM = (54, 54, 60), (30, 30, 34)
-PAPER = (251, 250, 247)
-CORAL = (208, 67, 47)
-INK = (26, 26, 29, 46)
+
+
+def prism(s: int, rect: QRectF) -> Image.Image:
+    canvas = QImage(s, s, QImage.Format.Format_RGBA8888)
+    canvas.fill(0)
+    painter = QPainter(canvas)
+    paint_prism(painter, rect)
+    painter.end()
+    return Image.frombytes("RGBA", (s, s), bytes(canvas.constBits()))
 
 
 def draw() -> Image.Image:
@@ -39,21 +55,12 @@ def draw() -> Image.Image:
     ImageDraw.Draw(mask).rounded_rectangle(box(0, 0, 64, 64), radius=15 * unit, fill=255)
     image.paste(tone, (0, 0), mask)
 
-    fold = 13
-    sheet = [at(17, 12), at(47 - fold, 12), at(47, 12 + fold), at(47, 52), at(17, 52)]
-    lift = Image.new("L", (s, s), 0)
-    ImageDraw.Draw(lift).polygon([(x, y + unit * 1.4) for x, y in sheet], fill=120)
-    image = Image.composite(Image.new("RGBA", (s, s), (0, 0, 0, 255)), image,
-                            lift.filter(ImageFilter.GaussianBlur(unit * 1.2)))
-    draw = ImageDraw.Draw(image, "RGBA")
-    draw.polygon(sheet, fill=PAPER)
-    draw.polygon([at(47 - fold, 12), at(47 - fold, 12 + fold), at(47, 12 + fold)], fill=CORAL)
-    for y, width in ((32, 20), (38, 20), (44, 12)):
-        draw.rounded_rectangle(box(22, y, width, 2.6), radius=1.3 * unit, fill=INK)
-    draw.rounded_rectangle(box(22, 21, 9, 5), radius=1.5 * unit, fill=CORAL)
+    inner = 64 * unit * MARK_SCALE
+    image.alpha_composite(prism(s, QRectF(s / 2 - inner / 2, s / 2 - inner / 2, inner, inner)))
     return image.resize((SIZE, SIZE), Image.Resampling.LANCZOS)
 
 
+app = QGuiApplication(sys.argv)
 icon = draw()
 icon.save(ASSETS / "icon.png")
 icon.save(ASSETS / "icon.icns")
