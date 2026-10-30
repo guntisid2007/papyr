@@ -1,9 +1,10 @@
+import os
 from pathlib import Path
 
 import pytest
 
 from utils.filenames import individual_output_paths, sanitize_pdf_name, unique_path
-from utils.files import collect_images, human_size
+from utils.files import FolderProblem, collect_images, folder_problem, human_size
 
 
 @pytest.mark.parametrize("raw, expected", [
@@ -61,3 +62,16 @@ def test_collect_images_skips_hidden_folders_such_as_notebook_checkpoints(tmp_pa
         (tmp_path / name).write_bytes(b"x")
     found = collect_images([tmp_path])
     assert [p.relative_to(tmp_path).as_posix() for p in found] == ["analysis.ipynb"]
+
+
+@pytest.mark.skipif(not hasattr(os, "geteuid") or os.geteuid() == 0, reason="root can write anywhere")
+def test_folder_problem_reads_the_real_filesystem(tmp_path):
+    locked = tmp_path / "locked"
+    locked.mkdir()
+    locked.chmod(0o555)
+    try:
+        assert folder_problem(locked) is FolderProblem.NOT_WRITABLE
+        assert folder_problem(tmp_path) is None
+        assert folder_problem(tmp_path / "missing") is FolderProblem.MISSING
+    finally:
+        locked.chmod(0o755)

@@ -1,5 +1,7 @@
+import os
 import re
 from collections.abc import Iterable
+from enum import Enum
 from pathlib import Path
 
 from converter.images import is_supported
@@ -38,3 +40,22 @@ def human_size(num_bytes: int) -> str:
             return f"{size:.0f} {unit}" if unit == "B" else f"{size:.1f} {unit}"
         size /= 1024
     raise AssertionError("unreachable")
+
+
+class FolderProblem(Enum):
+    """Why converted files can't be saved in a folder: (short line for the folder row, explanation)."""
+
+    MISSING = ("Folder not found — choose another", "The Save to folder no longer exists. Choose another folder.")
+    NOT_WRITABLE = ("This folder isn't writable", "Papyr can't save files in this folder. Choose another folder.")
+
+    def __init__(self, short: str, explanation: str):
+        self.short = short
+        self.explanation = explanation
+
+
+def folder_problem(folder: Path) -> FolderProblem | None:
+    if not folder.is_dir():
+        return FolderProblem.MISSING
+    if not os.access(folder, os.W_OK | os.X_OK):
+        return FolderProblem.NOT_WRITABLE
+    return None
