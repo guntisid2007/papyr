@@ -20,9 +20,20 @@ from PySide6.QtCore import QBuffer, QIODevice
 
 from converter import OutputFormat
 from gui.app import create_app
-from screenshots import SPECS, Shooter, isolate_settings, sample_files, use_scheme
+from screenshots import SPECS, Shooter, isolate_settings, sample_photo, use_scheme
 
 HOLD, BLEND, STEP_MS = 24, 6, 40
+TRIP_SIZE = (4000, 3000)  # large enough that each file takes a visible moment to convert
+
+
+def trip_photos(folder: Path) -> list[Path]:
+    paths = []
+    for index in range(8):
+        name, _, *colors = SPECS[index % 3]
+        path = folder / f"IMG_{4021 + index}.HEIC"
+        sample_photo(path, TRIP_SIZE, *colors)
+        paths.append(path)
+    return paths
 
 
 def to_pil(pixmap) -> Image.Image:
@@ -45,6 +56,7 @@ def main(scheme: str) -> None:
         (Path(home) / "Documents" / "PDFs").mkdir(parents=True)
         shooter = Shooter(app, pictures, scheme)
         window = shooter.open(OutputFormat.PDF)
+        shooter.away_from_cursor()
         keyframes: list[list[Image.Image]] = []
 
         def grab() -> Image.Image:
@@ -52,7 +64,7 @@ def main(scheme: str) -> None:
             return to_pil(window.grab())
 
         keyframes.append([grab()])
-        window.add_paths(sample_files(pictures))
+        window.add_paths(trip_photos(pictures))
         window.dock._edit(merge=True, merged_name="Trip Photos")
         keyframes.append([grab()])
 
@@ -77,8 +89,9 @@ def main(scheme: str) -> None:
             frames.append(frame)
             durations.append(STEP_MS * (HOLD if len(group) == 1 else 6))
     out = ROOT / "docs" / "screenshots" / f"papyr-flow-{scheme}.gif"
+    out.parent.mkdir(parents=True, exist_ok=True)
     frames[0].save(out, save_all=True, append_images=frames[1:], duration=durations, loop=0, optimize=True)
-    print(out, out.stat().st_size, "bytes,", len(frames), "frames,", len(SPECS), "files")
+    print(out, out.stat().st_size, "bytes,", len(frames), "frames,", len(progress), "progress frames")
 
 
 if __name__ == "__main__":

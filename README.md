@@ -7,16 +7,17 @@ HEIC, JPEG, PNG, WebP, AVIF, TIFF, BMP, GIF, and PDF, from any of them to any of
 
 <p align="center"><a href="https://github.com/guntisid2007/papyr/releases/latest"><b>Download the latest version</b></a></p>
 
-![Papyr with five photos ready to combine into one PDF](docs/screenshots/main-light.png)
+![Papyr with five photos ready to merge into one PDF](docs/screenshots/workspace-light.png)
 
 Papyr turns iPhone photos (HEIC) into PDFs or JPEGs, PDFs into images, PNGs into WebP, Jupyter notebooks into PDFs, and any other combination of common image formats and PDF. It runs on your computer and never sends your files anywhere. You do not need Python or any other software to use it.
 
 ## Features
 
 - **Any to any.** Reads HEIC, HEIF, JPEG, PNG, WebP, AVIF, TIFF, BMP, GIF, PDF, and Jupyter notebooks (`.ipynb`). Writes PDF, JPEG, PNG, HEIC, WebP, AVIF, TIFF, GIF, and BMP.
+- One compact window that moves through three screens: a welcome screen to drop files on, the list of files with everything you need in a dock at the bottom, and a summary when the conversion is done.
 - Drag files or whole folders onto the window or the Dock icon, use **Open With** in Finder, or pick them with **Browse Files…**.
-- A list with a thumbnail, name, type, and size for every file. Reorder it by dragging or with **Edit → Move Up** and **Move Down**, remove a file with its **×** button, or clear the list. Unreadable files are flagged with the reason as soon as you add them, and files in formats Papyr can't read are skipped with a note.
-- The sidebar shows only the settings that apply to your format and files.
+- A list with a thumbnail, name, size, and format for every file. Reorder it by dragging or with **Edit → Move Up** and **Move Down**, remove a file with its **×** button, or clear the list. Unreadable files are flagged with the reason as soon as you add them, and files in formats Papyr can't read are skipped with a note. Lists of hundreds of files stay responsive, because previews load in the background.
+- The output format is always visible in the dock. The dock shows only the settings that format uses, and each opens a small popover.
 - **To PDF:**
   - One PDF per file, or everything combined into one PDF in list order.
   - Page size: original image size, A4, or US Letter. Pages turn landscape automatically for wide photos.
@@ -30,17 +31,17 @@ Papyr turns iPhone photos (HEIC) into PDFs or JPEGs, PDFs into images, PNGs into
 - Photos taken sideways or upside down come out the right way up.
 - Colours are converted to standard sRGB so they look right everywhere.
 - Never overwrites anything. If a file with the same name exists, Papyr adds a number, such as `photo (1).jpg`.
-- A progress bar that names the file being converted, and a **Cancel** button. The window stays responsive while it works.
-- If some files fail, the rest are still saved. Each failed file is marked in the list with a plain reason, and **Details…** lists them all.
-- When conversion finishes, the new file flies into a folder, and **Show in Finder** (**Show in Explorer** on Windows) selects it.
+- Real progress: the file being converted, how many are done, and how many are left, with a **Cancel** button that keeps the files already finished. The window stays responsive while it works.
+- If some files fail, the rest are still saved. The summary says how many were converted, lists each file that failed with a plain reason, and **Retry Failed** puts only those files back in the list. **Show in Finder** (**Show in Explorer** on Windows) selects the result.
 - Remembers your output folder and settings, and follows your system's light or dark mode. If the output folder is missing or read-only, Papyr says so before you convert.
+- Screens cross-fade in under a fifth of a second, or switch instantly when **Reduce motion** is on in macOS Accessibility settings.
 - A full menu bar with standard keyboard shortcuts.
 
-![The finished file flying into the output folder](docs/screenshots/save-animation.gif)
+![Five photos going from the welcome screen to one merged PDF](docs/screenshots/papyr-flow-light.gif)
 
-| Light mode, before adding files | Dark mode, after converting to JPEG |
-| --- | --- |
-| ![Empty window in light mode](docs/screenshots/empty-light.png) | ![Five photos converted to JPEG in dark mode](docs/screenshots/main-dark.png) |
+| Welcome, light mode | Files and the dock, dark mode | Done, dark mode |
+| --- | --- | --- |
+| ![The welcome screen in light mode](docs/screenshots/welcome-light.png) | ![Five photos set to merge into one PDF, in dark mode](docs/screenshots/workspace-dark.png) | ![The summary after saving one merged PDF, in dark mode](docs/screenshots/done-dark.png) |
 
 ## Download and install
 
@@ -85,15 +86,16 @@ The build was made on Ubuntu 22.04 and needs glibc 2.35 or newer plus the usual 
 
 ## How to use
 
-1. Drag photos, PDFs, notebooks, or folders onto the window, or click **Browse Files…** or **Add Folder…**.
-2. Arrange the list. Drag rows, or select a row and press **⌘⌥↑** or **⌘⌥↓**. To remove a file, click its **×** or press **Delete**.
-3. Under **Convert to**, pick the format you want. The sidebar then shows only the settings that apply.
-   - For **PDF**, set the page size and margins. With two or more files, you can tick **Combine into one PDF** and type a name. The pages follow the list order.
-   - For an image format, set the quality where the format has one. If you added PDFs or notebooks, also set the **PDF page resolution**.
-4. Under **Save to**, click **Change…** to pick where the results go.
-5. Click **Convert to …**. When it finishes, click **Show in Finder**.
+1. Drag photos, PDFs, notebooks, or folders onto the window, or click **Browse Files…** or **Add Folder…**. You can pick the output format on the welcome screen before adding anything.
+2. Arrange the list. Drag rows, or select a row and press **⌘⌥↑** or **⌘⌥↓**. To remove a file, click its **×** or press **Delete**. To add more, drop them on the list or use the **+** and folder buttons above it.
+3. In the dock at the bottom, pick the format: **PDF**, **JPEG**, **PNG**, **WebP**, or **HEIC**, or **More** for AVIF, TIFF, GIF, and BMP. The row above it then shows only the settings for that format.
+   - For **PDF**, the **Page** chip sets the page size and margins. With two or more files, turn on **Merge into one PDF**, then click the file name chip to rename the merged PDF. The pages follow the list order, and the list numbers its rows.
+   - For an image format, the **Quality** chip sets the quality where the format has one. If you added PDFs or notebooks, the **PDF pages** chip sets their resolution.
+4. Click the folder chip to choose where the results go.
+5. Click **Convert to …** or press **⌘↩**. To stop, click **Cancel** or press **Esc**.
+6. When it finishes, click **Show in Finder**. **Convert More** starts over with an empty list, and **Back to Files** returns to the same files, for example to convert them to another format.
 
-The list stays after converting, so you can change a setting and convert again. If a file cannot be read (for example, it is damaged or password-protected), it is marked in the list with the reason. Conversion skips it, carries on with the rest, and **Details…** shows which files were skipped and why.
+If a file cannot be read (for example, it is damaged or password-protected), it is flagged in the list with the reason. Conversion skips it and carries on with the rest. The summary lists each file that failed and why, and **Retry Failed** puts only those files back in the list. Dropping new files on the summary starts a new list.
 
 ### Keyboard shortcuts
 
@@ -104,12 +106,13 @@ On Windows and Linux, use **Ctrl** for **⌘** and **Alt** for **⌥**.
 | Add files | **⌘O** |
 | Add a folder | **⌘⇧O** |
 | Convert | **⌘↩** |
+| Cancel a conversion | **Esc** or **⌘.** |
 | Select every file | **⌘A** |
 | Remove the selected files (while the list has focus) | **Backspace** (⌫) or **Delete** (⌦) |
 | Move the selected files up or down | **⌘⌥↑** or **⌘⌥↓** |
 | Close the window | **⌘W** |
 
-**Show in Finder** is in the **File** menu and **Clear All** is in the **Edit** menu. **About Papyr** is in the **Papyr** menu on a Mac and in the **Help** menu elsewhere.
+**Show in Finder** and **Cancel Conversion** are in the **File** menu, and **Clear All** is in the **Edit** menu. **About Papyr** is in the **Papyr** menu on a Mac and in the **Help** menu elsewhere.
 
 ## Privacy
 
@@ -177,11 +180,12 @@ Releases are built by [GitHub Actions](.github/workflows/build.yml). Pushing a t
 ```
 src/main.py            entry point and the packaged-app self-test
 src/converter/         decoding, page layout, PDF and image writing, notebook layout (no GUI code)
-src/gui/               Qt window, file list, settings sidebar, theme, save animation, and background workers
+src/gui/               Qt window and its states (model.py), the welcome, files, and done views and the dock
+                       (views/), the file list, theme tokens, icons, and background workers
 src/utils/             file collection, output names, error messages, version, revealing files, asset paths
 assets/                app icons
 tests/                 pytest suite, a sample HEIC file, and PDF builders
-scripts/               regenerate icons, screenshots, the animation GIF, and the sample HEIC
+scripts/               regenerate icons, screenshots (--states renders every state), the flow GIF, and the sample HEIC
 ```
 
 ## Contributing

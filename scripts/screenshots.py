@@ -102,8 +102,8 @@ def use_scheme(app, dark: bool) -> None:
 
 
 class Shooter:
-    def __init__(self, app, out: Path, scheme: str):
-        self.app, self.out, self.scheme = app, out, scheme
+    def __init__(self, app, out: Path, scheme: str, sized: bool = True):
+        self.app, self.out, self.scheme, self.sized = app, out, scheme, sized
         self.window: MainWindow | None = None
 
     def open(self, fmt: OutputFormat = OutputFormat.PDF, size: str = "default") -> MainWindow:
@@ -129,8 +129,9 @@ class Shooter:
         self.window.resize(*SIZES[size])
         self.away_from_cursor()
         self.settle()
-        path = self.out / f"{name}-{self.scheme}-{size}.png"
-        self.window.grab().save(str(path))
+        path = self.out / (f"{name}-{self.scheme}-{size}.png" if self.sized else f"{name}-{self.scheme}.png")
+        if not self.window.grab().save(str(path)):
+            raise OSError(f"could not write {path}")
         print(path)
         return path
 
@@ -163,7 +164,8 @@ class Shooter:
 
 def docs(app, scheme: str, tmp: Path, out: Path) -> None:
     """The README screenshots."""
-    shooter = Shooter(app, out, scheme)
+    out.mkdir(parents=True, exist_ok=True)
+    shooter = Shooter(app, out, scheme, sized=False)
     shooter.open()
     shooter.shoot("welcome")
     shooter.window.add_paths(sample_files(tmp))
