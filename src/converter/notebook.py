@@ -5,7 +5,6 @@ notebook. It has no network access, so a notebook that links to the web cannot m
 """
 
 import base64
-import binascii
 import json
 import re
 from collections.abc import Callable
@@ -95,7 +94,7 @@ def parse_notebook(raw: bytes) -> list[Cell]:
         raise ImageLoadError("Notebook has no list of cells")
     try:
         cells = [cell for cell in map(_parse_cell, notebook["cells"]) if cell is not None]
-    except (AttributeError, TypeError, binascii.Error) as exc:
+    except (AttributeError, TypeError, ValueError) as exc:
         raise ImageLoadError(f"Notebook is damaged: {exc}") from exc
     if not cells:
         raise ImageLoadError("Notebook has no cells")
@@ -111,6 +110,27 @@ def _fixed_font() -> QFont:
     return font
 
 
+def _prefix_attachment_images(doc: QTextDocument, prefix: str) -> None:
+    """Attachment names are scoped to their cell, so give each cell's references a document-unique name."""
+    found = []
+    block = doc.begin()
+    while block.isValid():
+        fragments = block.begin()
+        while not fragments.atEnd():
+            fragment = fragments.fragment()
+            image = fragment.charFormat().toImageFormat()
+            if fragment.charFormat().isImageFormat() and image.name().startswith("attachment:"):
+                found.append((fragment.position(), fragment.length(), image))
+            fragments += 1
+        block = block.next()
+    cursor = QTextCursor(doc)
+    for position, length, image in found:
+        image.setName(prefix + image.name())
+        cursor.setPosition(position)
+        cursor.setPosition(position + length, QTextCursor.MoveMode.KeepAnchor)
+        cursor.setCharFormat(image)
+
+
 class _Builder:
     """Appends cells to one QTextDocument laid out for the PDF writer."""
 
@@ -122,6 +142,7 @@ class _Builder:
         self.mono.setFont(_fixed_font())
         self.gap = 0.0  # space before the next block, set at each cell boundary
         self._images = 0
+        self._cells = 0
 
     def block(self, top_margin: float = 0, char_format: QTextCharFormat | None = None) -> None:
         block_format = QTextBlockFormat()
@@ -140,9 +161,15 @@ class _Builder:
         self.block(4, char_format)
         self.cursor.insertText(text.rstrip("\n"), char_format)
 
-    def markdown(self, text: str) -> None:
+    def markdown(self, text: str, attachments: dict[str, bytes] | None = None) -> None:
         source = QTextDocument()
         source.setMarkdown(text)
+        if attachments:
+            self._cells += 1
+            prefix = f"cell{self._cells}-"
+            for name, data in attachments.items():
+                self.add_image(f"{prefix}attachment:{name}", data)
+            _prefix_attachment_images(source, prefix)
         self.block()
         self.cursor.insertFragment(QTextDocumentFragment(source))
 
@@ -163,9 +190,7 @@ class _Builder:
 
 
 def _markdown_cell(builder: _Builder, cell: Cell) -> None:
-    for name, data in cell.attachments.items():
-        builder.add_image(f"attachment:{name}", data)
-    builder.markdown(cell.source)
+    builder.markdown(cell.source, cell.attachments)
 
 
 def _code_cell(builder: _Builder, cell: Cell) -> None:

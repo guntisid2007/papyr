@@ -144,6 +144,7 @@ def test_html_output_is_rendered_and_plain_text_fallback_skipped(tmp_path):
     ("{not json", "Not a valid notebook"),
     (json.dumps({"nbformat": 3, "worksheets": []}), "format 4"),
     (json.dumps({"nbformat": 4, "metadata": {}}), "no list of cells"),
+    (json.dumps({"nbformat": 4, "cells": [code("", display(image_png="é"))]}), "damaged"),
 ])
 def test_unreadable_notebooks_are_reported_as_failures(tmp_path, content, message):
     bad = tmp_path / "bad.ipynb"
@@ -232,3 +233,14 @@ def test_rendering_without_a_qt_application_is_a_clear_error(tmp_path):
     result = subprocess.run([sys.executable, "-c", script, str(source)], capture_output=True, text=True,
                             env={"PYTHONPATH": str(src), "QT_QPA_PLATFORM": "offscreen"}, timeout=60)
     assert result.stdout.startswith("refused:"), result.stderr
+
+
+def test_each_cell_shows_its_own_attachment_when_names_repeat(tmp_path):
+    cells = [markdown("![plot](attachment:image.png)",
+                      attachments={"image.png": {"image/png": png_b64((40, 40), color)}})
+             for color in ("red", "blue")]
+    pdf = render_notebook(write_notebook(tmp_path / "nb.ipynb", *cells), A4)
+    page = pdfium.PdfDocument(pdf)[0]
+    colors = sorted(obj.get_bitmap().to_pil().convert("RGB").getpixel((0, 0))
+                    for obj in page.get_objects() if obj.type == pdfium.raw.FPDF_PAGEOBJ_IMAGE)
+    assert len(colors) == 2 and colors[0][2] > 200 and colors[1][0] > 200
