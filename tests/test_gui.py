@@ -619,7 +619,7 @@ def test_menu_actions_do_what_they_say(app, window, make, monkeypatch):
     about = []
     monkeypatch.setattr("gui.main_window.QMessageBox.about", lambda parent, title, text: about.append(text))
     window._about_action.trigger()
-    assert "Papyr 2.1.0" in about[0]
+    assert "Papyr 2.2.0" in about[0]
 
     window._close_action.trigger()
     assert not window.isVisible()

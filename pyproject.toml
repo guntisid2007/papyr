@@ -1,6 +1,6 @@
 [project]
 name = "papyr"
-version = "2.1.0"
+version = "2.2.0"
 description = "Papyr: a free, offline desktop converter between HEIC, JPEG, PNG, WebP, AVIF, TIFF, BMP, GIF, and PDF, and from Jupyter notebooks to PDF."
 license = "MIT"
 requires-python = ">=3.10"

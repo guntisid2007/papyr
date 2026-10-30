@@ -30,7 +30,7 @@ def macos_bundle(monkeypatch) -> dict:
 def test_one_version_everywhere(monkeypatch):
     pyproject = re.search(r'^version = "(.+)"$', (ROOT / "pyproject.toml").read_text(), re.MULTILINE).group(1)
     plist = macos_bundle(monkeypatch)["info_plist"]
-    assert __version__ == "2.1.0"
+    assert __version__ == "2.2.0"
     assert pyproject == plist["CFBundleShortVersionString"] == plist["CFBundleVersion"] == __version__
 
 
