@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pypdf
 import pypdfium2 as pdfium
-from PIL import Image, ImageChops, ImageOps, ImageStat
+from PIL import Image, ImageChops, ImageFilter, ImageOps, ImageStat
 
 # The file format each Papyr output must really be, read from its first bytes.
 
@@ -302,3 +302,23 @@ def text_darkness(path: Path, needle: str) -> int | None:
         return None
     finally:
         doc.close()
+
+
+def _dark(image: Image.Image, below: int) -> Image.Image:
+    """255 where every channel is under below: text ink, not a coloured band (each band colour has a channel of 128
+    or more)."""
+    r, g, b = on_white(image).split()
+    return ImageChops.lighter(ImageChops.lighter(r, g), b).point(lambda v: 255 if v < below else 0)
+
+
+def ink_recall(output: Image.Image, reference: Image.Image) -> float | None:
+    """Of the reference's dark ink, the share still dark in the output within one pixel. None when the reference
+    has no dark ink. Unlike an average difference, this falls to zero when one line of text on a page is lost."""
+    if output.size != reference.size:
+        reference = reference.resize(output.size, Image.Resampling.LANCZOS)
+    wanted = _dark(reference, 100)
+    total = wanted.histogram()[255]
+    if not total:
+        return None
+    kept = _dark(output, 160).filter(ImageFilter.MaxFilter(3))
+    return ImageChops.multiply(wanted, kept).histogram()[255] / total

@@ -10,7 +10,7 @@ import pillow_heif
 import pypdfium2 as pdfium
 from PIL import Image, ImageCms, ImageMath, ImageOps, ImageSequence, UnidentifiedImageError
 
-from .formats import INPUT_EXTENSIONS, LOSSLESS_INPUTS, ImageLoadError, OutputFormat
+from .formats import INPUT_EXTENSIONS, LOSSLESS_INPUTS, ImageLoadError, OutputFormat, unreadable
 from .layout import PageSize, PdfSettings
 from .notebook import render_notebook
 from .pdf_writer import EncodedImage
@@ -176,8 +176,8 @@ def _image_pages(path: Path, keep_alpha: bool) -> Iterator[Image.Image]:
                 yield _normalize(ImageOps.exif_transpose(frame), icc, keep_alpha)
     except Image.DecompressionBombError as exc:
         raise ImageLoadError("Image is too large to convert safely") from exc
-    except Exception as exc:  # Pillow's plugins raise whatever type a malformed file trips (TypeError, struct.error)
-        raise ImageLoadError(f"Could not read image: {exc}") from exc
+    except Exception as exc:
+        raise unreadable(exc, "image") from exc
 
 
 def iter_pages(path: Path, *, keep_alpha: bool = False, pdf_dpi: int = DEFAULT_PDF_DPI) -> Iterator[Image.Image]:

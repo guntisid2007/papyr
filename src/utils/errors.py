@@ -10,6 +10,7 @@ _RULES: tuple[tuple[tuple[str, ...], str], ...] = (
     (("password",), "This PDF is password-protected."),
     (("encrypted with aes",), "This PDF is protected, so Papyr can only turn it into images, not a new PDF."),
     (("too large",), "This image is too large to convert safely."),
+    (("not enough memory",), "There isn't enough memory to convert this file."),
     (("no such file",), "The file was moved or deleted."),
     (("could not read", "permission denied"), "Papyr isn't allowed to read this file."),
     (("permission denied",), NOT_WRITABLE),

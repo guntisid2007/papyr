@@ -25,7 +25,7 @@ from fixture_factory import ALPHA_PROBES, EXECUTION_SENTINEL, PAGE_COLORS, Fixtu
 from gui.model import GifMode, Options, QueueSummary, plan_job
 from validators import (alpha_at, band_color, color_distance, fit_on_page, gif_frames, ink, is_solid, mae,
                         parse_gif, pdf_facts, pdf_page_count_pdfium, pdf_render, quadrant_mae, second_decoder, sniff,
-                        text_darkness)
+                        text_darkness, ink_recall)
 
 EXTENSION_ROWS = {".heic": "HEIC", ".heif": "HEIF", ".jpg": "JPEG", ".jpeg": "JPEG", ".png": "PNG", ".webp": "WEBP",
                   ".avif": "AVIF", ".tif": "TIFF", ".tiff": "TIFF", ".bmp": "BMP", ".gif": "GIF", ".pdf": "PDF",
@@ -42,6 +42,7 @@ A4 = (595.2756, 841.8898)
 # Lossless, then lossy or palette. Measured on these fixtures: at most 0.0 lossless, and 1.2 (worst quarter 1.4) for
 # WebP, GIF palettes, and animation frames. Erasing a page body below its band measures far above either.
 RENDER_TOLERANCE = {False: (1.0, 2.0), True: (2.5, 5.0)}
+MIN_INK_RECALL = 0.95
 MARGIN_PT = 10 * 72 / 25.4
 
 
@@ -376,6 +377,14 @@ def _compare_render(spec, index, fmt, decoded, reference, problems, where) -> No
     if diff > whole or worst > quarter:
         problems.append(f"{where}: differs from the source page by {diff:.1f} (worst quarter {worst:.1f}); "
                         f"allowed {whole}/{quarter}")
+    _check_ink(decoded, reference, problems, where)
+
+
+def _check_ink(output, reference, problems, where) -> None:
+    """Every real output on these fixtures keeps all of its page's dark ink; a page with its text erased keeps none."""
+    recall = ink_recall(output, reference)
+    if recall is not None and recall < MIN_INK_RECALL:
+        problems.append(f"{where}: only {recall:.0%} of the source's text and line ink survived")
 
 
 def _expected_frame(spec, index, canvas: tuple[int, int]) -> Image.Image:
@@ -468,6 +477,7 @@ def _check_animation(spec, file, pages, problems, facts) -> None:
             whole, quarter = RENDER_TOLERANCE[True]
             if diff > whole or worst > quarter:
                 problems.append(f"frame {index + 1} differs from its page by {diff:.1f} (worst quarter {worst:.1f})")
+            _check_ink(frame, expected, problems, f"frame {index + 1}")
         colors = [page.color for page in spec.pages]
         for number, frame in enumerate(frames[:len(colors)], start=1):
             scores = [_presence(frame, color) for color in colors]

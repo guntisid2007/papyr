@@ -146,7 +146,7 @@ def test_the_matrix_check_catches_lost_text_on_sparse_pages(fixture, target, fix
 
     def add(self, frame):
         wrong = frame.copy()
-        wrong.paste("white", (0, round(wrong.height * 0.25), wrong.width, wrong.height))
+        wrong.paste("white", (0, round(wrong.height * 0.12), wrong.width, wrong.height))
         original(self, wrong)
     monkeypatch.setattr(animation.GifWriter, "add", add)
     result = run_pair(fixture_specs[fixture], TARGET[target], tmp_path / "out")

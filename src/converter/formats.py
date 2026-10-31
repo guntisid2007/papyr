@@ -10,6 +10,14 @@ class ImageLoadError(Exception):
     pass
 
 
+def unreadable(exc: Exception, what: str) -> ImageLoadError:
+    """The error to report when a decoder fails on one file. Decoders raise whatever type a malformed file trips,
+    so any exception is that file's; running out of memory is named, since the file may be fine."""
+    if isinstance(exc, MemoryError):
+        return ImageLoadError("Not enough memory to convert this file")
+    return ImageLoadError(f"Could not read {what}: {exc}")
+
+
 class OutputFormat(Enum):
     """Every format the app can write: (label, extension, Pillow format, keeps transparency, has quality)."""
 

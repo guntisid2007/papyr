@@ -6,7 +6,7 @@ from typing import BinaryIO
 
 from PIL import GifImagePlugin, Image, ImageSequence
 
-from .formats import GifSettings, ImageLoadError
+from .formats import GifSettings, ImageLoadError, unreadable
 from .images import NOTEBOOK_IMAGE_SETTINGS, document_pdf, is_document, is_supported, iter_pages, pdf_page_sizes, \
     pdf_pages, to_gif_palette
 
@@ -41,8 +41,8 @@ def measure(path: Path) -> FrameSource:
             sizes = tuple(_upright(frame) for frame in frames)
     except Image.DecompressionBombError as exc:
         raise ImageLoadError("Image is too large to convert safely") from exc
-    except Exception as exc:  # as in images._image_pages: any error while decoding is this file's
-        raise ImageLoadError(f"Could not read image: {exc}") from exc
+    except Exception as exc:
+        raise unreadable(exc, "image") from exc
     return FrameSource(path, sizes)
 
 
