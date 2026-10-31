@@ -175,3 +175,16 @@ def test_the_matrix_check_catches_text_blacked_out(target, fixture_specs, monkey
     result = run_pair(fixture_specs["pdf-twelve-pages"], TARGET[target], tmp_path / "out")
     RESULTS.remove(result)
     assert result.validation == "FAILED", result.actual
+
+
+@pytest.mark.parametrize("target", ["PNG", "GIF", "PDF"])
+def test_the_matrix_check_catches_lost_notebook_output_text(target, fixture_specs, monkeypatch, tmp_path):
+    """Saved stdout dropped from the layout: the figures and their order survive, the printed results do not."""
+    original = notebook._Builder.mono_text
+
+    def mono_text(self, text, color=None):
+        original(self, "" if "SAVED_OUTPUT" in text else text, color)
+    monkeypatch.setattr(notebook._Builder, "mono_text", mono_text)
+    result = run_pair(fixture_specs["notebook-short"], TARGET[target], tmp_path / "out")
+    RESULTS.remove(result)
+    assert result.validation == "FAILED", result.actual

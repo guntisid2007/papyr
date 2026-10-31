@@ -1,5 +1,7 @@
 """What conversions do beyond format pairs: page sequences and their order, one animation per document, many files
 at once, and every setting the window offers, each checked on the files written."""
+from pathlib import Path
+
 import pypdf
 import pytest
 from PIL import Image
@@ -87,9 +89,15 @@ def test_combined_gif_holds_every_page_of_every_file_in_queue_order(fixture_spec
     assert not report.failures
     info = parse_gif(tmp_path / "All.gif")
     assert info.frames == 3 + 1 + 1 and set(info.delays_ms) == {250}
-    frames = gif_frames(tmp_path / "All.gif")
-    for first, second in zip(frames, frames[1:]):
-        assert mae(first, second) > 2
+    frames = [frame.convert("RGB").resize((200, 200)) for frame in gif_frames(tmp_path / "All.gif")]
+
+    def share(frame, color):
+        return sum(1 for p in frame.get_flattened_data() if color_distance(p, color) <= 30) / (200 * 200)
+    for number in range(3):
+        assert share(frames[number], PAGE_COLORS[number]) > 0.02 and ink(frames[number]) > 0.5, \
+            f"frame {number + 1} is not TIFF page {number + 1}"
+    assert ink(frames[3]) > 0.5 and max(share(frames[3], c) for c in PAGE_COLORS[:3]) < 0.005, "frame 4 is not the PNG"
+    assert ink(frames[4]) < 0.25 and share(frames[4], PAGE_COLORS[0]) > 0.02, "frame 5 is not the text PDF"
 
 
 @pytest.mark.pdf
@@ -371,3 +379,41 @@ def test_missing_settings_are_documented_not_faked():
     from gui.model import Control
     assert {c.name for c in Control} == {"MERGE", "MERGED_NAME", "PAGE_SIZE", "MARGINS", "QUALITY", "PDF_DPI",
                                          "GIF_MODE", "FRAME_MS", "PLAYS", "GIF_RESOLUTION"}
+
+
+def _notebook_with(tmp_path, cells) -> Path:
+    import json
+    path = tmp_path / "figure.ipynb"
+    path.write_text(json.dumps({"nbformat": 4, "nbformat_minor": 4, "metadata": {}, "cells": cells}))
+    return path
+
+
+RED_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="120"><rect width="300" height="120" fill="#e00000"/></svg>'
+
+
+@pytest.mark.notebook
+def test_an_svg_attached_to_a_markdown_cell_is_drawn(tmp_path):
+    notebook = _notebook_with(tmp_path, [{"cell_type": "markdown", "metadata": {},
+                                          "source": "Figure: ![chart](attachment:chart.svg)",
+                                          "attachments": {"chart.svg": {"image/svg+xml": RED_SVG}}}])
+    pdf = convert_individual([notebook], tmp_path / "out", PdfSettings()).outputs[0]
+    page = pdf_render(pdf, 0, 72).convert("RGB")
+    red = sum(1 for p in page.get_flattened_data() if color_distance(p, (224, 0, 0)) <= 40)
+    assert red > 2000, f"the attached SVG is missing ({red} red pixels)"
+
+
+@pytest.mark.notebook
+def test_a_figure_with_an_absurd_saved_width_still_fits_the_page(tmp_path):
+    import base64
+    import io
+    figure = io.BytesIO()
+    Image.new("RGB", (120, 60), (224, 0, 0)).save(figure, "PNG")
+    notebook = _notebook_with(tmp_path, [{"cell_type": "code", "execution_count": 1, "metadata": {}, "source": "plot()",
+                                          "outputs": [{"output_type": "display_data",
+                                                       "metadata": {"image/png": {"width": 10 ** 400}},
+                                                       "data": {"image/png": base64.b64encode(figure.getvalue()).decode()}}]}])
+    good = tmp_path / "next.png"
+    Image.new("RGB", (40, 30), "blue").save(good)
+    report = convert_individual([notebook, good], tmp_path / "out", PdfSettings())
+    assert [p.name for p in report.outputs] == ["figure.pdf", "next.pdf"] and not report.failures, report
+    assert pdf_facts(report.outputs[0]).images[0] == [(120, 60)]
