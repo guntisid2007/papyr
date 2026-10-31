@@ -2,6 +2,7 @@ import io
 import itertools
 import logging
 import os
+import shutil
 import tempfile
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
@@ -12,11 +13,12 @@ from typing import BinaryIO
 import pypdf
 
 from utils.filenames import individual_output_paths, safe_stem, unique_path
+from utils.noreplace import rename_no_replace
 
 from .animation import FrameSource, GifWriter, canvas_size, frames, measure
 from .formats import GifSettings, ImageLoadError, ImageSettings, OutputFormat, unreadable
-from .images import animation_timing, document_pdf, encode_for_pdf, is_document, is_lossless_source, iter_pages, \
-    save_animation, save_image
+from .images import PDF_ENCRYPTED, animation_timing, document_pdf, encode_for_pdf, is_document, is_lossless_source, \
+    iter_pages, pdf_is_encrypted, save_animation, save_image
 from .layout import PdfSettings, compute_placement
 from .pdf_writer import PdfWriter
 
@@ -27,7 +29,11 @@ CancelCheck = Callable[[], bool]
 # derive from BaseException and pass through.
 _ERRORS = (Exception,)
 log = logging.getLogger("papyr.convert")
-_AES = "PDF is encrypted with AES, so its pages can't be copied into a new PDF"
+# mkstemp makes files only their owner can read. A finished file gets the mode any app's new file gets instead.
+# The umask can only be read by setting it, so this happens once, at import, before any conversion thread starts.
+_UMASK = os.umask(0o022)
+os.umask(_UMASK)
+_FILE_MODE = 0o666 & ~_UMASK
 
 
 @dataclass
@@ -70,52 +76,99 @@ class _Staged:
             yield stream
             stream.flush()
             os.fsync(stream.fileno())
+        os.chmod(temp, _FILE_MODE)
         if os.path.getsize(temp) == 0:
             raise OSError(f"Writing {destination.name} produced an empty file")
 
     def commit(self, taken: set[Path], replace: bool = False) -> list[Path]:
         """Move every file into place and return where each went. A name already used on disk or in this batch
         gets a ' (n)' suffix, unless replace says the user agreed to overwrite it. If one move fails, the files
-        this commit already placed are removed again, so a source never leaves only some of its files."""
-        placed: list[Path] = []
+        this commit already placed are removed again, so a source never leaves only some of its files. A file
+        is removed only while it is still the one Papyr placed, never one another program put there since."""
+        placed: list[tuple[Path, _Identity]] = []
         try:
             for temp, destination in self._files:
                 placed.append(_place(temp, destination, taken, replace))
         except BaseException:
-            for path in placed:
-                _remove(path)
+            for path, identity in placed:
+                _remove_if_ours(path, identity)
                 taken.discard(path)
             raise
         self._files.clear()
-        return placed
+        return [path for path, _ in placed]
 
 
-def _place(temp: str, wanted: Path, taken: set[Path], replace: bool) -> Path:
+# Device, inode, and size of a file Papyr placed. Not the modification time: some network disks set it on close.
+_Identity = tuple[int, int, int]
+
+
+def _identity(info: os.stat_result) -> _Identity:
+    return info.st_dev, info.st_ino, info.st_size
+
+
+def _place(temp: str, wanted: Path, taken: set[Path], replace: bool) -> tuple[Path, _Identity]:
+    """Give temp its name. Without replace this never replaces a file, even one that appears at the chosen name
+    while Papyr moves into it: the move is an atomic no-replace rename, else a hard link, else a copy into a file
+    created exclusively. Only the copy is not atomic. A crash during it can leave a partial file under the name."""
     if replace:
         os.replace(temp, wanted)
         taken.add(wanted)
-        return wanted
+        return wanted, _identity(os.stat(wanted))
     while True:
         destination = unique_path(wanted, taken)
         taken.add(destination)
+        try:  # a real failure to move propagates; only an unsupported move falls back
+            if rename_no_replace(temp, destination):
+                return destination, _identity(os.stat(destination))
+        except FileExistsError:
+            continue  # the name appeared since unique_path looked
         try:
-            os.link(temp, destination)  # fails rather than overwrite a file that appeared since unique_path looked
+            os.link(temp, destination)
         except FileExistsError:
             continue
-        except OSError:  # a disk without hard links (FAT, some network shares): claim the name, then replace it
+        except OSError:  # no hard links on this disk (FAT, exFAT, some network shares)
             try:
-                claim = os.open(destination, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                return destination, _copy_exclusive(temp, destination)
             except FileExistsError:
                 continue
-            try:
-                os.close(claim)
-                os.replace(temp, destination)
-            except BaseException:
-                _remove(destination)
-                raise
-            return destination
         _remove(Path(temp))
-        return destination
+        return destination, _identity(os.stat(destination))
+
+
+def _copy_exclusive(temp: str, destination: Path) -> _Identity:
+    """Create destination only if it doesn't exist, and write temp's bytes through that handle. Another program
+    that replaces the name meanwhile keeps its file: Papyr's handle still points at the file Papyr created."""
+    fd = os.open(destination, os.O_CREAT | os.O_EXCL | os.O_WRONLY | getattr(os, "O_BINARY", 0), 0o666)
+    try:
+        with os.fdopen(fd, "wb", closefd=False) as out, open(temp, "rb") as source:
+            shutil.copyfileobj(source, out, 1024 * 1024)
+            out.flush()
+            os.fsync(fd)
+        identity = _identity(os.fstat(fd))
+        if _identity(os.stat(destination)) != identity:  # renamed over while copying: that file is not Papyr's
+            raise FileExistsError(f"{destination} was replaced while Papyr wrote it")
+    except BaseException:
+        info = os.fstat(fd)
+        os.close(fd)
+        _remove_if_ours(destination, _identity(info))
+        raise
+    os.close(fd)
+    _remove(Path(temp))
+    return identity
+
+
+def _remove_if_ours(path: Path, identity: _Identity) -> None:
+    """Remove a file Papyr placed, unless something else now has its name."""
+    try:
+        if _identity(os.stat(path)) != identity:
+            log.warning("Left %s in place: another program replaced it after Papyr wrote it", path)
+            return
+    except FileNotFoundError:
+        return
+    except OSError:
+        log.warning("Could not check %s", path, exc_info=True)
+        return
+    _remove(path)
 
 
 def _remove(path: Path) -> None:
@@ -153,25 +206,29 @@ def _encoded_pages(source: Path, settings: PdfSettings, cancelled: CancelCheck) 
 
 
 def _read_document(source: Path, settings: PdfSettings) -> pypdf.PdfReader:
+    """Open a document for copying into a PDF. An encrypted PDF is refused even when it opens without a password:
+    its encryption carries the owner's restrictions, and a copy would drop them."""
     pdf = document_pdf(source, settings)
+    if pdf_is_encrypted(pdf):
+        raise ImageLoadError(PDF_ENCRYPTED)
     try:
         reader = pypdf.PdfReader(io.BytesIO(pdf) if isinstance(pdf, bytes) else pdf)
-        if reader.is_encrypted and reader.decrypt("") == pypdf.PasswordType.NOT_DECRYPTED:
-            raise ImageLoadError("PDF is password-protected")
+        if reader.is_encrypted:  # PDFium saw no encryption, but pypdf would decrypt something: refuse all the same
+            raise ImageLoadError(PDF_ENCRYPTED)
         if not reader.pages:
             raise ImageLoadError("PDF has no pages")
     except ImageLoadError:
         raise
-    except pypdf.errors.DependencyError as exc:  # AES-256 is checked as the file opens
-        raise ImageLoadError(_AES) from exc
+    except pypdf.errors.DependencyError as exc:  # pypdf met AES, so the file is encrypted
+        raise ImageLoadError(PDF_ENCRYPTED) from exc
     except Exception as exc:
         raise unreadable(exc, "PDF") from exc
     return reader
 
 
 def _copy_pages(combined: pypdf.PdfWriter, reader: pypdf.PdfReader) -> None:
-    """Copy every page, or none. pypdf reads and decrypts objects as it copies them, so a damaged object, or AES
-    without the cryptography package, fails part way through."""
+    """Copy every page, or none. pypdf reads objects as it copies them, so a damaged object fails part way
+    through."""
     before = len(combined.pages)
     try:
         for page in reader.pages:
@@ -179,8 +236,6 @@ def _copy_pages(combined: pypdf.PdfWriter, reader: pypdf.PdfReader) -> None:
     except Exception as exc:
         while len(combined.pages) > before:
             combined.remove_page(len(combined.pages) - 1)
-        if isinstance(exc, pypdf.errors.DependencyError):
-            raise ImageLoadError(_AES) from exc
         raise unreadable(exc, "PDF") from exc
 
 

@@ -9,6 +9,7 @@ from typing import BinaryIO
 
 import pillow_heif
 import pypdfium2 as pdfium
+import pypdfium2.raw as pdfium_c
 from PIL import Image, ImageCms, ImageMath, ImageOps, ImageSequence, UnidentifiedImageError
 
 from .formats import ANIMATED_INPUTS, INPUT_EXTENSIONS, LOSSLESS_INPUTS, ImageLoadError, OutputFormat, unreadable
@@ -26,6 +27,9 @@ ORIENTATION_TAG = 274
 QUARTER_TURNS = frozenset({5, 6, 7, 8})  # EXIF orientations that swap width and height
 MAX_ANIMATION_PIXELS = 128 * 1024 * 1024  # an animated WebP is encoded from every frame held at once, 4 bytes each
 _PDFIUM_LOCK = threading.Lock()  # PDFium is not thread-safe; thumbnails and conversion use it concurrently
+_EXTRACT = 1 << 4  # permission bit 5 of /P: copy or otherwise extract text and graphics
+PDF_NO_COPYING = "PDF is protected and its owner doesn't allow copying its content"
+PDF_ENCRYPTED = "PDF is encrypted, so its pages can't be copied into a new PDF without losing that protection"
 _DOCUMENTS: dict[str, Callable[[Path, PdfSettings], Path | bytes]] = {
     ".pdf": lambda path, settings: path,
     ".ipynb": render_notebook,
@@ -129,13 +133,39 @@ def _render_page(document: pdfium.PdfDocument, index: int, dpi: float, fit: tupl
             page.close()
 
 
-def _open_pdf(source: Path | bytes) -> pdfium.PdfDocument:
-    """Open a PDF. Call with the PDFium lock held."""
+def _open_pdf(source: Path | bytes, export: bool = True) -> pdfium.PdfDocument:
+    """Open a PDF. Call with the PDFium lock held. With export, an encrypted PDF whose owner doesn't allow copying
+    its content is refused, because turning its pages into images would export that content. Previews don't
+    export anything, so they pass export=False."""
     try:
-        return pdfium.PdfDocument(source)
+        document = pdfium.PdfDocument(source)
     except pdfium.PdfiumError as exc:
-        message = "PDF is password-protected" if "password" in str(exc).lower() else f"Could not read PDF: {exc}"
+        text = str(exc).lower()
+        if "password" in text:
+            message = "PDF is password-protected"
+        elif "security scheme" in text:
+            message = f"PDF uses a protection scheme Papyr can't open: {exc}"
+        else:
+            message = f"Could not read PDF: {exc}"
         raise ImageLoadError(message) from exc
+    if export and is_encrypted_pdf(document) and not pdfium_c.FPDF_GetDocUserPermissions(document.raw) & _EXTRACT:
+        document.close()
+        raise ImageLoadError(PDF_NO_COPYING)
+    return document
+
+
+def is_encrypted_pdf(document: pdfium.PdfDocument) -> bool:
+    return pdfium_c.FPDF_GetSecurityHandlerRevision(document.raw) != -1
+
+
+def pdf_is_encrypted(source: Path | bytes) -> bool:
+    """Whether a PDF that opens without a password is still encrypted, which means it carries owner restrictions."""
+    with _PDFIUM_LOCK:
+        document = _open_pdf(source, export=False)
+        try:
+            return is_encrypted_pdf(document)
+        finally:
+            document.close()
 
 
 def pdf_page_sizes(source: Path | bytes) -> list[tuple[float, float]]:
@@ -154,11 +184,11 @@ def pdf_page_sizes(source: Path | bytes) -> list[tuple[float, float]]:
 
 
 def pdf_pages(source: Path | bytes, dpi: float = DEFAULT_PDF_DPI,
-              fit: tuple[int, int] | None = None) -> Iterator[Image.Image]:
+              fit: tuple[int, int] | None = None, export: bool = True) -> Iterator[Image.Image]:
     """Render each page at dpi, or as large as fits inside fit. The PDFium lock is held per call, not across
     yields, so a long conversion never blocks thumbnails."""
     with _PDFIUM_LOCK:
-        document = _open_pdf(source)
+        document = _open_pdf(source, export)
         count = len(document)
     try:
         if count == 0:
@@ -329,7 +359,7 @@ def make_thumbnail(path: Path, max_size: int) -> Image.Image:
     if not is_supported(path):
         raise ImageLoadError(f"Unsupported file type: {path.suffix or 'no extension'}")
     if is_document(path):
-        pages = pdf_pages(document_pdf(path, NOTEBOOK_IMAGE_SETTINGS), dpi=36)
+        pages = pdf_pages(document_pdf(path, NOTEBOOK_IMAGE_SETTINGS), dpi=36, export=False)
         try:
             image = next(pages).convert("RGBA")
         finally:

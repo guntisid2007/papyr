@@ -8,7 +8,11 @@ GENERIC = "This file couldn't be converted."
 _RULES: tuple[tuple[tuple[str, ...], str], ...] = (
     (("unsupported file type",), "This file format isn't supported."),
     (("password",), "This PDF is password-protected."),
-    (("encrypted with aes",), "This PDF is protected, so Papyr can only turn it into images, not a new PDF."),
+    (("doesn't allow copying",), "This PDF's security settings don't allow its content to be copied, so Papyr "
+                                 "won't convert it."),
+    (("pdf is encrypted",), "This PDF is protected. Papyr won't copy it into a new PDF, because the copy would "
+                            "lose that protection."),
+    (("protection scheme",), "This PDF uses a kind of protection Papyr can't open."),
     (("too large",), "This image is too large to convert safely."),
     (("not enough memory",), "There isn't enough memory to convert this file."),
     (("no such file", ".papyr-"), "The Save to folder was moved or deleted."),

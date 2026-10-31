@@ -201,32 +201,56 @@ def test_a_full_disk_while_writing_leaves_nothing(tmp_path, monkeypatch):
 
 
 def test_a_move_failing_part_way_takes_back_the_files_already_moved(tmp_path, monkeypatch):
-    real_link = os.link
+    real_rename = convert.rename_no_replace
     moved = []
 
-    def link(src, dst, **kw):
+    def rename(src, dst):
         if moved:
             raise OSError(errno.ENOSPC, "No space left on device")
         moved.append(dst)
-        real_link(src, dst, **kw)
-
-    def replace(src, dst, **kw):
-        raise OSError(errno.ENOSPC, "No space left on device")
-    monkeypatch.setattr(os, "link", link)
-    monkeypatch.setattr(os, "replace", replace)
+        return real_rename(src, dst)
+    monkeypatch.setattr(convert, "rename_no_replace", rename)
     out = tmp_path / "out"
     report = convert_images([tiff_with_broken_page(tmp_path / "scan.tiff", None)], out,
                             ImageSettings(OutputFormat.PNG))
-    monkeypatch.undo()
     assert moved, "the first page was moved into place before the failure"
     assert report.outputs == [] and len(report.failures) == 1
     assert files_in(out) == []
 
 
-def test_a_disk_without_hard_links_still_gets_its_files(tmp_path, monkeypatch):
+def test_taking_back_a_moved_file_spares_one_another_program_put_in_its_place(tmp_path, monkeypatch):
+    """Page 1 is in place, another program replaces it with its own file, then page 2 fails to move. Taking
+    back page 1 must not delete the other program's file."""
+    real_rename = convert.rename_no_replace
+    moved = []
+
+    def rename(src, dst):
+        if moved:
+            (moved[0].parent / "elsewhere").write_bytes(b"someone else's file")
+            os.replace(moved[0].parent / "elsewhere", moved[0])
+            raise OSError(errno.ENOSPC, "No space left on device")
+        moved.append(Path(dst))
+        return real_rename(src, dst)
+    monkeypatch.setattr(convert, "rename_no_replace", rename)
+    out = tmp_path / "out"
+    report = convert_images([tiff_with_broken_page(tmp_path / "scan.tiff", None)], out,
+                            ImageSettings(OutputFormat.PNG))
+    assert report.outputs == [] and len(report.failures) == 1
+    assert files_in(out) == ["scan-page-1.png"]
+    assert (out / "scan-page-1.png").read_bytes() == b"someone else's file"
+
+
+def no_atomic_moves(monkeypatch, link_error=errno.ENOTSUP):
+    """A disk like exFAT on macOS: no atomic no-replace rename and no hard links."""
     def no_links(src, dst, **kw):
-        raise OSError(errno.ENOTSUP, "Operation not supported")
+        raise OSError(link_error, os.strerror(link_error))
+    monkeypatch.setattr(convert, "rename_no_replace", lambda src, dst: False)
     monkeypatch.setattr(os, "link", no_links)
+
+
+@pytest.mark.parametrize("link_error", [errno.ENOTSUP, errno.EPERM, errno.EACCES])
+def test_a_disk_without_atomic_moves_still_gets_its_files(tmp_path, monkeypatch, link_error):
+    no_atomic_moves(monkeypatch, link_error)
     out = tmp_path / "out"
     out.mkdir()
     (out / "scan-page-1.png").write_bytes(b"keep me")
@@ -234,6 +258,7 @@ def test_a_disk_without_hard_links_still_gets_its_files(tmp_path, monkeypatch):
                             ImageSettings(OutputFormat.PNG))
     assert [p.name for p in report.outputs] == ["scan-page-1 (1).png", "scan-page-2.png", "scan-page-3.png"]
     assert (out / "scan-page-1.png").read_bytes() == b"keep me"
+    assert [Image.open(p).size for p in report.outputs] == [(24, 16)] * 3
     no_temporaries(out)
 
 
@@ -304,34 +329,80 @@ def test_an_unexpected_error_is_that_files_failure_and_keeps_the_rest(tmp_path, 
     assert not any("bad" in p for p in files_in(tmp_path / "out"))
 
 
-def test_without_hard_links_a_name_taken_mid_run_is_still_not_overwritten(tmp_path, monkeypatch):
-    """Without hard links the name is claimed with an exclusive create, so a file another program writes just
-    before the move keeps its bytes and the conversion takes the next name."""
+def test_without_atomic_moves_a_name_taken_mid_run_is_still_not_overwritten(tmp_path, monkeypatch):
+    """The name is created exclusively, so a file another program writes just before the copy keeps its bytes and
+    the conversion takes the next name."""
     out = tmp_path / "out"
+    no_atomic_moves(monkeypatch)
 
-    def no_links_and_a_competitor(src, dst, **kw):
+    def competitor_first(src, dst, **kw):
         if not (out / "photo.png").exists():
             (out / "photo.png").write_bytes(b"someone else's file")
         raise OSError(errno.ENOTSUP, "Operation not supported")
-    monkeypatch.setattr(os, "link", no_links_and_a_competitor)
+    monkeypatch.setattr(os, "link", competitor_first)
     report = convert_images([good_png(tmp_path / "photo.png")], out, ImageSettings(OutputFormat.PNG))
     assert (out / "photo.png").read_bytes() == b"someone else's file"
     assert [p.name for p in report.outputs] == ["photo (1).png"]
     assert Image.open(report.outputs[0]).size == (40, 30)
 
 
-def test_a_failed_name_claim_leaves_no_empty_file(tmp_path, monkeypatch):
-    def no_links(src, dst, **kw):
-        raise OSError(errno.ENOTSUP, "Operation not supported")
-    real_close = os.close
+def test_without_atomic_moves_a_name_replaced_during_the_copy_keeps_the_other_file(tmp_path, monkeypatch):
+    """The narrow race the audit found: another program renames its file over Papyr's freshly created name while
+    Papyr copies into it. Its file survives, and Papyr writes its own under the next name instead of claiming
+    the replaced one as its output."""
+    out = tmp_path / "out"
+    no_atomic_moves(monkeypatch)
+    real_copy = convert.shutil.copyfileobj
+    raced = []
 
-    def close_then_fail(fd):
-        real_close(fd)
-        raise OSError(errno.EIO, "I/O error")
-    monkeypatch.setattr(os, "link", no_links)
-    monkeypatch.setattr(os, "close", close_then_fail)
+    def copy_then_race(source, target, *args):
+        real_copy(source, target, *args)
+        if not raced:
+            raced.append(1)
+            (out / "theirs").write_bytes(b"someone else's file")
+            os.replace(out / "theirs", out / "photo.png")
+    monkeypatch.setattr(convert.shutil, "copyfileobj", copy_then_race)
+    report = convert_images([good_png(tmp_path / "photo.png")], out, ImageSettings(OutputFormat.PNG))
+    assert not report.failures
+    assert (out / "photo.png").read_bytes() == b"someone else's file"
+    assert [p.name for p in report.outputs] == ["photo (1).png"]
+    assert Image.open(report.outputs[0]).size == (40, 30)
+    no_temporaries(out)
+
+
+def test_without_atomic_moves_a_failed_copy_leaves_no_file(tmp_path, monkeypatch):
+    no_atomic_moves(monkeypatch)
+    real_fsync = os.fsync
+
+    def fail_on_the_copy(fd):
+        if any(p.name == "photo.png" for p in (tmp_path / "out").iterdir()):
+            raise OSError(errno.EIO, "I/O error")
+        real_fsync(fd)
+    monkeypatch.setattr(os, "fsync", fail_on_the_copy)
     out = tmp_path / "out"
     report = convert_images([good_png(tmp_path / "photo.png")], out, ImageSettings(OutputFormat.PNG))
     monkeypatch.undo()
     assert report.outputs == [] and len(report.failures) == 1
     assert files_in(out) == []
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="Windows has no POSIX file modes")
+@pytest.mark.parametrize("name", list(ENTRY_POINTS))
+def test_converted_files_get_the_usual_permissions_not_owner_only(tmp_path, name):
+    """Staged files start as mkstemp's owner-only 0600. Papyr 2.3.1 left its outputs that way, so other accounts
+    and some shared folders couldn't read them."""
+    umask = os.umask(0o022)
+    os.umask(umask)
+    report = ENTRY_POINTS[name]([good_png(tmp_path / "photo.png")], tmp_path / "out")
+    assert report.outputs and not report.failures
+    for path in report.outputs:
+        assert stat.S_IMODE(path.stat().st_mode) == 0o666 & ~umask, f"{path.name}: {oct(path.stat().st_mode)}"
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="Windows has no POSIX file modes")
+def test_without_atomic_moves_files_get_the_usual_permissions_too(tmp_path, monkeypatch):
+    no_atomic_moves(monkeypatch)
+    umask = os.umask(0o022)
+    os.umask(umask)
+    report = convert_images([good_png(tmp_path / "photo.png")], tmp_path / "out", ImageSettings(OutputFormat.PNG))
+    assert stat.S_IMODE(report.outputs[0].stat().st_mode) == 0o666 & ~umask

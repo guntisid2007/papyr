@@ -9,6 +9,7 @@ from pypdf import PdfReader
 from converter import (ImageSettings, OutputFormat, PageSize, PdfSettings, convert_images, convert_individual,
                        convert_merged)
 from pdf_samples import encrypted_pdf, text_pdf
+from utils.errors import friendly_error
 
 RED, BLUE = (230, 20, 20), (20, 20, 230)
 SIZE = (64, 48)
@@ -193,7 +194,9 @@ print("ok")
 
 
 @pytest.mark.parametrize("output", [OutputFormat.PDF, OutputFormat.PNG], ids=lambda f: f.name)
-def test_pdf_with_empty_user_password_converts(tmp_path, output):
+def test_pdf_with_empty_user_password_becomes_images_but_not_a_new_pdf(tmp_path, output):
+    """It opens without a password, so it can be read, but its encryption carries the owner's restrictions. A copy
+    into a new PDF would drop them, so PDF output refuses it. Its owner allows copying, so pictures are fine."""
     import pypdf
     source = tmp_path / "restricted.pdf"
     writer = pypdf.PdfWriter(clone_from=text_pdf(tmp_path / "plain.pdf", ["Readable"]))
@@ -202,10 +205,12 @@ def test_pdf_with_empty_user_password_converts(tmp_path, output):
         writer.write(stream)
     if output is OutputFormat.PDF:
         report = convert_individual([source], tmp_path / "out", ORIGINAL)
-        assert "Readable" in PdfReader(report.outputs[0]).pages[0].extract_text()
+        assert report.outputs == [] and [friendly_error(r) for _, r in report.failures] == [
+            "This PDF is protected. Papyr won't copy it into a new PDF, because the copy would lose that protection."]
+        assert not (tmp_path / "out").exists() or list((tmp_path / "out").iterdir()) == []
     else:
         report = convert_images([source], tmp_path / "out", ImageSettings(output))
-    assert report.failures == [] and len(report.outputs) == 1
+        assert report.failures == [] and len(report.outputs) == 1
 
 
 def test_pdfium_bitmap_is_freed_under_the_lock_even_on_error(tmp_path, monkeypatch):

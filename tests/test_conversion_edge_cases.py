@@ -147,34 +147,128 @@ def test_password_protected_pdfs_say_so(tmp_path):
     assert_fails_cleanly(encrypted_pdf(tmp_path / "locked.pdf"), tmp_path / "out", "This PDF is password-protected.")
 
 
-@pytest.mark.pdf
-def test_a_pdf_with_only_an_owner_password_opens_like_any_other(tmp_path):
-    source = text_pdf(tmp_path / "plain.pdf", ["PAGE_001", "PAGE_002"])
+COPY_DENIED = "This PDF's security settings don't allow its content to be copied, so Papyr won't convert it."
+PROTECTED = "This PDF is protected. Papyr won't copy it into a new PDF, because the copy would lose that protection."
+
+
+def _rc4(path: Path, algorithm: str = "RC4-128", permissions: int | None = None) -> Path:
+    """Text pages encrypted with an empty user password: anyone can open them, and /P holds the owner's limits."""
+    source = text_pdf(path.with_name(f"plain-{path.name}"), ["PAGE_001", "PAGE_002"])
     writer = pypdf.PdfWriter(clone_from=source)
-    writer.encrypt(user_password="", owner_password="owner", algorithm="RC4-128")
-    locked = tmp_path / "restricted.pdf"
-    with open(locked, "wb") as stream:
-        writer.write(stream)
-    for target, report in run_everywhere(locked, tmp_path / "out"):
-        assert not report.failures, f"{target.key}: {report.failures}"
-    assert pdf_facts(tmp_path / "out" / "PDF" / "restricted.pdf").pages == 2
+    options = {} if permissions is None else {"permissions_flag": permissions}
+    writer.encrypt("", "owner", algorithm=algorithm, **options)
+    writer.write(path)
+    return path
+
+
+def _copyable(tmp_path: Path, kind: str) -> Path:
+    return FIXTURES / f"copyable-{kind}.pdf" if kind.startswith("aes") else _rc4(tmp_path / f"{kind}.pdf", kind.upper())
+
+
+def _copy_denied(tmp_path: Path, kind: str) -> Path:
+    return FIXTURES / f"restricted-{kind}.pdf" if kind.startswith("aes") else _rc4(tmp_path / f"{kind}.pdf",
+                                                                                 permissions=0)
 
 
 @pytest.mark.pdf
-@pytest.mark.parametrize("name", ["restricted-aes-128.pdf", "restricted-aes-256.pdf"])
-def test_aes_restricted_pdfs_never_end_the_batch(tmp_path, name):
-    """Owner-restricted PDFs (no password to open) usually use AES. pypdf needs the cryptography package to copy
-    their pages, and its error escaped the converter, so every file after one in the queue was lost."""
+@pytest.mark.parametrize("kind", ["rc4-40", "rc4-128", "aes-128", "aes-256"])
+def test_an_encrypted_pdf_that_allows_copying_becomes_images_but_never_a_new_pdf(tmp_path, kind):
+    """A copy into a new PDF would drop the owner's restrictions, so PDF output refuses every encrypted PDF.
+    Pictures of its pages are a copy the owner allowed."""
+    source = _copyable(tmp_path, kind)
+    for target, report in run_everywhere(source, tmp_path / "out"):
+        if target.format is OutputFormat.PDF:
+            assert not report.outputs, f"{target.key}: copied an encrypted PDF into {report.outputs}"
+            assert [friendly_error(r) for _, r in report.failures] == [PROTECTED], f"{target.key}: {report}"
+        else:
+            assert not report.failures, f"{target.key}: {report.failures}"
+            animated = target.format is OutputFormat.GIF and target.key != "GIF_SEPARATE"
+            assert len(report.outputs) == (1 if animated else 2), f"{target.key}: {report.outputs}"
+    assert not (tmp_path / "out" / "PDF").exists() or leftovers(tmp_path / "out" / "PDF") == []
+
+
+@pytest.mark.pdf
+@pytest.mark.parametrize("kind", ["rc4-128", "aes-128", "aes-256"])
+def test_an_encrypted_pdf_that_forbids_copying_is_refused_for_every_output(tmp_path, kind):
+    """The owner set /P without the copy bit. Rendering its pages to pictures would export what it protects."""
+    source = _copy_denied(tmp_path, kind)
+    for target, report in run_everywhere(source, tmp_path / "out"):
+        assert not report.outputs, f"{target.key}: wrote {report.outputs}"
+        expected = PROTECTED if target.format is OutputFormat.PDF else COPY_DENIED
+        assert [friendly_error(r) for _, r in report.failures] == [expected], f"{target.key}: {report.failures}"
+    assert leftovers(tmp_path / "out") == []
+
+
+@pytest.mark.pdf
+@pytest.mark.parametrize("name", ["restricted-aes-128.pdf", "restricted-aes-256.pdf", "copyable-aes-256.pdf"])
+def test_a_protected_pdf_never_ends_the_batch(tmp_path, name):
     sources = [FIXTURES / name, FIXTURES / "outside.png"]
     for target in OFFERED:
         options = Options(format=target.format, gif_mode=target.gif_mode)
         job = plan_job(options, QueueSummary(count=2, has_document=True), sources, tmp_path / target.key)
         report = job(lambda *a: None, lambda: False)
-        assert any(p.stem == "outside" for p in report.outputs) or target.key == "GIF", f"{target.key}: {report}"
+        assert any(p.stem == "outside" for p in report.outputs) or report.outputs and target.format is \
+            OutputFormat.GIF, f"{target.key}: {report}"
         for path, reason in report.failures:
-            assert path.name == name and friendly_error(reason) != GENERIC, f"{target.key}: {reason}"
-        if target.format is not OutputFormat.PDF:
-            assert not report.failures, f"{target.key} reads AES through PDFium: {report.failures}"
+            assert path.name == name and friendly_error(reason) in (PROTECTED, COPY_DENIED), f"{target.key}: {reason}"
+
+
+@pytest.mark.pdf
+def test_a_merged_pdf_leaves_out_an_encrypted_file_and_keeps_the_rest(tmp_path):
+    locked = _rc4(tmp_path / "locked.pdf")
+    report = convert_merged([locked, text_pdf(tmp_path / "next.pdf", ["NEXT_PAGE"])], tmp_path / "All.pdf",
+                            PdfSettings())
+    assert [(p.name, friendly_error(r)) for p, r in report.failures] == [("locked.pdf", PROTECTED)]
+    facts = pdf_facts(tmp_path / "All.pdf")
+    assert facts.pages == 1 and "NEXT_PAGE" in facts.texts[0]
+    assert pypdf.PdfReader(tmp_path / "All.pdf").is_encrypted is False
+
+
+@pytest.mark.pdf
+def test_a_pdf_that_needs_a_password_to_open_is_refused_for_aes_too(tmp_path):
+    assert_fails_cleanly(FIXTURES / "password-aes-256.pdf", tmp_path / "out", "This PDF is password-protected.")
+
+
+@pytest.mark.pdf
+def test_a_copy_denied_pdf_still_shows_a_preview(tmp_path):
+    """A thumbnail in the window is viewing, which every PDF allows once it opens. Nothing is written."""
+    from converter.images import make_thumbnail
+    assert make_thumbnail(FIXTURES / "restricted-aes-128.pdf", 64).size == (64, 64)
+
+
+def _malformed_encryption(path: Path, key: str, value) -> Path:
+    from pypdf.generic import NameObject, NumberObject, TextStringObject
+    values = {"bogus-name": NameObject("/Bogus"), "99": NumberObject(99), "text": TextStringObject("abc"),
+              "pkcs7": NameObject("/adbe.pkcs7.s4")}
+    source = text_pdf(path.with_name(f"plain-{path.name}"), ["MALFORMED"])
+    writer = pypdf.PdfWriter(clone_from=source)
+    writer.encrypt("", "owner", algorithm="RC4-128")
+    if value is None:
+        del writer._encrypt_entry[NameObject(key)]
+    else:
+        writer._encrypt_entry[NameObject(key)] = values[value]
+    writer.write(path)
+    return path
+
+
+MALFORMED = {"unknown-filter": ("/Filter", "bogus-name"), "unknown-version": ("/V", "99"),
+             "unknown-revision": ("/R", "99"), "no-owner-key": ("/O", None), "no-permissions": ("/P", None),
+             "permissions-not-a-number": ("/P", "text"), "short-user-key": ("/U", "text")}
+
+
+@pytest.mark.pdf
+@pytest.mark.parametrize("case", sorted(MALFORMED))
+def test_malformed_encryption_fails_that_file_with_a_reason_and_the_batch_goes_on(tmp_path, case):
+    bad = _malformed_encryption(tmp_path / f"{case}.pdf", *MALFORMED[case])
+    good = tmp_path / "good.png"
+    Image.new("RGB", (40, 30), "blue").save(good)
+    for name, run in ENTRY_POINTS:
+        report = run([bad, good], tmp_path / name)
+        assert report.outputs, f"{name}: the good file was not converted: {report}"
+        assert [p.name for p, _ in report.failures] == [bad.name], f"{name}: {report.failures}"
+        reason = friendly_error(report.failures[0][1])
+        assert reason not in (GENERIC,), f"{name}: {report.failures[0][1]}"
+        assert not any("MALFORMED" in "".join(pdf_facts(o).texts) for o in report.outputs if o.suffix == ".pdf")
 
 
 def _png_header_only(path: Path, width: int, height: int) -> Path:
@@ -340,22 +434,9 @@ def test_any_decoder_error_in_one_picture_is_that_files_failure(tmp_path, name, 
         [("broken.tiff", "The file appears to be damaged.")], name
 
 
-def _encrypted_with(path: Path, edit) -> Path:
-    source = text_pdf(path.with_name(f"plain-{path.name}"), ["RESTRICTED_BUT_COPYABLE"])
-    writer = pypdf.PdfWriter(clone_from=source)
-    writer.encrypt("", "owner", algorithm="RC4-128")
-    edit(writer)
-    writer.write(path)
-    return path
-
-
 @pytest.mark.pdf
-def test_a_pdf_pypdf_cannot_open_is_one_failure_on_pdf_output(tmp_path):
-    from pypdf.generic import NameObject
-
-    def unusual_handler(writer):
-        writer._encrypt_entry[NameObject("/SubFilter")] = NameObject("/adbe.pkcs7.s4")
-    bad = _encrypted_with(tmp_path / "unusual.pdf", unusual_handler)
+def test_an_unusual_encryption_handler_is_one_failure_and_the_batch_goes_on(tmp_path):
+    bad = _malformed_encryption(tmp_path / "unusual.pdf", "/SubFilter", "pkcs7")
     good = text_pdf(tmp_path / "good.pdf", ["VALID_AFTER_BAD"])
     for name, run in ENTRY_POINTS:
         report = run([bad, good], tmp_path / name)
@@ -364,56 +445,6 @@ def test_a_pdf_pypdf_cannot_open_is_one_failure_on_pdf_output(tmp_path):
             assert path.name == "unusual.pdf" and friendly_error(reason) != GENERIC, f"{name}: {reason}"
     merged = convert_merged([bad, good], tmp_path / "m" / "All.pdf", PdfSettings())
     assert "VALID_AFTER_BAD" in "".join(pdf_facts(merged.outputs[0]).texts)
-
-
-@pytest.mark.pdf
-def test_an_rc4_pdf_that_also_lists_an_unused_aes_filter_still_copies(tmp_path):
-    from pypdf.generic import DictionaryObject, NameObject
-
-    def rc4_v4_with_spare_aes(writer):
-        writer.encrypt("", "owner", algorithm="AES-128")
-        writer._encryption.StmF = writer._encryption.StrF = writer._encryption.EFF = "/V2"
-        entry = writer._encrypt_entry
-        entry["/CF"]["/StdCF"][NameObject("/CFM")] = NameObject("/V2")
-        entry["/CF"][NameObject("/UnusedAES")] = DictionaryObject({NameObject("/CFM"): NameObject("/AESV2")})
-    try:
-        restricted = _encrypted_with(tmp_path / "rc4-v4.pdf", rc4_v4_with_spare_aes)
-    except pypdf.errors.DependencyError:
-        pytest.skip("this pypdf needs cryptography even to write the AES-128 dictionary")
-    report = convert_individual([restricted], tmp_path / "out", PdfSettings())
-    assert not report.failures, report.failures
-    assert "RESTRICTED_BUT_COPYABLE" in pdf_facts(report.outputs[0]).texts[0]
-
-
-def _rc4_with_spare_aes_declarations(writer, variant):
-    from pypdf.generic import DictionaryObject, NameObject
-    aes = DictionaryObject({NameObject("/CFM"): NameObject("/AESV2")})
-    entry = writer._encrypt_entry
-    if variant == "v2":  # /V 2 ignores crypt filters entirely
-        entry[NameObject("/CF")] = DictionaryObject({NameObject("/SpareAES"): aes})
-        for key in ("/StmF", "/StrF", "/EFF"):
-            entry[NameObject(key)] = NameObject("/SpareAES")
-    else:  # /V 4, AES only for attachments, and there are none
-        writer.encrypt("", "owner", algorithm="AES-128")
-        entry = writer._encrypt_entry
-        writer._encryption.StmF = writer._encryption.StrF = "/V2"
-        writer._encryption.EFF = "/AESV2"
-        entry["/CF"]["/StdCF"][NameObject("/CFM")] = NameObject("/V2")
-        entry["/CF"][NameObject("/AttachmentAES")] = aes
-        entry[NameObject("/EFF")] = NameObject("/AttachmentAES")
-
-
-@pytest.mark.pdf
-@pytest.mark.parametrize("variant", ["v2", "v4-attachments-only"])
-def test_restricted_pdfs_copy_whenever_their_pages_need_no_aes(tmp_path, variant):
-    try:
-        restricted = _encrypted_with(tmp_path / f"{variant}.pdf", lambda w: _rc4_with_spare_aes_declarations(w, variant))
-    except pypdf.errors.DependencyError:
-        pytest.skip("this pypdf needs cryptography even to write the AES-128 dictionary")
-    report = convert_merged([restricted, text_pdf(tmp_path / "next.pdf", ["NEXT"])], tmp_path / "All.pdf",
-                            PdfSettings())
-    assert not report.failures, report.failures
-    assert pdf_facts(tmp_path / "All.pdf").pages == 2
 
 
 def test_running_out_of_memory_on_one_file_says_so_and_the_batch_goes_on(fixture_specs, tmp_path, monkeypatch):

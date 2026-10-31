@@ -86,12 +86,16 @@ def test_a_damaged_pdf_in_the_queue_does_not_cost_the_other_files(app, window, f
     data[len(data) // 3:len(data) // 3 + 2000] = b"\x00" * 2000
     damaged = tmp_path / "damaged.pdf"
     damaged.write_bytes(bytes(data))
-    drop_onto(window, [damaged, fixture_specs["png-landscape"].path(), FIXTURES / "restricted-aes-128.pdf"])
+    drop_onto(window, [damaged, fixture_specs["png-landscape"].path(), FIXTURES / "copyable-aes-128.pdf",
+                       FIXTURES / "restricted-aes-128.pdf"])
     choose_format(window, OutputFormat.PNG)
     convert(app, window)
     result = window.state().result
-    assert "png-landscape.png" in [p.name for p in result.outputs], result
-    assert [f.reason for f in result.failures] == ["The file appears to be damaged."]
+    names = [p.name for p in result.outputs]
+    assert "png-landscape.png" in names and "copyable-aes-128-page-2.png" in names, result
+    assert [f.reason for f in result.failures] == [
+        "The file appears to be damaged.",
+        "This PDF's security settings don't allow its content to be copied, so Papyr won't convert it."]
     assert window.done.retry_button.isVisible()
 
     window.done.back_button.click()
@@ -99,6 +103,7 @@ def test_a_damaged_pdf_in_the_queue_does_not_cost_the_other_files(app, window, f
     convert(app, window)
     result = window.state().result
     assert "png-landscape.pdf" in [p.name for p in result.outputs], result
+    assert not any("aes" in p.name for p in result.outputs), "an encrypted PDF was copied into a new PDF"
     assert all(f.reason != "This file couldn't be converted." for f in result.failures), result.failures
     rows = [window.done.failures.item(i).data(Qt.ItemDataRole.AccessibleTextRole)
             for i in range(window.done.failures.count())]
