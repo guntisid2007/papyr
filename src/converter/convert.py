@@ -102,10 +102,16 @@ def _place(temp: str, wanted: Path, taken: set[Path], replace: bool) -> Path:
             os.link(temp, destination)  # fails rather than overwrite a file that appeared since unique_path looked
         except FileExistsError:
             continue
-        except OSError:  # a disk without hard links (FAT, some network shares)
-            if os.path.lexists(destination):
+        except OSError:  # a disk without hard links (FAT, some network shares): claim the name, then replace it
+            try:
+                os.close(os.open(destination, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+            except FileExistsError:
                 continue
-            os.rename(temp, destination)
+            try:
+                os.replace(temp, destination)
+            except BaseException:
+                _remove(destination)
+                raise
             return destination
         _remove(Path(temp))
         return destination
@@ -300,8 +306,10 @@ def _stage_images(staged: _Staged, source: Path, output_dir: Path, settings: Ima
     stem = safe_stem(source.stem)
     timing = animation_timing(source) if settings.keeps_animation or settings.every_frame else None
     if timing is not None and settings.keeps_animation:
+        _check(cancelled)
         with staged.file(output_dir / f"{stem}{fmt.extension}") as stream:
             save_animation(source, timing, stream, settings.quality)
+        _check(cancelled)
         return
     every_frame = settings.every_frame and timing is not None
     pages = iter_pages(source, keep_alpha=fmt.keeps_alpha, pdf_dpi=settings.pdf_dpi, every_frame=every_frame)

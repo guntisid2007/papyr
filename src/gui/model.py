@@ -199,7 +199,7 @@ _NEEDS: dict[Control, Callable[[Options, QueueSummary], bool]] = {
     Control.MERGE: lambda options, queue: queue.count >= 2,
     Control.MERGED_NAME: lambda options, queue: options.merges(queue),
     Control.PDF_DPI: lambda options, queue: queue.has_document and not options.animates(queue),
-    Control.GIF_MODE: lambda options, queue: queue.count >= 2 or queue.may_have_pages,
+    Control.GIF_MODE: lambda options, queue: queue.count >= 2 or queue.may_have_pages or queue.has_animation,
     Control.FRAME_MS: Options.animates,
     Control.PLAYS: Options.animates,
     Control.GIF_RESOLUTION: Options.animates,

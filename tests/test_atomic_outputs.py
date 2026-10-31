@@ -201,7 +201,7 @@ def test_a_full_disk_while_writing_leaves_nothing(tmp_path, monkeypatch):
 
 
 def test_a_move_failing_part_way_takes_back_the_files_already_moved(tmp_path, monkeypatch):
-    real_link, real_rename = os.link, os.rename
+    real_link = os.link
     moved = []
 
     def link(src, dst, **kw):
@@ -210,14 +210,14 @@ def test_a_move_failing_part_way_takes_back_the_files_already_moved(tmp_path, mo
         moved.append(dst)
         real_link(src, dst, **kw)
 
-    def rename(src, dst, **kw):
+    def replace(src, dst, **kw):
         raise OSError(errno.ENOSPC, "No space left on device")
     monkeypatch.setattr(os, "link", link)
-    monkeypatch.setattr(os, "rename", rename)
+    monkeypatch.setattr(os, "replace", replace)
     out = tmp_path / "out"
     report = convert_images([tiff_with_broken_page(tmp_path / "scan.tiff", None)], out,
                             ImageSettings(OutputFormat.PNG))
-    monkeypatch.setattr(os, "rename", real_rename)
+    monkeypatch.undo()
     assert moved, "the first page was moved into place before the failure"
     assert report.outputs == [] and len(report.failures) == 1
     assert files_in(out) == []
@@ -302,3 +302,19 @@ def test_an_unexpected_error_is_that_files_failure_and_keeps_the_rest(tmp_path, 
     assert [p.name for p, _ in report.failures] == ["bad.png"]
     assert report.outputs and all(p.exists() for p in report.outputs)
     assert not any("bad" in p for p in files_in(tmp_path / "out"))
+
+
+def test_without_hard_links_a_name_taken_mid_run_is_still_not_overwritten(tmp_path, monkeypatch):
+    """Without hard links the name is claimed with an exclusive create, so a file another program writes just
+    before the move keeps its bytes and the conversion takes the next name."""
+    out = tmp_path / "out"
+
+    def no_links_and_a_competitor(src, dst, **kw):
+        if not (out / "photo.png").exists():
+            (out / "photo.png").write_bytes(b"someone else's file")
+        raise OSError(errno.ENOTSUP, "Operation not supported")
+    monkeypatch.setattr(os, "link", no_links_and_a_competitor)
+    report = convert_images([good_png(tmp_path / "photo.png")], out, ImageSettings(OutputFormat.PNG))
+    assert (out / "photo.png").read_bytes() == b"someone else's file"
+    assert [p.name for p in report.outputs] == ["photo (1).png"]
+    assert Image.open(report.outputs[0]).size == (40, 30)

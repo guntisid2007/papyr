@@ -7,12 +7,10 @@ from typing import BinaryIO
 from PIL import GifImagePlugin, Image, ImageSequence
 
 from .formats import GifSettings, ImageLoadError, unreadable
-from .images import NOTEBOOK_IMAGE_SETTINGS, Timing, animation_timing, document_pdf, is_document, is_supported, \
-    iter_pages, pdf_page_sizes, pdf_pages, to_gif_palette
+from .images import NOTEBOOK_IMAGE_SETTINGS, ORIENTATION_TAG, QUARTER_TURNS, Timing, animation_timing, document_pdf, \
+    is_document, is_supported, iter_pages, pdf_page_sizes, pdf_pages, to_gif_palette
 
 Size = tuple[int, int]
-_ORIENTATION = 274
-_QUARTER_TURNS = frozenset({5, 6, 7, 8})
 
 
 @dataclass(frozen=True)
@@ -52,7 +50,7 @@ def measure(path: Path) -> FrameSource:
 
 def _upright(frame: Image.Image) -> Size:
     """The frame's size once its EXIF orientation is applied. Pillow opens a TIFF with that already done."""
-    turned = frame.format != "TIFF" and frame.getexif().get(_ORIENTATION) in _QUARTER_TURNS
+    turned = frame.format != "TIFF" and frame.getexif().get(ORIENTATION_TAG) in QUARTER_TURNS
     return (frame.height, frame.width) if turned else frame.size
 
 

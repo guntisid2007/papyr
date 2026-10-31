@@ -178,3 +178,9 @@ def test_every_frame_reaches_the_engine_and_is_remembered(tmp_path):
     options.save(settings)
     assert Options.load(settings).every_frame
     assert not Options.load(QSettings(str(tmp_path / "empty.ini"), QSettings.Format.IniFormat)).every_frame
+
+
+def test_one_animated_file_can_still_choose_how_gif_output_animates():
+    animated = QueueSummary(count=1, has_animation=True)
+    assert Control.GIF_MODE in controls_for(Options(format=OutputFormat.GIF), animated)
+    assert Control.GIF_MODE not in controls_for(Options(format=OutputFormat.GIF), ONE)

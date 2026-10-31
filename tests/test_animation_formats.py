@@ -212,3 +212,32 @@ def test_identical_frames_in_a_webp_keep_the_total_time(tmp_path):
     frames, durations, _ = read(webp)
     assert durations == [500, 400]
     assert mae(frames[0], red.convert("RGBA")) < 3 and mae(frames[1], blue.convert("RGBA")) < 3
+
+
+def test_cancelling_while_an_animation_is_read_writes_nothing(tmp_path, monkeypatch):
+    import converter.convert as convert
+    real, asked = convert.animation_timing, []
+
+    def timing_then_cancel(path):
+        found = real(path)
+        asked.append(1)
+        return found
+    monkeypatch.setattr(convert, "animation_timing", timing_then_cancel)
+    report = convert_images([animation(tmp_path / "clip.gif")], tmp_path / "out", ImageSettings(OutputFormat.WEBP),
+                            cancelled=lambda: bool(asked))
+    assert report.cancelled and not report.outputs
+    assert not list((tmp_path / "out").glob("*")) if (tmp_path / "out").exists() else True
+
+
+def test_a_turned_animation_keeps_its_full_upright_size(tmp_path):
+    exif = Image.Exif()
+    exif[0x0112] = 6
+    source = tmp_path / "portrait.webp"
+    Image.new("RGB", (80, 40), "red").save(source, save_all=True, append_images=[Image.new("RGB", (80, 40), "blue")],
+                                           duration=[100, 200], loop=0, lossless=True, exif=exif)
+    assert animation_timing(source).size == (40, 80)
+    [gif] = convert_animated_gifs([source], tmp_path / "gif", GifSettings()).outputs
+    [webp] = convert_images([source], tmp_path / "webp", ImageSettings(OutputFormat.WEBP)).outputs
+    for out in (gif, webp):
+        with Image.open(out) as image:
+            assert image.size == (40, 80), out.name

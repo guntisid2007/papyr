@@ -22,6 +22,8 @@ DEEP_GRAY_MODES = frozenset({"I", "I;16", "I;16B", "I;16L"})
 PDF_EMBED_JPEG_QUALITY = 92
 DEFAULT_PDF_DPI = 200
 NOTEBOOK_IMAGE_SETTINGS = PdfSettings(PageSize.ORIGINAL, 15)
+ORIENTATION_TAG = 274
+QUARTER_TURNS = frozenset({5, 6, 7, 8})  # EXIF orientations that swap width and height
 MAX_ANIMATION_PIXELS = 128 * 1024 * 1024  # an animated WebP is encoded from every frame held at once, 4 bytes each
 _PDFIUM_LOCK = threading.Lock()  # PDFium is not thread-safe; thumbnails and conversion use it concurrently
 _DOCUMENTS: dict[str, Callable[[Path, PdfSettings], Path | bytes]] = {
@@ -216,7 +218,8 @@ def animation_timing(path: Path) -> Timing | None:
             if not getattr(image, "is_animated", False):
                 return None
             loop = image.info.get("loop")
-            size = image.size
+            turned = image.getexif().get(ORIENTATION_TAG) in QUARTER_TURNS  # frames are decoded upright
+            size = (image.height, image.width) if turned else image.size
             durations = tuple(_duration(frame) for frame in ImageSequence.Iterator(image))
             gif = image.format == "GIF"
     except Image.DecompressionBombError as exc:
