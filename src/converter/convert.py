@@ -1,3 +1,4 @@
+import importlib.util
 import io
 import itertools
 import logging
@@ -23,6 +24,7 @@ ProgressCallback = Callable[[int, int, Path], None]
 CancelCheck = Callable[[], bool]
 _ERRORS = (ImageLoadError, OSError, ValueError, pypdf.errors.PyPdfError)
 log = logging.getLogger("papyr.convert")
+_AES = "PDF is encrypted with AES, so its pages can't be copied into a new PDF"
 
 
 @dataclass
@@ -83,12 +85,26 @@ def _encoded_pages(source: Path, settings: PdfSettings, cancelled: CancelCheck) 
 
 def _read_document(source: Path, settings: PdfSettings) -> pypdf.PdfReader:
     pdf = document_pdf(source, settings)
-    reader = pypdf.PdfReader(io.BytesIO(pdf) if isinstance(pdf, bytes) else pdf)
+    try:
+        reader = pypdf.PdfReader(io.BytesIO(pdf) if isinstance(pdf, bytes) else pdf)
+    except pypdf.errors.DependencyError as exc:  # AES-256 is checked as the file opens
+        raise ImageLoadError(_AES) from exc
+    if reader.is_encrypted and _uses_aes(reader) and importlib.util.find_spec("cryptography") is None:
+        raise ImageLoadError(_AES)
     if reader.is_encrypted and reader.decrypt("") == pypdf.PasswordType.NOT_DECRYPTED:
         raise ImageLoadError("PDF is password-protected")
     if not reader.pages:
         raise ImageLoadError("PDF has no pages")
     return reader
+
+
+def _uses_aes(reader: pypdf.PdfReader) -> bool:
+    """pypdf decrypts AES only with the cryptography package, and only as each object is copied, so a PDF that
+    opens without a password would fail part way through. Decide before copying anything."""
+    encrypt = reader.trailer["/Encrypt"].get_object()
+    filters = encrypt["/CF"].get_object() if "/CF" in encrypt else {}
+    return encrypt.get("/V", 0) >= 5 or any(f.get_object().get("/CFM") in ("/AESV2", "/AESV3")
+                                             for f in filters.values())
 
 
 def _write_pdf(stream: BinaryIO, sources: list[Path], settings: PdfSettings, report: ConversionReport,

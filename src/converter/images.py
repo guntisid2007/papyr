@@ -106,7 +106,10 @@ def _flatten(image: Image.Image) -> Image.Image:
 
 def _render_page(document: pdfium.PdfDocument, index: int, dpi: float, fit: tuple[int, int] | None) -> Image.Image:
     with _PDFIUM_LOCK:
-        page = document[index]
+        try:
+            page = document[index]
+        except pdfium.PdfiumError as exc:  # a damaged page in a document PDFium could open
+            raise ImageLoadError(f"Could not read page {index + 1} of the PDF: {exc}") from exc
         try:
             width, height = page.get_size()
             scale = min(fit[0] / width, fit[1] / height) if fit else dpi / 72
@@ -137,6 +140,8 @@ def pdf_page_sizes(source: Path | bytes) -> list[tuple[float, float]]:
         document = _open_pdf(source)
         try:
             sizes = [document.get_page_size(index) for index in range(len(document))]
+        except pdfium.PdfiumError as exc:
+            raise ImageLoadError(f"Could not read the PDF's pages: {exc}") from exc
         finally:
             document.close()
     if not sizes:

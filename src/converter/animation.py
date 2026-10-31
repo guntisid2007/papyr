@@ -7,8 +7,8 @@ from typing import BinaryIO
 from PIL import GifImagePlugin, Image, ImageSequence, UnidentifiedImageError
 
 from .formats import GifSettings, ImageLoadError
-from .images import NOTEBOOK_IMAGE_SETTINGS, document_pdf, is_document, iter_pages, pdf_page_sizes, pdf_pages, \
-    to_gif_palette
+from .images import NOTEBOOK_IMAGE_SETTINGS, document_pdf, is_document, is_supported, iter_pages, pdf_page_sizes, \
+    pdf_pages, to_gif_palette
 
 Size = tuple[int, int]
 _ORIENTATION = 274
@@ -30,6 +30,8 @@ class FrameSource:
 
 
 def measure(path: Path) -> FrameSource:
+    if not is_supported(path):
+        raise ImageLoadError(f"Unsupported file type: {path.suffix or 'no extension'}")
     if is_document(path):
         pdf = document_pdf(path, NOTEBOOK_IMAGE_SETTINGS)
         return FrameSource(path, tuple(pdf_page_sizes(pdf)), pdf)

@@ -151,7 +151,9 @@ def parse_notebook(raw: bytes) -> Notebook:
         notebook = json.loads(raw)
     except ValueError as exc:
         raise ImageLoadError(f"Not a valid notebook: {exc}") from exc
-    if not isinstance(notebook, dict) or notebook.get("nbformat") != 4:
+    if not isinstance(notebook, dict):
+        raise ImageLoadError("Not a valid notebook: the file holds JSON, but not a notebook")
+    if notebook.get("nbformat") != 4:
         raise ImageLoadError("Only Jupyter notebooks in format 4 are supported")
     if not isinstance(notebook.get("cells"), list):
         raise ImageLoadError("Notebook has no list of cells")
