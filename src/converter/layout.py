@@ -18,6 +18,7 @@ class PageSize(Enum):
 class PdfSettings:
     page_size: PageSize = PageSize.A4
     margin_mm: float = 10.0
+    every_frame: bool = False  # an animated GIF or WebP gives a page per frame, not only its first
 
     @property
     def margin_pt(self) -> float:

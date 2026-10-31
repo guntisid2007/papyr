@@ -6,15 +6,24 @@ _RESERVED = frozenset({"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1,
                        *(f"LPT{i}" for i in range(1, 10))})
 
 
+MAX_STEM_BYTES = 180  # file systems allow 255 bytes; this leaves room for '-frame-0001 (12).heic'
+
+
+def safe_stem(name: str, fallback: str = "Converted") -> str:
+    """A name part that is legal on every desktop file system and short enough for any suffix Papyr adds."""
+    stem = _ILLEGAL.sub("_", name.strip()).strip(" .")
+    stem = stem.encode()[:MAX_STEM_BYTES].decode(errors="ignore").rstrip(" .")
+    if not stem or stem.split(".")[0].upper() in _RESERVED:
+        return fallback
+    return stem
+
+
 def sanitize_name(name: str, extension: str, fallback: str = "Converted") -> str:
     """Turn user input into a safe file name that ends in extension."""
     stem = name.strip()
     if stem.lower().endswith(extension):
         stem = stem[:-len(extension)]
-    stem = _ILLEGAL.sub("_", stem).strip(" .")
-    if not stem or stem.upper() in _RESERVED:
-        stem = fallback
-    return f"{stem[:200]}{extension}"
+    return f"{safe_stem(stem, fallback)}{extension}"
 
 
 def unique_path(path: Path, taken: set[Path] = frozenset()) -> Path:

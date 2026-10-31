@@ -45,6 +45,7 @@ class QueueSummary:
     has_document: bool = False
     total_bytes: int = 0
     has_tiff: bool = False
+    has_animation: bool = False  # an animated GIF or WebP
 
     @property
     def may_have_pages(self) -> bool:
@@ -66,6 +67,7 @@ class Control(Enum):
     FRAME_MS = auto()
     PLAYS = auto()
     GIF_RESOLUTION = auto()
+    EVERY_FRAME = auto()
 
 
 class GifMode(Enum):
@@ -82,13 +84,14 @@ class GifMode(Enum):
 
 
 def _image_controls(fmt: OutputFormat) -> tuple[Control, ...]:
-    return (Control.QUALITY,) * fmt.has_quality + (Control.PDF_DPI,)
+    return (Control.QUALITY,) * fmt.has_quality + (Control.PDF_DPI, Control.EVERY_FRAME)
 
 
 FORMAT_CONTROLS: dict[OutputFormat, tuple[Control, ...]] = {
-    fmt: (Control.MERGE, Control.MERGED_NAME, Control.PAGE_SIZE, Control.MARGINS) if fmt is OutputFormat.PDF
+    fmt: (Control.MERGE, Control.MERGED_NAME, Control.PAGE_SIZE, Control.MARGINS, Control.EVERY_FRAME)
+    if fmt is OutputFormat.PDF
     else (Control.GIF_MODE, Control.MERGED_NAME, Control.FRAME_MS, Control.PLAYS, Control.GIF_RESOLUTION,
-          Control.PDF_DPI) if fmt is OutputFormat.GIF
+          Control.PDF_DPI, Control.EVERY_FRAME) if fmt is OutputFormat.GIF
     else _image_controls(fmt)
     for fmt in OutputFormat
 }
@@ -106,6 +109,7 @@ class Options:
     frame_ms: int = 1000
     plays: int = 0  # 0 plays forever
     gif_resolution: GifResolution = GifResolution.BALANCED
+    every_frame: bool = False
 
     def with_(self, **changes) -> "Options":
         return replace(self, **changes)
@@ -121,11 +125,17 @@ class Options:
         return self.format is OutputFormat.GIF and (
             self.merges(queue) or (self.gif_mode is not GifMode.SEPARATE and queue.may_have_pages))
 
+    def keeps_animation(self) -> bool:
+        """An animated GIF or WebP stays an animation: WebP output, or GIF output that animates."""
+        if self.format is OutputFormat.GIF:
+            return self.gif_mode is not GifMode.SEPARATE
+        return self.image_settings().keeps_animation
+
     def pdf_settings(self) -> PdfSettings:
-        return PdfSettings(self.page_size, self.margin_mm)
+        return PdfSettings(self.page_size, self.margin_mm, self.every_frame)
 
     def image_settings(self) -> ImageSettings:
-        return ImageSettings(self.format, self.quality, self.pdf_dpi)
+        return ImageSettings(self.format, self.quality, self.pdf_dpi, self.every_frame)
 
     def gif_settings(self) -> GifSettings:
         return GifSettings(self.frame_ms, self.plays, self.gif_resolution)
@@ -163,7 +173,8 @@ class Options:
                    frame_ms=round_frame_ms(number("gif_frame_ms", default.frame_ms, *FRAME_MS_RANGE)),
                    plays=plays,
                    gif_resolution=GifResolution.__members__.get(str(settings.value("gif_resolution")),
-                                                                default.gif_resolution))
+                                                                default.gif_resolution),
+                   every_frame=str(settings.value("every_frame", "false")).lower() == "true")
 
     def save(self, settings: QSettings) -> None:
         settings.setValue("output_format", self.format.name)
@@ -177,11 +188,13 @@ class Options:
         settings.setValue("gif_frame_ms", self.frame_ms)
         settings.setValue("gif_plays", self.plays)
         settings.setValue("gif_resolution", self.gif_resolution.name)
+        settings.setValue("every_frame", self.every_frame)
 
 
 # Some settings only mean something for certain files or choices: merging needs two files, the merged file's
 # name needs merging on, and the page resolution only applies to PDFs and notebooks being turned into still images.
 # A GIF's animation choice needs pages or files to animate, and its timing and frame size need an animation.
+# Every frame applies to animated GIF and WebP files going to a format that can't keep them animated.
 _NEEDS: dict[Control, Callable[[Options, QueueSummary], bool]] = {
     Control.MERGE: lambda options, queue: queue.count >= 2,
     Control.MERGED_NAME: lambda options, queue: options.merges(queue),
@@ -190,6 +203,7 @@ _NEEDS: dict[Control, Callable[[Options, QueueSummary], bool]] = {
     Control.FRAME_MS: Options.animates,
     Control.PLAYS: Options.animates,
     Control.GIF_RESOLUTION: Options.animates,
+    Control.EVERY_FRAME: lambda options, queue: queue.has_animation and not options.keeps_animation(),
 }
 
 

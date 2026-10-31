@@ -5,23 +5,27 @@ import os
 import tempfile
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import BinaryIO
 
 import pypdf
 
-from utils.filenames import individual_output_paths, unique_path
+from utils.filenames import individual_output_paths, safe_stem, unique_path
 
 from .animation import FrameSource, GifWriter, canvas_size, frames, measure
 from .formats import GifSettings, ImageLoadError, ImageSettings, OutputFormat, unreadable
-from .images import document_pdf, encode_for_pdf, is_document, is_lossless_source, iter_pages, save_image
+from .images import animation_timing, document_pdf, encode_for_pdf, is_document, is_lossless_source, iter_pages, \
+    save_animation, save_image
 from .layout import PdfSettings, compute_placement
 from .pdf_writer import PdfWriter
 
 ProgressCallback = Callable[[int, int, Path], None]
 CancelCheck = Callable[[], bool]
-_ERRORS = (ImageLoadError, OSError, ValueError, pypdf.errors.PyPdfError)
+# Decoders and encoders raise whatever type a malformed file or a full disk trips, so any exception while converting
+# one source is that source's failure. Cancelling and finding nothing readable are control flow, not errors, so they
+# derive from BaseException and pass through.
+_ERRORS = (Exception,)
 log = logging.getLogger("papyr.convert")
 _AES = "PDF is encrypted with AES, so its pages can't be copied into a new PDF"
 
@@ -33,26 +37,85 @@ class ConversionReport:
     cancelled: bool = False
 
 
-class _Cancelled(Exception):
+class _Cancelled(BaseException):
     pass
 
 
-class _NothingReadable(Exception):
+class _NothingReadable(BaseException):
     pass
 
 
-@contextmanager
-def _atomic_file(destination: Path):
-    """Write to a hidden temp file next to the destination and move it into place on success."""
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    fd, temp_name = tempfile.mkstemp(prefix=".papyr-", suffix=".part", dir=destination.parent)
-    try:
+class _Staged:
+    """The new files from one source. Each is written to a hidden temporary file in its destination folder, so
+    nothing appears under a real name until every file is complete, and moving one into place is a rename on
+    the same disk. Leaving the block without commit removes them all."""
+
+    def __init__(self):
+        self._files: list[tuple[str, Path]] = []  # (temporary file, the name it should get)
+
+    def __enter__(self) -> "_Staged":
+        return self
+
+    def __exit__(self, *exc) -> None:
+        for temp, _ in self._files:
+            _remove(Path(temp))
+        self._files.clear()
+
+    @contextmanager
+    def file(self, destination: Path) -> Iterator[BinaryIO]:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        fd, temp = tempfile.mkstemp(prefix=".papyr-", suffix=".part", dir=destination.parent)
+        self._files.append((temp, destination))
         with os.fdopen(fd, "wb") as stream:
             yield stream
-        os.replace(temp_name, destination)
-    finally:
-        if os.path.exists(temp_name):
-            os.remove(temp_name)
+            stream.flush()
+            os.fsync(stream.fileno())
+        if os.path.getsize(temp) == 0:
+            raise OSError(f"Writing {destination.name} produced an empty file")
+
+    def commit(self, taken: set[Path], replace: bool = False) -> list[Path]:
+        """Move every file into place and return where each went. A name already used on disk or in this batch
+        gets a ' (n)' suffix, unless replace says the user agreed to overwrite it. If one move fails, the files
+        this commit already placed are removed again, so a source never leaves only some of its files."""
+        placed: list[Path] = []
+        try:
+            for temp, destination in self._files:
+                placed.append(_place(temp, destination, taken, replace))
+        except BaseException:
+            for path in placed:
+                _remove(path)
+                taken.discard(path)
+            raise
+        self._files.clear()
+        return placed
+
+
+def _place(temp: str, wanted: Path, taken: set[Path], replace: bool) -> Path:
+    if replace:
+        os.replace(temp, wanted)
+        taken.add(wanted)
+        return wanted
+    while True:
+        destination = unique_path(wanted, taken)
+        taken.add(destination)
+        try:
+            os.link(temp, destination)  # fails rather than overwrite a file that appeared since unique_path looked
+        except FileExistsError:
+            continue
+        except OSError:  # a disk without hard links (FAT, some network shares)
+            if os.path.lexists(destination):
+                continue
+            os.rename(temp, destination)
+            return destination
+        _remove(Path(temp))
+        return destination
+
+
+def _remove(path: Path) -> None:
+    try:
+        path.unlink(missing_ok=True)
+    except OSError:
+        log.warning("Could not remove %s", path, exc_info=True)
 
 
 def _fail(report: ConversionReport, path: Path, exc: Exception) -> None:
@@ -76,7 +139,7 @@ def _check(cancelled: CancelCheck) -> None:
 
 def _encoded_pages(source: Path, settings: PdfSettings, cancelled: CancelCheck) -> Iterator[tuple]:
     lossless = is_lossless_source(source)
-    for page in iter_pages(source):
+    for page in iter_pages(source, every_frame=settings.every_frame):
         _check(cancelled)
         encoded = encode_for_pdf(page, lossless)
         yield encoded, compute_placement(encoded.width, encoded.height, settings)
@@ -166,14 +229,16 @@ def convert_individual(sources: list[Path], output_dir: Path, settings: PdfSetti
                        ) -> ConversionReport:
     """Write one PDF per source, named after it."""
     report = ConversionReport()
+    taken: set[Path] = set()
     destinations = individual_output_paths(sources, output_dir, ".pdf")
     try:
         for index, (source, destination) in enumerate(zip(sources, destinations)):
             try:
-                with _atomic_file(destination) as stream:
-                    _write_pdf(stream, [source], settings, report,
-                               lambda _, path: progress(index, len(sources), path), cancelled)
-                report.outputs.append(destination)
+                with _Staged() as staged:
+                    with staged.file(destination) as stream:
+                        _write_pdf(stream, [source], settings, report,
+                                   lambda _, path: progress(index, len(sources), path), cancelled)
+                    report.outputs += staged.commit(taken)
             except _NothingReadable:
                 pass  # _write_pdf already recorded why this source failed
             except _ERRORS as exc:
@@ -187,13 +252,15 @@ def convert_individual(sources: list[Path], output_dir: Path, settings: PdfSetti
 def convert_merged(sources: list[Path], destination: Path, settings: PdfSettings,
                    progress: ProgressCallback = _noop, cancelled: CancelCheck = _never
                    ) -> ConversionReport:
-    """Write every readable source into one PDF, in order. Unreadable files are skipped and reported."""
+    """Write every readable source into one PDF, in order. Unreadable files are skipped and reported. The window
+    asks before destination is replaced."""
     report = ConversionReport()
     try:
-        with _atomic_file(destination) as stream:
-            _write_pdf(stream, sources, settings, report,
-                       lambda index, path: progress(index, len(sources), path), cancelled)
-        report.outputs.append(destination)
+        with _Staged() as staged:
+            with staged.file(destination) as stream:
+                _write_pdf(stream, sources, settings, report,
+                           lambda index, path: progress(index, len(sources), path), cancelled)
+            report.outputs += staged.commit(set(), replace=True)
     except _Cancelled:
         report.cancelled = True
     except _NothingReadable:
@@ -207,37 +274,53 @@ def convert_merged(sources: list[Path], destination: Path, settings: PdfSettings
 def convert_images(sources: list[Path], output_dir: Path, settings: ImageSettings,
                    progress: ProgressCallback = _noop, cancelled: CancelCheck = _never
                    ) -> ConversionReport:
-    """Write every page of every source as an image file. Multi-page sources get '-page-N' names."""
+    """Write every page of every source as an image file. Multi-page sources get '-page-N' names, and the frames
+    of an animation '-frame-NNN'. A source's files appear only once all of them are written."""
     report = ConversionReport()
     taken: set[Path] = set()
-    ext = settings.format.extension
     try:
         for index, source in enumerate(sources):
             _check(cancelled)
             progress(index, len(sources), source)
-            pages = iter_pages(source, keep_alpha=settings.format.keeps_alpha, pdf_dpi=settings.pdf_dpi)
             try:
-                first = next(pages)
-                second = next(pages, None)
-                numbered = second is not None
-                all_pages = itertools.chain([first] if second is None else [first, second], pages)
-                for number, page in enumerate(all_pages, start=1):
-                    _check(cancelled)
-                    name = f"{source.stem}-page-{_page_label(number, settings.format)}{ext}" if numbered \
-                        else f"{source.stem}{ext}"
-                    destination = unique_path(output_dir / name, taken)
-                    taken.add(destination)
-                    with _atomic_file(destination) as stream:
-                        save_image(page, stream, settings.format, settings.quality)
-                    report.outputs.append(destination)
+                with _Staged() as staged:
+                    _stage_images(staged, source, output_dir, settings, cancelled)
+                    report.outputs += staged.commit(taken)
             except _ERRORS as exc:
                 _fail(report, source, exc)
-            finally:
-                pages.close()
     except _Cancelled:
         report.cancelled = True
     progress(len(sources), len(sources), sources[-1] if sources else Path())
     return report
+
+
+def _stage_images(staged: _Staged, source: Path, output_dir: Path, settings: ImageSettings,
+                  cancelled: CancelCheck) -> None:
+    fmt = settings.format
+    stem = safe_stem(source.stem)
+    timing = animation_timing(source) if settings.keeps_animation or settings.every_frame else None
+    if timing is not None and settings.keeps_animation:
+        with staged.file(output_dir / f"{stem}{fmt.extension}") as stream:
+            save_animation(source, timing, stream, settings.quality)
+        return
+    every_frame = settings.every_frame and timing is not None
+    pages = iter_pages(source, keep_alpha=fmt.keeps_alpha, pdf_dpi=settings.pdf_dpi, every_frame=every_frame)
+    try:
+        first = next(pages)
+        second = next(pages, None)
+        all_pages = itertools.chain([first] if second is None else [first, second], pages)
+        for number, page in enumerate(all_pages, start=1):
+            _check(cancelled)
+            if second is None:
+                name = stem
+            elif every_frame:
+                name = f"{stem}-frame-{number:0{max(3, len(str(len(timing.durations))))}d}"
+            else:
+                name = f"{stem}-page-{_page_label(number, fmt)}"
+            with staged.file(output_dir / f"{name}{fmt.extension}") as stream:
+                save_image(page, stream, fmt, settings.quality)
+    finally:
+        pages.close()
 
 
 def _page_label(number: int, fmt: OutputFormat) -> str:
@@ -247,18 +330,21 @@ def _page_label(number: int, fmt: OutputFormat) -> str:
 
 def _write_animation(stream: BinaryIO, sources: list[FrameSource], settings: GifSettings, report: ConversionReport,
                      progress: Callable[[int, Path], None], cancelled: CancelCheck) -> None:
-    """Write every page of every source as one frame, in order. A source that fails while decoding is reported
-    and the animation goes on without its remaining pages."""
+    """Write every page of every source as one frame, in order. An animated source keeps its own frame durations.
+    A source that fails while decoding is reported, and none of its frames are kept."""
     canvas = canvas_size(sources, settings.resolution.long_side)
     writer = GifWriter(stream, settings)
     for index, source in enumerate(sources):
         _check(cancelled)
         progress(index, source.path)
+        durations = source.timing.durations if source.timing else (None,) * len(source.sizes)
+        checkpoint = writer.checkpoint()
         try:
-            for frame in frames(source, canvas):
+            for frame, duration in zip(frames(source, canvas), durations, strict=True):
                 _check(cancelled)
-                writer.add(frame)
+                writer.add(frame, duration)
         except _ERRORS as exc:
+            writer.rollback(checkpoint)
             _fail(report, source.path, exc)
     if not writer.frame_count:
         raise _NothingReadable
@@ -270,8 +356,10 @@ def convert_animated_gifs(sources: list[Path], output_dir: Path, settings: GifSe
                           progress: ProgressCallback = _noop, cancelled: CancelCheck = _never
                           ) -> ConversionReport:
     """Write one GIF per source, named after it. Every page of a PDF, notebook, or multi-page TIFF becomes a
-    frame of one animation; a single picture becomes a still GIF at its own size."""
+    frame of one animation; an animated GIF or WebP keeps its own frames, timing, and plays; a single picture
+    becomes a still GIF at its own size."""
     report = ConversionReport()
+    taken: set[Path] = set()
     destinations = individual_output_paths(sources, output_dir, OutputFormat.GIF.extension)
     try:
         for index, (source, destination) in enumerate(zip(sources, destinations)):
@@ -279,16 +367,18 @@ def convert_animated_gifs(sources: list[Path], output_dir: Path, settings: GifSe
             progress(index, len(sources), source)
             try:
                 measured = measure(source)
-                with _atomic_file(destination) as stream:
-                    if measured.is_still:
-                        pages = iter_pages(source, keep_alpha=True)
-                        try:
-                            save_image(next(pages), stream, OutputFormat.GIF, 0)
-                        finally:
-                            pages.close()
-                    else:
-                        _write_animation(stream, [measured], settings, report, lambda *_: None, cancelled)
-                report.outputs.append(destination)
+                own = replace(settings, plays=measured.timing.plays) if measured.timing else settings
+                with _Staged() as staged:
+                    with staged.file(destination) as stream:
+                        if measured.is_still:
+                            pages = iter_pages(source, keep_alpha=True)
+                            try:
+                                save_image(next(pages), stream, OutputFormat.GIF, 0)
+                            finally:
+                                pages.close()
+                        else:
+                            _write_animation(stream, [measured], own, report, lambda *_: None, cancelled)
+                    report.outputs += staged.commit(taken)
             except _NothingReadable:
                 pass  # _write_animation already recorded why this source failed
             except _ERRORS as exc:
@@ -314,10 +404,11 @@ def convert_combined_gif(sources: list[Path], destination: Path, settings: GifSe
                 _fail(report, source, exc)
         if not measured:
             raise _NothingReadable
-        with _atomic_file(destination) as stream:
-            _write_animation(stream, measured, settings, report,
-                             lambda index, path: progress(sources.index(path), len(sources), path), cancelled)
-        report.outputs.append(destination)
+        with _Staged() as staged:
+            with staged.file(destination) as stream:
+                _write_animation(stream, measured, settings, report,
+                                 lambda index, path: progress(sources.index(path), len(sources), path), cancelled)
+            report.outputs += staged.commit(set(), replace=True)
     except _Cancelled:
         report.cancelled = True
     except _NothingReadable:

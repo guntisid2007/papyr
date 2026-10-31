@@ -21,7 +21,7 @@ from PIL import Image, features
 from converter import INPUT_EXTENSIONS, OutputFormat
 from converter.images import NOTEBOOK_IMAGE_SETTINGS
 from converter.notebook import render_notebook
-from fixture_factory import ALPHA_PROBES, EXECUTION_SENTINEL, PAGE_COLORS, FixtureSpec
+from fixture_factory import ALPHA_PROBES, EXECUTION_SENTINEL, PAGE_COLORS, ROOT, FixtureSpec
 from gui.model import GifMode, Options, QueueSummary, plan_job
 from validators import (alpha_at, band_color, color_distance, fit_on_page, gif_frames, ink, is_solid, mae,
                         parse_gif, pdf_facts, pdf_page_count_pdfium, pdf_render, quadrant_mae, second_decoder, sniff,
@@ -137,6 +137,11 @@ def animates(spec: FixtureSpec, target: Target) -> bool:
     return target.key == "GIF" and (spec.kind != "raster" or len(spec.pages) > 1)
 
 
+def keeps_animation(spec: FixtureSpec, target: Target) -> bool:
+    """An animated input written to an animation format stays one animation with its own timing."""
+    return spec.animated_frames > 1 and (target.key == "GIF" or target.format is OutputFormat.WEBP)
+
+
 def expected_names(spec: FixtureSpec, target: Target, pages: int) -> list[str]:
     stem = Path(spec.file_name).stem
     ext = target.format.extension
@@ -150,8 +155,10 @@ def expected_behavior(spec: FixtureSpec, target: Target) -> str:
     if not target.offered:
         return "not offered"
     pages = "each page" if spec.kind != "raster" or len(spec.pages) > 1 else "the picture"
+    if keeps_animation(spec, target):
+        return f"one animated {target.format.label}, all {spec.animated_frames} frames, 200 ms each, loops forever"
     if spec.animated_frames > 1:
-        pages = "the first frame only (animated inputs are read as their first frame)"
+        pages = "the first frame only (Every frame is off by default)"
     if target.format is OutputFormat.PDF:
         return f"one PDF with {pages} as a page" + (", text kept" if spec.kind != "raster" else ", on A4")
     if target.key == "GIF" and animates(spec, target):
@@ -264,6 +271,8 @@ def validate(spec, target, report, out_dir, on_disk, progress) -> tuple[list[str
     try:
         if target.format is OutputFormat.PDF:
             _check_pdf(spec, files[0], pages, problems, facts)
+        elif keeps_animation(spec, target):
+            _check_kept_animation(spec, target, files[0], problems, facts)
         elif target.key == "GIF" and animates(spec, target):
             _check_animation(spec, files[0], pages, problems, facts)
         else:
@@ -509,6 +518,54 @@ def _check_animation(spec, file, pages, problems, facts) -> None:
             problems.append(f"frame {number} looks like page {scores.index(max(scores)) + 1}")
     facts["actual"] = f"1 GIF, {info.frames} frames at {info.width}x{info.height}, delays " \
                       f"{sorted(set(info.delays_ms))} ms, loop {info.loop}"
+
+
+def _check_kept_animation(spec, target, file, problems, facts) -> None:
+    """Every source frame, in order, with its 200 ms and the loop forever, read back by Pillow and counted by Qt."""
+    fmt = target.format
+    if (kind := sniff(file)) != SNIFFED[fmt]:
+        problems.append(f"{file.name}: bytes say {kind}, expected {SNIFFED[fmt]}")
+    want = spec.animated_frames
+    with Image.open(file) as image:
+        loop = image.info.get("loop")
+        frames, durations = [], []
+        for index in range(getattr(image, "n_frames", 1)):
+            image.seek(index)
+            frames.append(image.convert("RGBA"))
+            durations.append(image.info.get("duration"))  # WebP sets it only once the frame is decoded
+    facts["decoders"] += ["Pillow"]
+    if fmt is OutputFormat.GIF:
+        info = parse_gif(file)
+        facts["decoders"].append("GIF parser")
+        durations, loop = info.delays_ms, info.loop
+        if info.frames != len(frames):
+            problems.append(f"the GIF holds {info.frames} frames, Pillow decodes {len(frames)}")
+    if len(frames) != want:
+        problems.append(f"{len(frames)} frames, expected {want}")
+    if durations != [200] * len(frames):
+        problems.append(f"frame durations {durations} ms, expected 200 each")
+    if loop != 0:
+        problems.append(f"loop {loop}, expected 0 (forever)")
+    from PySide6.QtGui import QImageReader
+    if (qt_count := QImageReader(str(file)).imageCount()) not in (len(frames), 0):
+        problems.append(f"Qt counts {qt_count} frames, Pillow {len(frames)}")
+    facts["decoders"].append("Qt")
+    whole, quarter = _tolerance(spec, fmt)
+    for number, (frame, reference) in enumerate(zip(frames, spec.extra["frames"]), start=1):
+        with Image.open(ROOT / "reference" / reference) as image:
+            expected = image.convert("RGBA")
+        if frame.size != expected.size:
+            problems.append(f"frame {number}: {frame.size}, expected {expected.size}")
+            continue
+        diff, worst = mae(frame, expected, 512), quadrant_mae(frame, expected)
+        if diff > whole or worst > quarter:
+            problems.append(f"frame {number} differs from source frame {number} by {diff:.1f} "
+                            f"(worst quarter {worst:.1f}); allowed {whole}/{quarter}")
+        scores = [_presence(frame, color) for color in PAGE_COLORS[:want]]
+        if scores.index(max(scores)) != number - 1:
+            problems.append(f"frame {number} looks like source frame {scores.index(max(scores)) + 1}")
+    facts["actual"] = f"1 animated {fmt.label}, {len(frames)} frames, durations {sorted(set(durations))} ms, " \
+                      f"loop {loop}"
 
 
 # PDFs

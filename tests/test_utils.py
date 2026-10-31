@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from utils.filenames import individual_output_paths, sanitize_name, unique_path
+from utils.filenames import individual_output_paths, safe_stem, sanitize_name, unique_path
 from utils.files import FolderProblem, collect_images, folder_problem, human_size
 
 
@@ -24,7 +24,17 @@ def test_sanitize_name(raw, expected):
 
 
 def test_sanitize_truncates_long_names():
-    assert len(sanitize_name("x" * 500, ".pdf")) == 204
+    assert len(sanitize_name("x" * 500, ".pdf")) == 184
+
+
+@pytest.mark.parametrize("raw", ["é" * 200, "漢" * 200, "😀" * 100])
+def test_long_names_fit_in_255_bytes_with_every_suffix(raw):
+    name = f"{safe_stem(raw)}-frame-0001 (12).heic"
+    assert len(name.encode()) <= 255 and name.encode().decode() == name
+
+
+def test_safe_stem_refuses_windows_device_names_with_dots():
+    assert safe_stem("con.backup") == "Converted" and safe_stem("console") == "console"
 
 
 def test_unique_path_skips_existing(tmp_path):

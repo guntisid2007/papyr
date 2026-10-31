@@ -26,12 +26,12 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
  "output_targets": 11,
  "possible_pairs": 121,
  "declared": {
-  "SUPPORTED": 110,
-  "UNSUPPORTED_BY_DESIGN": 11
+  "UNSUPPORTED_BY_DESIGN": 11,
+  "SUPPORTED": 110
  },
  "pair_status": {
-  "PASSED": 110,
-  "UNSUPPORTED_BY_DESIGN": 11
+  "UNSUPPORTED_BY_DESIGN": 11,
+  "PASSED": 110
  },
  "conversions_run": 500,
  "conversion_status": {
@@ -58,22 +58,22 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
 | HEIC | JPEG | SUPPORTED | heic-portrait | one JPEG file per page for the picture | 1 JPEG file(s), 360x540 | PASSED | 0.01 | 23167 | Pillow, Qt |  |
 | HEIC | JPEG | SUPPORTED | heic-tiny | one JPEG file per page for the picture | 1 JPEG file(s), 24x16 | PASSED | 0.00 | 499 | Pillow, Qt |  |
 | HEIC | PNG | SUPPORTED | heic-exif-rotated | one PNG file per page for the picture | 1 PNG file(s), 640x400 | PASSED | 0.02 | 52301 | Pillow, Qt |  |
-| HEIC | PNG | SUPPORTED | heic-hires | one PNG file per page for the picture | 1 PNG file(s), 3200x2000 | PASSED | 0.16 | 177701 | Pillow, Qt |  |
+| HEIC | PNG | SUPPORTED | heic-hires | one PNG file per page for the picture | 1 PNG file(s), 3200x2000 | PASSED | 0.15 | 177701 | Pillow, Qt |  |
 | HEIC | PNG | SUPPORTED | heic-landscape | one PNG file per page for the picture, transparency kept | 1 PNG file(s), 640x400 | PASSED | 0.02 | 60214 | Pillow, Qt |  |
 | HEIC | PNG | SUPPORTED | heic-portrait | one PNG file per page for the picture | 1 PNG file(s), 360x540 | PASSED | 0.01 | 44679 | Pillow, Qt |  |
 | HEIC | PNG | SUPPORTED | heic-tiny | one PNG file per page for the picture | 1 PNG file(s), 24x16 | PASSED | 0.00 | 620 | Pillow, Qt |  |
-| HEIC | HEIC | SUPPORTED | heic-exif-rotated | one HEIC file per page for the picture | 1 HEIC file(s), 640x400 | PASSED | 0.08 | 45944 | Pillow, Qt |  |
-| HEIC | HEIC | SUPPORTED | heic-hires | one HEIC file per page for the picture | 1 HEIC file(s), 3200x2000 | PASSED | 0.55 | 292237 | Pillow, Qt |  |
+| HEIC | HEIC | SUPPORTED | heic-exif-rotated | one HEIC file per page for the picture | 1 HEIC file(s), 640x400 | PASSED | 0.07 | 45944 | Pillow, Qt |  |
+| HEIC | HEIC | SUPPORTED | heic-hires | one HEIC file per page for the picture | 1 HEIC file(s), 3200x2000 | PASSED | 0.52 | 292237 | Pillow, Qt |  |
 | HEIC | HEIC | SUPPORTED | heic-landscape | one HEIC file per page for the picture, transparency kept | 1 HEIC file(s), 640x400 | PASSED | 0.09 | 46560 | Pillow, Qt |  |
 | HEIC | HEIC | SUPPORTED | heic-portrait | one HEIC file per page for the picture | 1 HEIC file(s), 360x540 | PASSED | 0.09 | 38499 | Pillow, Qt |  |
 | HEIC | HEIC | SUPPORTED | heic-tiny | one HEIC file per page for the picture | 1 HEIC file(s), 24x16 | PASSED | 0.01 | 1068 | Pillow, Qt |  |
 | HEIC | WEBP | SUPPORTED | heic-exif-rotated | one WebP file per page for the picture | 1 WebP file(s), 640x400 | PASSED | 0.02 | 11356 | Pillow, Qt |  |
-| HEIC | WEBP | SUPPORTED | heic-hires | one WebP file per page for the picture | 1 WebP file(s), 3200x2000 | PASSED | 0.28 | 75906 | Pillow, Qt |  |
+| HEIC | WEBP | SUPPORTED | heic-hires | one WebP file per page for the picture | 1 WebP file(s), 3200x2000 | PASSED | 0.27 | 75906 | Pillow, Qt |  |
 | HEIC | WEBP | SUPPORTED | heic-landscape | one WebP file per page for the picture, transparency kept | 1 WebP file(s), 640x400 | PASSED | 0.02 | 12046 | Pillow, Qt |  |
 | HEIC | WEBP | SUPPORTED | heic-portrait | one WebP file per page for the picture | 1 WebP file(s), 360x540 | PASSED | 0.01 | 9468 | Pillow, Qt |  |
 | HEIC | WEBP | SUPPORTED | heic-tiny | one WebP file per page for the picture | 1 WebP file(s), 24x16 | PASSED | 0.00 | 202 | Pillow, Qt |  |
 | HEIC | AVIF | SUPPORTED | heic-exif-rotated | one AVIF file per page for the picture | 1 AVIF file(s), 640x400 | PASSED | 0.03 | 13304 | Pillow, sips |  |
-| HEIC | AVIF | SUPPORTED | heic-hires | one AVIF file per page for the picture | 1 AVIF file(s), 3200x2000 | PASSED | 0.23 | 95121 | Pillow, sips |  |
+| HEIC | AVIF | SUPPORTED | heic-hires | one AVIF file per page for the picture | 1 AVIF file(s), 3200x2000 | PASSED | 0.22 | 95121 | Pillow, sips |  |
 | HEIC | AVIF | SUPPORTED | heic-landscape | one AVIF file per page for the picture, transparency kept | 1 AVIF file(s), 640x400 | PASSED | 0.03 | 14577 | Pillow, sips |  |
 | HEIC | AVIF | SUPPORTED | heic-portrait | one AVIF file per page for the picture | 1 AVIF file(s), 360x540 | PASSED | 0.03 | 10191 | Pillow, sips |  |
 | HEIC | AVIF | SUPPORTED | heic-tiny | one AVIF file per page for the picture | 1 AVIF file(s), 24x16 | PASSED | 0.00 | 427 | Pillow, sips |  |
@@ -102,39 +102,39 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
 | HEIC | IPYNB | UNSUPPORTED_BY_DESIGN | heic-landscape | not offered | Papyr never writes notebooks; there is no notebook output format | UNSUPPORTED_BY_DESIGN | 0.00 | 0 |  |  |
 | HEIC | IPYNB | UNSUPPORTED_BY_DESIGN | heic-portrait | not offered | Papyr never writes notebooks; there is no notebook output format | UNSUPPORTED_BY_DESIGN | 0.00 | 0 |  |  |
 | HEIC | IPYNB | UNSUPPORTED_BY_DESIGN | heic-tiny | not offered | Papyr never writes notebooks; there is no notebook output format | UNSUPPORTED_BY_DESIGN | 0.00 | 0 |  |  |
-| HEIF | PDF | SUPPORTED | heif-hires | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.13 | 282514 | PDFium, pypdf |  |
+| HEIF | PDF | SUPPORTED | heif-hires | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.12 | 282514 | PDFium, pypdf |  |
 | HEIF | PDF | SUPPORTED | heif-landscape | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.01 | 32515 | PDFium, pypdf |  |
 | HEIF | PDF | SUPPORTED | heif-portrait | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 595x842 pt | PASSED | 0.01 | 26559 | PDFium, pypdf |  |
 | HEIF | PDF | SUPPORTED | heif-tiny | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.00 | 1301 | PDFium, pypdf |  |
-| HEIF | JPEG | SUPPORTED | heif-hires | one JPEG file per page for the picture | 1 JPEG file(s), 3200x2000 | PASSED | 0.13 | 260840 | Pillow, Qt |  |
+| HEIF | JPEG | SUPPORTED | heif-hires | one JPEG file per page for the picture | 1 JPEG file(s), 3200x2000 | PASSED | 0.12 | 260840 | Pillow, Qt |  |
 | HEIF | JPEG | SUPPORTED | heif-landscape | one JPEG file per page for the picture, transparency on white | 1 JPEG file(s), 640x400 | PASSED | 0.01 | 28061 | Pillow, Qt |  |
 | HEIF | JPEG | SUPPORTED | heif-portrait | one JPEG file per page for the picture | 1 JPEG file(s), 360x540 | PASSED | 0.01 | 22495 | Pillow, Qt |  |
 | HEIF | JPEG | SUPPORTED | heif-tiny | one JPEG file per page for the picture | 1 JPEG file(s), 24x16 | PASSED | 0.00 | 499 | Pillow, Qt |  |
-| HEIF | PNG | SUPPORTED | heif-hires | one PNG file per page for the picture | 1 PNG file(s), 3200x2000 | PASSED | 0.16 | 169787 | Pillow, Qt |  |
+| HEIF | PNG | SUPPORTED | heif-hires | one PNG file per page for the picture | 1 PNG file(s), 3200x2000 | PASSED | 0.15 | 169787 | Pillow, Qt |  |
 | HEIF | PNG | SUPPORTED | heif-landscape | one PNG file per page for the picture, transparency kept | 1 PNG file(s), 640x400 | PASSED | 0.02 | 56271 | Pillow, Qt |  |
 | HEIF | PNG | SUPPORTED | heif-portrait | one PNG file per page for the picture | 1 PNG file(s), 360x540 | PASSED | 0.01 | 43655 | Pillow, Qt |  |
 | HEIF | PNG | SUPPORTED | heif-tiny | one PNG file per page for the picture | 1 PNG file(s), 24x16 | PASSED | 0.00 | 620 | Pillow, Qt |  |
-| HEIF | HEIC | SUPPORTED | heif-hires | one HEIC file per page for the picture | 1 HEIC file(s), 3200x2000 | PASSED | 0.54 | 292376 | Pillow, Qt |  |
+| HEIF | HEIC | SUPPORTED | heif-hires | one HEIC file per page for the picture | 1 HEIC file(s), 3200x2000 | PASSED | 0.53 | 292376 | Pillow, Qt |  |
 | HEIF | HEIC | SUPPORTED | heif-landscape | one HEIC file per page for the picture, transparency kept | 1 HEIC file(s), 640x400 | PASSED | 0.09 | 44661 | Pillow, Qt |  |
-| HEIF | HEIC | SUPPORTED | heif-portrait | one HEIC file per page for the picture | 1 HEIC file(s), 360x540 | PASSED | 0.09 | 37629 | Pillow, Qt |  |
+| HEIF | HEIC | SUPPORTED | heif-portrait | one HEIC file per page for the picture | 1 HEIC file(s), 360x540 | PASSED | 0.08 | 37629 | Pillow, Qt |  |
 | HEIF | HEIC | SUPPORTED | heif-tiny | one HEIC file per page for the picture | 1 HEIC file(s), 24x16 | PASSED | 0.01 | 1068 | Pillow, Qt |  |
 | HEIF | WEBP | SUPPORTED | heif-hires | one WebP file per page for the picture | 1 WebP file(s), 3200x2000 | PASSED | 0.27 | 76356 | Pillow, Qt |  |
 | HEIF | WEBP | SUPPORTED | heif-landscape | one WebP file per page for the picture, transparency kept | 1 WebP file(s), 640x400 | PASSED | 0.02 | 10430 | Pillow, Qt |  |
 | HEIF | WEBP | SUPPORTED | heif-portrait | one WebP file per page for the picture | 1 WebP file(s), 360x540 | PASSED | 0.02 | 9060 | Pillow, Qt |  |
 | HEIF | WEBP | SUPPORTED | heif-tiny | one WebP file per page for the picture | 1 WebP file(s), 24x16 | PASSED | 0.00 | 202 | Pillow, Qt |  |
-| HEIF | AVIF | SUPPORTED | heif-hires | one AVIF file per page for the picture | 1 AVIF file(s), 3200x2000 | PASSED | 0.22 | 94217 | Pillow, sips |  |
+| HEIF | AVIF | SUPPORTED | heif-hires | one AVIF file per page for the picture | 1 AVIF file(s), 3200x2000 | PASSED | 0.21 | 94217 | Pillow, sips |  |
 | HEIF | AVIF | SUPPORTED | heif-landscape | one AVIF file per page for the picture, transparency kept | 1 AVIF file(s), 640x400 | PASSED | 0.03 | 13426 | Pillow, sips |  |
 | HEIF | AVIF | SUPPORTED | heif-portrait | one AVIF file per page for the picture | 1 AVIF file(s), 360x540 | PASSED | 0.03 | 10018 | Pillow, sips |  |
 | HEIF | AVIF | SUPPORTED | heif-tiny | one AVIF file per page for the picture | 1 AVIF file(s), 24x16 | PASSED | 0.00 | 427 | Pillow, sips |  |
-| HEIF | TIFF | SUPPORTED | heif-hires | one TIFF file per page for the picture | 1 TIFF file(s), 3200x2000 | PASSED | 0.13 | 544696 | Pillow, Qt |  |
+| HEIF | TIFF | SUPPORTED | heif-hires | one TIFF file per page for the picture | 1 TIFF file(s), 3200x2000 | PASSED | 0.12 | 544696 | Pillow, Qt |  |
 | HEIF | TIFF | SUPPORTED | heif-landscape | one TIFF file per page for the picture, transparency kept | 1 TIFF file(s), 640x400 | PASSED | 0.01 | 101272 | Pillow, Qt |  |
 | HEIF | TIFF | SUPPORTED | heif-portrait | one TIFF file per page for the picture | 1 TIFF file(s), 360x540 | PASSED | 0.01 | 93706 | Pillow, Qt |  |
 | HEIF | TIFF | SUPPORTED | heif-tiny | one TIFF file per page for the picture | 1 TIFF file(s), 24x16 | PASSED | 0.00 | 1354 | Pillow, Qt |  |
-| HEIF | GIF | SUPPORTED | heif-hires | one GIF file per page for the picture | 1 GIF file(s), 3200x2000 | PASSED | 0.26 | 268781 | Pillow, Qt |  |
+| HEIF | GIF | SUPPORTED | heif-hires | one GIF file per page for the picture | 1 GIF file(s), 3200x2000 | PASSED | 0.25 | 268781 | Pillow, Qt |  |
 | HEIF | GIF | SUPPORTED | heif-landscape | one GIF file per page for the picture, transparency kept | 1 GIF file(s), 640x400 | PASSED | 0.03 | 44723 | Pillow, Qt |  |
 | HEIF | GIF | SUPPORTED | heif-portrait | one GIF file per page for the picture | 1 GIF file(s), 360x540 | PASSED | 0.03 | 42944 | Pillow, Qt |  |
 | HEIF | GIF | SUPPORTED | heif-tiny | one GIF file per page for the picture | 1 GIF file(s), 24x16 | PASSED | 0.00 | 1233 | Pillow, Qt |  |
-| HEIF | GIF_SEPARATE | SUPPORTED | heif-hires | one GIF file per page for the picture | 1 GIF file(s), 3200x2000 | PASSED | 0.26 | 268781 | Pillow, Qt |  |
+| HEIF | GIF_SEPARATE | SUPPORTED | heif-hires | one GIF file per page for the picture | 1 GIF file(s), 3200x2000 | PASSED | 0.25 | 268781 | Pillow, Qt |  |
 | HEIF | GIF_SEPARATE | SUPPORTED | heif-landscape | one GIF file per page for the picture, transparency kept | 1 GIF file(s), 640x400 | PASSED | 0.03 | 44723 | Pillow, Qt |  |
 | HEIF | GIF_SEPARATE | SUPPORTED | heif-portrait | one GIF file per page for the picture | 1 GIF file(s), 360x540 | PASSED | 0.03 | 42944 | Pillow, Qt |  |
 | HEIF | GIF_SEPARATE | SUPPORTED | heif-tiny | one GIF file per page for the picture | 1 GIF file(s), 24x16 | PASSED | 0.00 | 1233 | Pillow, Qt |  |
@@ -154,7 +154,7 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
 | JPEG | PDF | SUPPORTED | jpeg-tiny | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.00 | 1271 | PDFium, pypdf |  |
 | JPEG | JPEG | SUPPORTED | jpeg-alias-extension | one JPEG file per page for the picture | 1 JPEG file(s), 300x200 | PASSED | 0.00 | 10416 | Pillow, Qt |  |
 | JPEG | JPEG | SUPPORTED | jpeg-exif-rotated | one JPEG file per page for the picture | 1 JPEG file(s), 640x400 | PASSED | 0.00 | 30918 | Pillow, Qt |  |
-| JPEG | JPEG | SUPPORTED | jpeg-hires | one JPEG file per page for the picture | 1 JPEG file(s), 3200x2000 | PASSED | 0.04 | 270498 | Pillow, Qt |  |
+| JPEG | JPEG | SUPPORTED | jpeg-hires | one JPEG file per page for the picture | 1 JPEG file(s), 3200x2000 | PASSED | 0.03 | 270498 | Pillow, Qt |  |
 | JPEG | JPEG | SUPPORTED | jpeg-landscape | one JPEG file per page for the picture | 1 JPEG file(s), 640x400 | PASSED | 0.00 | 30778 | Pillow, Qt |  |
 | JPEG | JPEG | SUPPORTED | jpeg-portrait | one JPEG file per page for the picture | 1 JPEG file(s), 360x540 | PASSED | 0.00 | 23885 | Pillow, Qt |  |
 | JPEG | JPEG | SUPPORTED | jpeg-tiny | one JPEG file per page for the picture | 1 JPEG file(s), 24x16 | PASSED | 0.00 | 479 | Pillow, Qt |  |
@@ -165,14 +165,14 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
 | JPEG | PNG | SUPPORTED | jpeg-portrait | one PNG file per page for the picture | 1 PNG file(s), 360x540 | PASSED | 0.01 | 110482 | Pillow, Qt |  |
 | JPEG | PNG | SUPPORTED | jpeg-tiny | one PNG file per page for the picture | 1 PNG file(s), 24x16 | PASSED | 0.00 | 770 | Pillow, Qt |  |
 | JPEG | HEIC | SUPPORTED | jpeg-alias-extension | one HEIC file per page for the picture | 1 HEIC file(s), 300x200 | PASSED | 0.04 | 19996 | Pillow, Qt |  |
-| JPEG | HEIC | SUPPORTED | jpeg-exif-rotated | one HEIC file per page for the picture | 1 HEIC file(s), 640x400 | PASSED | 0.08 | 65161 | Pillow, Qt |  |
-| JPEG | HEIC | SUPPORTED | jpeg-hires | one HEIC file per page for the picture | 1 HEIC file(s), 3200x2000 | PASSED | 0.38 | 343881 | Pillow, Qt |  |
+| JPEG | HEIC | SUPPORTED | jpeg-exif-rotated | one HEIC file per page for the picture | 1 HEIC file(s), 640x400 | PASSED | 0.07 | 65161 | Pillow, Qt |  |
+| JPEG | HEIC | SUPPORTED | jpeg-hires | one HEIC file per page for the picture | 1 HEIC file(s), 3200x2000 | PASSED | 0.36 | 343881 | Pillow, Qt |  |
 | JPEG | HEIC | SUPPORTED | jpeg-landscape | one HEIC file per page for the picture | 1 HEIC file(s), 640x400 | PASSED | 0.08 | 64125 | Pillow, Qt |  |
-| JPEG | HEIC | SUPPORTED | jpeg-portrait | one HEIC file per page for the picture | 1 HEIC file(s), 360x540 | PASSED | 0.08 | 51564 | Pillow, Qt |  |
+| JPEG | HEIC | SUPPORTED | jpeg-portrait | one HEIC file per page for the picture | 1 HEIC file(s), 360x540 | PASSED | 0.07 | 51564 | Pillow, Qt |  |
 | JPEG | HEIC | SUPPORTED | jpeg-tiny | one HEIC file per page for the picture | 1 HEIC file(s), 24x16 | PASSED | 0.00 | 827 | Pillow, Qt |  |
 | JPEG | WEBP | SUPPORTED | jpeg-alias-extension | one WebP file per page for the picture | 1 WebP file(s), 300x200 | PASSED | 0.00 | 4940 | Pillow, Qt |  |
 | JPEG | WEBP | SUPPORTED | jpeg-exif-rotated | one WebP file per page for the picture | 1 WebP file(s), 640x400 | PASSED | 0.01 | 12172 | Pillow, Qt |  |
-| JPEG | WEBP | SUPPORTED | jpeg-hires | one WebP file per page for the picture | 1 WebP file(s), 3200x2000 | PASSED | 0.23 | 85330 | Pillow, Qt |  |
+| JPEG | WEBP | SUPPORTED | jpeg-hires | one WebP file per page for the picture | 1 WebP file(s), 3200x2000 | PASSED | 0.19 | 85330 | Pillow, Qt |  |
 | JPEG | WEBP | SUPPORTED | jpeg-landscape | one WebP file per page for the picture | 1 WebP file(s), 640x400 | PASSED | 0.01 | 12560 | Pillow, Qt |  |
 | JPEG | WEBP | SUPPORTED | jpeg-portrait | one WebP file per page for the picture | 1 WebP file(s), 360x540 | PASSED | 0.01 | 10100 | Pillow, Qt |  |
 | JPEG | WEBP | SUPPORTED | jpeg-tiny | one WebP file per page for the picture | 1 WebP file(s), 24x16 | PASSED | 0.00 | 196 | Pillow, Qt |  |
@@ -186,7 +186,7 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
 | JPEG | TIFF | SUPPORTED | jpeg-exif-rotated | one TIFF file per page for the picture | 1 TIFF file(s), 640x400 | PASSED | 0.01 | 192240 | Pillow, Qt |  |
 | JPEG | TIFF | SUPPORTED | jpeg-hires | one TIFF file per page for the picture | 1 TIFF file(s), 3200x2000 | PASSED | 0.05 | 944708 | Pillow, Qt |  |
 | JPEG | TIFF | SUPPORTED | jpeg-landscape | one TIFF file per page for the picture | 1 TIFF file(s), 640x400 | PASSED | 0.01 | 189454 | Pillow, Qt |  |
-| JPEG | TIFF | SUPPORTED | jpeg-portrait | one TIFF file per page for the picture | 1 TIFF file(s), 360x540 | PASSED | 0.00 | 173578 | Pillow, Qt |  |
+| JPEG | TIFF | SUPPORTED | jpeg-portrait | one TIFF file per page for the picture | 1 TIFF file(s), 360x540 | PASSED | 0.01 | 173578 | Pillow, Qt |  |
 | JPEG | TIFF | SUPPORTED | jpeg-tiny | one TIFF file per page for the picture | 1 TIFF file(s), 24x16 | PASSED | 0.00 | 1230 | Pillow, Qt |  |
 | JPEG | GIF | SUPPORTED | jpeg-alias-extension | one GIF file per page for the picture | 1 GIF file(s), 300x200 | PASSED | 0.02 | 21688 | Pillow, Qt |  |
 | JPEG | GIF | SUPPORTED | jpeg-exif-rotated | one GIF file per page for the picture | 1 GIF file(s), 640x400 | PASSED | 0.03 | 54781 | Pillow, Qt |  |
@@ -195,8 +195,8 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
 | JPEG | GIF | SUPPORTED | jpeg-portrait | one GIF file per page for the picture | 1 GIF file(s), 360x540 | PASSED | 0.03 | 49007 | Pillow, Qt |  |
 | JPEG | GIF | SUPPORTED | jpeg-tiny | one GIF file per page for the picture | 1 GIF file(s), 24x16 | PASSED | 0.00 | 1238 | Pillow, Qt |  |
 | JPEG | GIF_SEPARATE | SUPPORTED | jpeg-alias-extension | one GIF file per page for the picture | 1 GIF file(s), 300x200 | PASSED | 0.02 | 21688 | Pillow, Qt |  |
-| JPEG | GIF_SEPARATE | SUPPORTED | jpeg-exif-rotated | one GIF file per page for the picture | 1 GIF file(s), 640x400 | PASSED | 0.04 | 54781 | Pillow, Qt |  |
-| JPEG | GIF_SEPARATE | SUPPORTED | jpeg-hires | one GIF file per page for the picture | 1 GIF file(s), 3200x2000 | PASSED | 0.22 | 362043 | Pillow, Qt |  |
+| JPEG | GIF_SEPARATE | SUPPORTED | jpeg-exif-rotated | one GIF file per page for the picture | 1 GIF file(s), 640x400 | PASSED | 0.03 | 54781 | Pillow, Qt |  |
+| JPEG | GIF_SEPARATE | SUPPORTED | jpeg-hires | one GIF file per page for the picture | 1 GIF file(s), 3200x2000 | PASSED | 0.20 | 362043 | Pillow, Qt |  |
 | JPEG | GIF_SEPARATE | SUPPORTED | jpeg-landscape | one GIF file per page for the picture | 1 GIF file(s), 640x400 | PASSED | 0.03 | 54691 | Pillow, Qt |  |
 | JPEG | GIF_SEPARATE | SUPPORTED | jpeg-portrait | one GIF file per page for the picture | 1 GIF file(s), 360x540 | PASSED | 0.03 | 49007 | Pillow, Qt |  |
 | JPEG | GIF_SEPARATE | SUPPORTED | jpeg-tiny | one GIF file per page for the picture | 1 GIF file(s), 24x16 | PASSED | 0.00 | 1238 | Pillow, Qt |  |
@@ -216,7 +216,7 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
 | PNG | PDF | SUPPORTED | png-grayscale | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.00 | 6692 | PDFium, pypdf |  |
 | PNG | PDF | SUPPORTED | png-hires | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.08 | 203287 | PDFium, pypdf |  |
 | PNG | PDF | SUPPORTED | png-landscape | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.01 | 51832 | PDFium, pypdf |  |
-| PNG | PDF | SUPPORTED | png-portrait | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 595x842 pt | PASSED | 0.01 | 47104 | PDFium, pypdf |  |
+| PNG | PDF | SUPPORTED | png-portrait | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 595x842 pt | PASSED | 0.00 | 47104 | PDFium, pypdf |  |
 | PNG | PDF | SUPPORTED | png-tiny | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.00 | 1460 | PDFium, pypdf |  |
 | PNG | JPEG | SUPPORTED | png-16bit-grayscale | one JPEG file per page for the picture | 1 JPEG file(s), 300x200 | PASSED | 0.00 | 5264 | Pillow, Qt |  |
 | PNG | JPEG | SUPPORTED | png-grayscale | one JPEG file per page for the picture | 1 JPEG file(s), 300x200 | PASSED | 0.00 | 5865 | Pillow, Qt |  |
@@ -226,27 +226,27 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
 | PNG | JPEG | SUPPORTED | png-tiny | one JPEG file per page for the picture | 1 JPEG file(s), 24x16 | PASSED | 0.00 | 530 | Pillow, Qt |  |
 | PNG | PNG | SUPPORTED | png-16bit-grayscale | one PNG file per page for the picture | 1 PNG file(s), 300x200 | PASSED | 0.00 | 3471 | Pillow, Qt |  |
 | PNG | PNG | SUPPORTED | png-grayscale | one PNG file per page for the picture | 1 PNG file(s), 300x200 | PASSED | 0.00 | 4247 | Pillow, Qt |  |
-| PNG | PNG | SUPPORTED | png-hires | one PNG file per page for the picture | 1 PNG file(s), 3200x2000 | PASSED | 0.06 | 79215 | Pillow, Qt |  |
+| PNG | PNG | SUPPORTED | png-hires | one PNG file per page for the picture | 1 PNG file(s), 3200x2000 | PASSED | 0.07 | 79215 | Pillow, Qt |  |
 | PNG | PNG | SUPPORTED | png-landscape | one PNG file per page for the picture, transparency kept | 1 PNG file(s), 640x400 | PASSED | 0.00 | 14414 | Pillow, Qt |  |
 | PNG | PNG | SUPPORTED | png-portrait | one PNG file per page for the picture | 1 PNG file(s), 360x540 | PASSED | 0.00 | 11230 | Pillow, Qt |  |
 | PNG | PNG | SUPPORTED | png-tiny | one PNG file per page for the picture | 1 PNG file(s), 24x16 | PASSED | 0.00 | 166 | Pillow, Qt |  |
 | PNG | HEIC | SUPPORTED | png-16bit-grayscale | one HEIC file per page for the picture | 1 HEIC file(s), 300x200 | PASSED | 0.03 | 10870 | Pillow, Qt |  |
 | PNG | HEIC | SUPPORTED | png-grayscale | one HEIC file per page for the picture | 1 HEIC file(s), 300x200 | PASSED | 0.03 | 11259 | Pillow, Qt |  |
-| PNG | HEIC | SUPPORTED | png-hires | one HEIC file per page for the picture | 1 HEIC file(s), 3200x2000 | PASSED | 0.47 | 295478 | Pillow, Qt |  |
+| PNG | HEIC | SUPPORTED | png-hires | one HEIC file per page for the picture | 1 HEIC file(s), 3200x2000 | PASSED | 0.45 | 295478 | Pillow, Qt |  |
 | PNG | HEIC | SUPPORTED | png-landscape | one HEIC file per page for the picture, transparency kept | 1 HEIC file(s), 640x400 | PASSED | 0.08 | 46897 | Pillow, Qt |  |
 | PNG | HEIC | SUPPORTED | png-portrait | one HEIC file per page for the picture | 1 HEIC file(s), 360x540 | PASSED | 0.08 | 39364 | Pillow, Qt |  |
 | PNG | HEIC | SUPPORTED | png-tiny | one HEIC file per page for the picture | 1 HEIC file(s), 24x16 | PASSED | 0.01 | 1047 | Pillow, Qt |  |
 | PNG | WEBP | SUPPORTED | png-16bit-grayscale | one WebP file per page for the picture | 1 WebP file(s), 300x200 | PASSED | 0.00 | 2410 | Pillow, Qt |  |
 | PNG | WEBP | SUPPORTED | png-grayscale | one WebP file per page for the picture | 1 WebP file(s), 300x200 | PASSED | 0.00 | 3058 | Pillow, Qt |  |
-| PNG | WEBP | SUPPORTED | png-hires | one WebP file per page for the picture | 1 WebP file(s), 3200x2000 | PASSED | 0.20 | 70566 | Pillow, Qt |  |
+| PNG | WEBP | SUPPORTED | png-hires | one WebP file per page for the picture | 1 WebP file(s), 3200x2000 | PASSED | 0.19 | 70566 | Pillow, Qt |  |
 | PNG | WEBP | SUPPORTED | png-landscape | one WebP file per page for the picture, transparency kept | 1 WebP file(s), 640x400 | PASSED | 0.01 | 10770 | Pillow, Qt |  |
 | PNG | WEBP | SUPPORTED | png-portrait | one WebP file per page for the picture | 1 WebP file(s), 360x540 | PASSED | 0.01 | 9238 | Pillow, Qt |  |
 | PNG | WEBP | SUPPORTED | png-tiny | one WebP file per page for the picture | 1 WebP file(s), 24x16 | PASSED | 0.00 | 202 | Pillow, Qt |  |
 | PNG | AVIF | SUPPORTED | png-16bit-grayscale | one AVIF file per page for the picture | 1 AVIF file(s), 300x200 | PASSED | 0.01 | 3317 | Pillow, sips |  |
 | PNG | AVIF | SUPPORTED | png-grayscale | one AVIF file per page for the picture | 1 AVIF file(s), 300x200 | PASSED | 0.01 | 3939 | Pillow, sips |  |
-| PNG | AVIF | SUPPORTED | png-hires | one AVIF file per page for the picture | 1 AVIF file(s), 3200x2000 | PASSED | 0.15 | 80784 | Pillow, sips |  |
+| PNG | AVIF | SUPPORTED | png-hires | one AVIF file per page for the picture | 1 AVIF file(s), 3200x2000 | PASSED | 0.14 | 80784 | Pillow, sips |  |
 | PNG | AVIF | SUPPORTED | png-landscape | one AVIF file per page for the picture, transparency kept | 1 AVIF file(s), 640x400 | PASSED | 0.02 | 13174 | Pillow, sips |  |
-| PNG | AVIF | SUPPORTED | png-portrait | one AVIF file per page for the picture | 1 AVIF file(s), 360x540 | PASSED | 0.03 | 9767 | Pillow, sips |  |
+| PNG | AVIF | SUPPORTED | png-portrait | one AVIF file per page for the picture | 1 AVIF file(s), 360x540 | PASSED | 0.02 | 9767 | Pillow, sips |  |
 | PNG | AVIF | SUPPORTED | png-tiny | one AVIF file per page for the picture | 1 AVIF file(s), 24x16 | PASSED | 0.00 | 433 | Pillow, sips |  |
 | PNG | TIFF | SUPPORTED | png-16bit-grayscale | one TIFF file per page for the picture | 1 TIFF file(s), 300x200 | PASSED | 0.00 | 5460 | Pillow, Qt |  |
 | PNG | TIFF | SUPPORTED | png-grayscale | one TIFF file per page for the picture | 1 TIFF file(s), 300x200 | PASSED | 0.00 | 6232 | Pillow, Qt |  |
@@ -262,9 +262,9 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
 | PNG | GIF | SUPPORTED | png-tiny | one GIF file per page for the picture | 1 GIF file(s), 24x16 | PASSED | 0.00 | 1239 | Pillow, Qt |  |
 | PNG | GIF_SEPARATE | SUPPORTED | png-16bit-grayscale | one GIF file per page for the picture | 1 GIF file(s), 300x200 | PASSED | 0.00 | 19542 | Pillow, Qt |  |
 | PNG | GIF_SEPARATE | SUPPORTED | png-grayscale | one GIF file per page for the picture | 1 GIF file(s), 300x200 | PASSED | 0.00 | 20313 | Pillow, Qt |  |
-| PNG | GIF_SEPARATE | SUPPORTED | png-hires | one GIF file per page for the picture | 1 GIF file(s), 3200x2000 | PASSED | 0.20 | 234014 | Pillow, Qt |  |
+| PNG | GIF_SEPARATE | SUPPORTED | png-hires | one GIF file per page for the picture | 1 GIF file(s), 3200x2000 | PASSED | 0.19 | 234014 | Pillow, Qt |  |
 | PNG | GIF_SEPARATE | SUPPORTED | png-landscape | one GIF file per page for the picture, transparency kept | 1 GIF file(s), 640x400 | PASSED | 0.03 | 38639 | Pillow, Qt |  |
-| PNG | GIF_SEPARATE | SUPPORTED | png-portrait | one GIF file per page for the picture | 1 GIF file(s), 360x540 | PASSED | 0.03 | 37630 | Pillow, Qt |  |
+| PNG | GIF_SEPARATE | SUPPORTED | png-portrait | one GIF file per page for the picture | 1 GIF file(s), 360x540 | PASSED | 0.02 | 37630 | Pillow, Qt |  |
 | PNG | GIF_SEPARATE | SUPPORTED | png-tiny | one GIF file per page for the picture | 1 GIF file(s), 24x16 | PASSED | 0.00 | 1239 | Pillow, Qt |  |
 | PNG | BMP | SUPPORTED | png-16bit-grayscale | one BMP file per page for the picture | 1 BMP file(s), 300x200 | PASSED | 0.00 | 61078 | Pillow, Qt |  |
 | PNG | BMP | SUPPORTED | png-grayscale | one BMP file per page for the picture | 1 BMP file(s), 300x200 | PASSED | 0.00 | 61078 | Pillow, Qt |  |
@@ -278,52 +278,52 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
 | PNG | IPYNB | UNSUPPORTED_BY_DESIGN | png-landscape | not offered | Papyr never writes notebooks; there is no notebook output format | UNSUPPORTED_BY_DESIGN | 0.00 | 0 |  |  |
 | PNG | IPYNB | UNSUPPORTED_BY_DESIGN | png-portrait | not offered | Papyr never writes notebooks; there is no notebook output format | UNSUPPORTED_BY_DESIGN | 0.00 | 0 |  |  |
 | PNG | IPYNB | UNSUPPORTED_BY_DESIGN | png-tiny | not offered | Papyr never writes notebooks; there is no notebook output format | UNSUPPORTED_BY_DESIGN | 0.00 | 0 |  |  |
-| WEBP | PDF | SUPPORTED | webp-animated | one PDF with the first frame only (animated inputs are read as their first frame) as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.00 | 15169 | PDFium, pypdf |  |
+| WEBP | PDF | SUPPORTED | webp-animated | one PDF with the first frame only (Every frame is off by default) as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.00 | 15169 | PDFium, pypdf |  |
 | WEBP | PDF | SUPPORTED | webp-hires | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.04 | 263240 | PDFium, pypdf |  |
 | WEBP | PDF | SUPPORTED | webp-landscape | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.00 | 33289 | PDFium, pypdf |  |
 | WEBP | PDF | SUPPORTED | webp-portrait | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 595x842 pt | PASSED | 0.00 | 28976 | PDFium, pypdf |  |
 | WEBP | PDF | SUPPORTED | webp-tiny | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.00 | 1251 | PDFium, pypdf |  |
-| WEBP | JPEG | SUPPORTED | webp-animated | one JPEG file per page for the first frame only (animated inputs are read as their first frame) | 1 JPEG file(s), 320x240 | PASSED | 0.00 | 12897 | Pillow, Qt |  |
+| WEBP | JPEG | SUPPORTED | webp-animated | one JPEG file per page for the first frame only (Every frame is off by default) | 1 JPEG file(s), 320x240 | PASSED | 0.00 | 12897 | Pillow, Qt |  |
 | WEBP | JPEG | SUPPORTED | webp-hires | one JPEG file per page for the picture | 1 JPEG file(s), 3200x2000 | PASSED | 0.04 | 241866 | Pillow, Qt |  |
 | WEBP | JPEG | SUPPORTED | webp-landscape | one JPEG file per page for the picture, transparency on white | 1 JPEG file(s), 640x400 | PASSED | 0.00 | 29232 | Pillow, Qt |  |
 | WEBP | JPEG | SUPPORTED | webp-portrait | one JPEG file per page for the picture | 1 JPEG file(s), 360x540 | PASSED | 0.00 | 25445 | Pillow, Qt |  |
 | WEBP | JPEG | SUPPORTED | webp-tiny | one JPEG file per page for the picture | 1 JPEG file(s), 24x16 | PASSED | 0.00 | 453 | Pillow, Qt |  |
-| WEBP | PNG | SUPPORTED | webp-animated | one PNG file per page for the first frame only (animated inputs are read as their first frame) | 1 PNG file(s), 320x240 | PASSED | 0.00 | 42893 | Pillow, Qt |  |
+| WEBP | PNG | SUPPORTED | webp-animated | one PNG file per page for the first frame only (Every frame is off by default) | 1 PNG file(s), 320x240 | PASSED | 0.01 | 42893 | Pillow, Qt |  |
 | WEBP | PNG | SUPPORTED | webp-hires | one PNG file per page for the picture | 1 PNG file(s), 3200x2000 | PASSED | 0.07 | 375457 | Pillow, Qt |  |
 | WEBP | PNG | SUPPORTED | webp-landscape | one PNG file per page for the picture, transparency kept | 1 PNG file(s), 640x400 | PASSED | 0.01 | 88700 | Pillow, Qt |  |
 | WEBP | PNG | SUPPORTED | webp-portrait | one PNG file per page for the picture | 1 PNG file(s), 360x540 | PASSED | 0.01 | 70794 | Pillow, Qt |  |
 | WEBP | PNG | SUPPORTED | webp-tiny | one PNG file per page for the picture | 1 PNG file(s), 24x16 | PASSED | 0.00 | 687 | Pillow, Qt |  |
-| WEBP | HEIC | SUPPORTED | webp-animated | one HEIC file per page for the first frame only (animated inputs are read as their first frame) | 1 HEIC file(s), 320x240 | PASSED | 0.05 | 22987 | Pillow, Qt |  |
-| WEBP | HEIC | SUPPORTED | webp-hires | one HEIC file per page for the picture | 1 HEIC file(s), 3200x2000 | PASSED | 0.36 | 309055 | Pillow, Qt |  |
+| WEBP | HEIC | SUPPORTED | webp-animated | one HEIC file per page for the first frame only (Every frame is off by default) | 1 HEIC file(s), 320x240 | PASSED | 0.04 | 22987 | Pillow, Qt |  |
+| WEBP | HEIC | SUPPORTED | webp-hires | one HEIC file per page for the picture | 1 HEIC file(s), 3200x2000 | PASSED | 0.34 | 309055 | Pillow, Qt |  |
 | WEBP | HEIC | SUPPORTED | webp-landscape | one HEIC file per page for the picture, transparency kept | 1 HEIC file(s), 640x400 | PASSED | 0.08 | 51124 | Pillow, Qt |  |
 | WEBP | HEIC | SUPPORTED | webp-portrait | one HEIC file per page for the picture | 1 HEIC file(s), 360x540 | PASSED | 0.07 | 46149 | Pillow, Qt |  |
 | WEBP | HEIC | SUPPORTED | webp-tiny | one HEIC file per page for the picture | 1 HEIC file(s), 24x16 | PASSED | 0.00 | 790 | Pillow, Qt |  |
-| WEBP | WEBP | SUPPORTED | webp-animated | one WebP file per page for the first frame only (animated inputs are read as their first frame) | 1 WebP file(s), 320x240 | PASSED | 0.01 | 5654 | Pillow, Qt |  |
+| WEBP | WEBP | SUPPORTED | webp-animated | one animated WebP, all 4 frames, 200 ms each, loops forever | 1 animated WebP, 4 frames, durations [200] ms, loop 0 | PASSED | 0.01 | 16366 | Pillow, Qt |  |
 | WEBP | WEBP | SUPPORTED | webp-hires | one WebP file per page for the picture | 1 WebP file(s), 3200x2000 | PASSED | 0.18 | 80366 | Pillow, Qt |  |
 | WEBP | WEBP | SUPPORTED | webp-landscape | one WebP file per page for the picture, transparency kept | 1 WebP file(s), 640x400 | PASSED | 0.01 | 12608 | Pillow, Qt |  |
 | WEBP | WEBP | SUPPORTED | webp-portrait | one WebP file per page for the picture | 1 WebP file(s), 360x540 | PASSED | 0.01 | 10686 | Pillow, Qt |  |
 | WEBP | WEBP | SUPPORTED | webp-tiny | one WebP file per page for the picture | 1 WebP file(s), 24x16 | PASSED | 0.00 | 188 | Pillow, Qt |  |
-| WEBP | AVIF | SUPPORTED | webp-animated | one AVIF file per page for the first frame only (animated inputs are read as their first frame) | 1 AVIF file(s), 320x240 | PASSED | 0.01 | 7766 | Pillow, sips |  |
-| WEBP | AVIF | SUPPORTED | webp-hires | one AVIF file per page for the picture | 1 AVIF file(s), 3200x2000 | PASSED | 0.18 | 119689 | Pillow, sips |  |
+| WEBP | AVIF | SUPPORTED | webp-animated | one AVIF file per page for the first frame only (Every frame is off by default) | 1 AVIF file(s), 320x240 | PASSED | 0.01 | 7766 | Pillow, sips |  |
+| WEBP | AVIF | SUPPORTED | webp-hires | one AVIF file per page for the picture | 1 AVIF file(s), 3200x2000 | PASSED | 0.14 | 119689 | Pillow, sips |  |
 | WEBP | AVIF | SUPPORTED | webp-landscape | one AVIF file per page for the picture, transparency kept | 1 AVIF file(s), 640x400 | PASSED | 0.04 | 15091 | Pillow, sips |  |
-| WEBP | AVIF | SUPPORTED | webp-portrait | one AVIF file per page for the picture | 1 AVIF file(s), 360x540 | PASSED | 0.05 | 12325 | Pillow, sips |  |
+| WEBP | AVIF | SUPPORTED | webp-portrait | one AVIF file per page for the picture | 1 AVIF file(s), 360x540 | PASSED | 0.04 | 12325 | Pillow, sips |  |
 | WEBP | AVIF | SUPPORTED | webp-tiny | one AVIF file per page for the picture | 1 AVIF file(s), 24x16 | PASSED | 0.00 | 433 | Pillow, sips |  |
-| WEBP | TIFF | SUPPORTED | webp-animated | one TIFF file per page for the first frame only (animated inputs are read as their first frame) | 1 TIFF file(s), 320x240 | PASSED | 0.00 | 60006 | Pillow, Qt |  |
+| WEBP | TIFF | SUPPORTED | webp-animated | one TIFF file per page for the first frame only (Every frame is off by default) | 1 TIFF file(s), 320x240 | PASSED | 0.01 | 60006 | Pillow, Qt |  |
 | WEBP | TIFF | SUPPORTED | webp-hires | one TIFF file per page for the picture | 1 TIFF file(s), 3200x2000 | PASSED | 0.05 | 674328 | Pillow, Qt |  |
 | WEBP | TIFF | SUPPORTED | webp-landscape | one TIFF file per page for the picture, transparency kept | 1 TIFF file(s), 640x400 | PASSED | 0.01 | 115102 | Pillow, Qt |  |
 | WEBP | TIFF | SUPPORTED | webp-portrait | one TIFF file per page for the picture | 1 TIFF file(s), 360x540 | PASSED | 0.00 | 97476 | Pillow, Qt |  |
 | WEBP | TIFF | SUPPORTED | webp-tiny | one TIFF file per page for the picture | 1 TIFF file(s), 24x16 | PASSED | 0.00 | 1190 | Pillow, Qt |  |
-| WEBP | GIF | SUPPORTED | webp-animated | one GIF file per page for the first frame only (animated inputs are read as their first frame) | 1 GIF file(s), 320x240 | PASSED | 0.01 | 22870 | Pillow, Qt |  |
+| WEBP | GIF | SUPPORTED | webp-animated | one animated GIF, all 4 frames, 200 ms each, loops forever | 1 animated GIF, 4 frames, durations [200] ms, loop 0 | PASSED | 0.05 | 71497 | GIF parser, Pillow, Qt |  |
 | WEBP | GIF | SUPPORTED | webp-hires | one GIF file per page for the picture | 1 GIF file(s), 3200x2000 | PASSED | 0.20 | 334137 | Pillow, Qt |  |
 | WEBP | GIF | SUPPORTED | webp-landscape | one GIF file per page for the picture, transparency kept | 1 GIF file(s), 640x400 | PASSED | 0.02 | 48009 | Pillow, Qt |  |
 | WEBP | GIF | SUPPORTED | webp-portrait | one GIF file per page for the picture | 1 GIF file(s), 360x540 | PASSED | 0.02 | 46248 | Pillow, Qt |  |
 | WEBP | GIF | SUPPORTED | webp-tiny | one GIF file per page for the picture | 1 GIF file(s), 24x16 | PASSED | 0.00 | 1244 | Pillow, Qt |  |
-| WEBP | GIF_SEPARATE | SUPPORTED | webp-animated | one GIF file per page for the first frame only (animated inputs are read as their first frame) | 1 GIF file(s), 320x240 | PASSED | 0.01 | 22870 | Pillow, Qt |  |
+| WEBP | GIF_SEPARATE | SUPPORTED | webp-animated | one GIF file per page for the first frame only (Every frame is off by default) | 1 GIF file(s), 320x240 | PASSED | 0.01 | 22870 | Pillow, Qt |  |
 | WEBP | GIF_SEPARATE | SUPPORTED | webp-hires | one GIF file per page for the picture | 1 GIF file(s), 3200x2000 | PASSED | 0.20 | 334137 | Pillow, Qt |  |
 | WEBP | GIF_SEPARATE | SUPPORTED | webp-landscape | one GIF file per page for the picture, transparency kept | 1 GIF file(s), 640x400 | PASSED | 0.02 | 48009 | Pillow, Qt |  |
 | WEBP | GIF_SEPARATE | SUPPORTED | webp-portrait | one GIF file per page for the picture | 1 GIF file(s), 360x540 | PASSED | 0.02 | 46248 | Pillow, Qt |  |
 | WEBP | GIF_SEPARATE | SUPPORTED | webp-tiny | one GIF file per page for the picture | 1 GIF file(s), 24x16 | PASSED | 0.00 | 1244 | Pillow, Qt |  |
-| WEBP | BMP | SUPPORTED | webp-animated | one BMP file per page for the first frame only (animated inputs are read as their first frame) | 1 BMP file(s), 320x240 | PASSED | 0.00 | 230454 | Pillow, Qt |  |
+| WEBP | BMP | SUPPORTED | webp-animated | one BMP file per page for the first frame only (Every frame is off by default) | 1 BMP file(s), 320x240 | PASSED | 0.00 | 230454 | Pillow, Qt |  |
 | WEBP | BMP | SUPPORTED | webp-hires | one BMP file per page for the picture | 1 BMP file(s), 3200x2000 | PASSED | 0.02 | 19200054 | Pillow, Qt |  |
 | WEBP | BMP | SUPPORTED | webp-landscape | one BMP file per page for the picture, transparency on white | 1 BMP file(s), 640x400 | PASSED | 0.00 | 768054 | Pillow, Qt |  |
 | WEBP | BMP | SUPPORTED | webp-portrait | one BMP file per page for the picture | 1 BMP file(s), 360x540 | PASSED | 0.00 | 583254 | Pillow, Qt |  |
@@ -341,31 +341,31 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
 | AVIF | JPEG | SUPPORTED | avif-landscape | one JPEG file per page for the picture, transparency on white | 1 JPEG file(s), 640x400 | PASSED | 0.01 | 28060 | Pillow, Qt |  |
 | AVIF | JPEG | SUPPORTED | avif-portrait | one JPEG file per page for the picture | 1 JPEG file(s), 360x540 | PASSED | 0.00 | 21680 | Pillow, Qt |  |
 | AVIF | JPEG | SUPPORTED | avif-tiny | one JPEG file per page for the picture | 1 JPEG file(s), 24x16 | PASSED | 0.00 | 465 | Pillow, Qt |  |
-| AVIF | PNG | SUPPORTED | avif-hires | one PNG file per page for the picture | 1 PNG file(s), 3200x2000 | PASSED | 0.10 | 462206 | Pillow, Qt |  |
+| AVIF | PNG | SUPPORTED | avif-hires | one PNG file per page for the picture | 1 PNG file(s), 3200x2000 | PASSED | 0.09 | 462206 | Pillow, Qt |  |
 | AVIF | PNG | SUPPORTED | avif-landscape | one PNG file per page for the picture, transparency kept | 1 PNG file(s), 640x400 | PASSED | 0.02 | 128658 | Pillow, Qt |  |
 | AVIF | PNG | SUPPORTED | avif-portrait | one PNG file per page for the picture | 1 PNG file(s), 360x540 | PASSED | 0.01 | 92849 | Pillow, Qt |  |
 | AVIF | PNG | SUPPORTED | avif-tiny | one PNG file per page for the picture | 1 PNG file(s), 24x16 | PASSED | 0.00 | 662 | Pillow, Qt |  |
-| AVIF | HEIC | SUPPORTED | avif-hires | one HEIC file per page for the picture | 1 HEIC file(s), 3200x2000 | PASSED | 0.38 | 358802 | Pillow, Qt |  |
+| AVIF | HEIC | SUPPORTED | avif-hires | one HEIC file per page for the picture | 1 HEIC file(s), 3200x2000 | PASSED | 0.36 | 358802 | Pillow, Qt |  |
 | AVIF | HEIC | SUPPORTED | avif-landscape | one HEIC file per page for the picture, transparency kept | 1 HEIC file(s), 640x400 | PASSED | 0.10 | 61363 | Pillow, Qt |  |
-| AVIF | HEIC | SUPPORTED | avif-portrait | one HEIC file per page for the picture | 1 HEIC file(s), 360x540 | PASSED | 0.08 | 46464 | Pillow, Qt |  |
+| AVIF | HEIC | SUPPORTED | avif-portrait | one HEIC file per page for the picture | 1 HEIC file(s), 360x540 | PASSED | 0.07 | 46464 | Pillow, Qt |  |
 | AVIF | HEIC | SUPPORTED | avif-tiny | one HEIC file per page for the picture | 1 HEIC file(s), 24x16 | PASSED | 0.01 | 807 | Pillow, Qt |  |
-| AVIF | WEBP | SUPPORTED | avif-hires | one WebP file per page for the picture | 1 WebP file(s), 3200x2000 | PASSED | 0.20 | 78556 | Pillow, Qt |  |
+| AVIF | WEBP | SUPPORTED | avif-hires | one WebP file per page for the picture | 1 WebP file(s), 3200x2000 | PASSED | 0.19 | 78556 | Pillow, Qt |  |
 | AVIF | WEBP | SUPPORTED | avif-landscape | one WebP file per page for the picture, transparency kept | 1 WebP file(s), 640x400 | PASSED | 0.01 | 10962 | Pillow, Qt |  |
 | AVIF | WEBP | SUPPORTED | avif-portrait | one WebP file per page for the picture | 1 WebP file(s), 360x540 | PASSED | 0.01 | 8804 | Pillow, Qt |  |
 | AVIF | WEBP | SUPPORTED | avif-tiny | one WebP file per page for the picture | 1 WebP file(s), 24x16 | PASSED | 0.00 | 194 | Pillow, Qt |  |
-| AVIF | AVIF | SUPPORTED | avif-hires | one AVIF file per page for the picture | 1 AVIF file(s), 3200x2000 | PASSED | 0.15 | 93087 | Pillow, sips |  |
+| AVIF | AVIF | SUPPORTED | avif-hires | one AVIF file per page for the picture | 1 AVIF file(s), 3200x2000 | PASSED | 0.14 | 93087 | Pillow, sips |  |
 | AVIF | AVIF | SUPPORTED | avif-landscape | one AVIF file per page for the picture, transparency kept | 1 AVIF file(s), 640x400 | PASSED | 0.02 | 13564 | Pillow, sips |  |
 | AVIF | AVIF | SUPPORTED | avif-portrait | one AVIF file per page for the picture | 1 AVIF file(s), 360x540 | PASSED | 0.02 | 9762 | Pillow, sips |  |
 | AVIF | AVIF | SUPPORTED | avif-tiny | one AVIF file per page for the picture | 1 AVIF file(s), 24x16 | PASSED | 0.00 | 433 | Pillow, sips |  |
-| AVIF | TIFF | SUPPORTED | avif-hires | one TIFF file per page for the picture | 1 TIFF file(s), 3200x2000 | PASSED | 0.06 | 749416 | Pillow, Qt |  |
+| AVIF | TIFF | SUPPORTED | avif-hires | one TIFF file per page for the picture | 1 TIFF file(s), 3200x2000 | PASSED | 0.05 | 749416 | Pillow, Qt |  |
 | AVIF | TIFF | SUPPORTED | avif-landscape | one TIFF file per page for the picture, transparency kept | 1 TIFF file(s), 640x400 | PASSED | 0.01 | 172038 | Pillow, Qt |  |
 | AVIF | TIFF | SUPPORTED | avif-portrait | one TIFF file per page for the picture | 1 TIFF file(s), 360x540 | PASSED | 0.01 | 156102 | Pillow, Qt |  |
 | AVIF | TIFF | SUPPORTED | avif-tiny | one TIFF file per page for the picture | 1 TIFF file(s), 24x16 | PASSED | 0.00 | 1140 | Pillow, Qt |  |
-| AVIF | GIF | SUPPORTED | avif-hires | one GIF file per page for the picture | 1 GIF file(s), 3200x2000 | PASSED | 0.19 | 318502 | Pillow, Qt |  |
+| AVIF | GIF | SUPPORTED | avif-hires | one GIF file per page for the picture | 1 GIF file(s), 3200x2000 | PASSED | 0.18 | 318502 | Pillow, Qt |  |
 | AVIF | GIF | SUPPORTED | avif-landscape | one GIF file per page for the picture, transparency kept | 1 GIF file(s), 640x400 | PASSED | 0.03 | 48616 | Pillow, Qt |  |
-| AVIF | GIF | SUPPORTED | avif-portrait | one GIF file per page for the picture | 1 GIF file(s), 360x540 | PASSED | 0.03 | 46230 | Pillow, Qt |  |
+| AVIF | GIF | SUPPORTED | avif-portrait | one GIF file per page for the picture | 1 GIF file(s), 360x540 | PASSED | 0.02 | 46230 | Pillow, Qt |  |
 | AVIF | GIF | SUPPORTED | avif-tiny | one GIF file per page for the picture | 1 GIF file(s), 24x16 | PASSED | 0.00 | 1242 | Pillow, Qt |  |
-| AVIF | GIF_SEPARATE | SUPPORTED | avif-hires | one GIF file per page for the picture | 1 GIF file(s), 3200x2000 | PASSED | 0.19 | 318502 | Pillow, Qt |  |
+| AVIF | GIF_SEPARATE | SUPPORTED | avif-hires | one GIF file per page for the picture | 1 GIF file(s), 3200x2000 | PASSED | 0.18 | 318502 | Pillow, Qt |  |
 | AVIF | GIF_SEPARATE | SUPPORTED | avif-landscape | one GIF file per page for the picture, transparency kept | 1 GIF file(s), 640x400 | PASSED | 0.03 | 48616 | Pillow, Qt |  |
 | AVIF | GIF_SEPARATE | SUPPORTED | avif-portrait | one GIF file per page for the picture | 1 GIF file(s), 360x540 | PASSED | 0.02 | 46230 | Pillow, Qt |  |
 | AVIF | GIF_SEPARATE | SUPPORTED | avif-tiny | one GIF file per page for the picture | 1 GIF file(s), 24x16 | PASSED | 0.00 | 1242 | Pillow, Qt |  |
@@ -391,24 +391,24 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
 | TIFF | JPEG | SUPPORTED | tiff-tiny | one JPEG file per page for the picture | 1 JPEG file(s), 24x16 | PASSED | 0.00 | 530 | Pillow, Qt |  |
 | TIFF | PNG | SUPPORTED | tiff-alias-extension | one PNG file per page for the picture | 1 PNG file(s), 300x200 | PASSED | 0.00 | 4831 | Pillow, Qt |  |
 | TIFF | PNG | SUPPORTED | tiff-hires | one PNG file per page for the picture | 1 PNG file(s), 3200x2000 | PASSED | 0.06 | 59844 | Pillow, Qt |  |
-| TIFF | PNG | SUPPORTED | tiff-landscape | one PNG file per page for the picture, transparency kept | 1 PNG file(s), 640x400 | PASSED | 0.00 | 12811 | Pillow, Qt |  |
+| TIFF | PNG | SUPPORTED | tiff-landscape | one PNG file per page for the picture, transparency kept | 1 PNG file(s), 640x400 | PASSED | 0.01 | 12811 | Pillow, Qt |  |
 | TIFF | PNG | SUPPORTED | tiff-multipage | one PNG file per page for each page, transparency kept | 3 PNG file(s), 500x350, 300x450, 420x420 | PASSED | 0.01 | 32233 | Pillow, Qt |  |
 | TIFF | PNG | SUPPORTED | tiff-portrait | one PNG file per page for the picture | 1 PNG file(s), 360x540 | PASSED | 0.00 | 9367 | Pillow, Qt |  |
 | TIFF | PNG | SUPPORTED | tiff-tiny | one PNG file per page for the picture | 1 PNG file(s), 24x16 | PASSED | 0.00 | 166 | Pillow, Qt |  |
 | TIFF | HEIC | SUPPORTED | tiff-alias-extension | one HEIC file per page for the picture | 1 HEIC file(s), 300x200 | PASSED | 0.04 | 16432 | Pillow, Qt |  |
-| TIFF | HEIC | SUPPORTED | tiff-hires | one HEIC file per page for the picture | 1 HEIC file(s), 3200x2000 | PASSED | 0.47 | 286717 | Pillow, Qt |  |
-| TIFF | HEIC | SUPPORTED | tiff-landscape | one HEIC file per page for the picture, transparency kept | 1 HEIC file(s), 640x400 | PASSED | 0.09 | 46906 | Pillow, Qt |  |
+| TIFF | HEIC | SUPPORTED | tiff-hires | one HEIC file per page for the picture | 1 HEIC file(s), 3200x2000 | PASSED | 0.44 | 286717 | Pillow, Qt |  |
+| TIFF | HEIC | SUPPORTED | tiff-landscape | one HEIC file per page for the picture, transparency kept | 1 HEIC file(s), 640x400 | PASSED | 0.08 | 46906 | Pillow, Qt |  |
 | TIFF | HEIC | SUPPORTED | tiff-multipage | one HEIC file per page for each page, transparency kept | 3 HEIC file(s), 500x350, 300x450, 420x420 | PASSED | 0.20 | 103015 | Pillow, Qt |  |
 | TIFF | HEIC | SUPPORTED | tiff-portrait | one HEIC file per page for the picture | 1 HEIC file(s), 360x540 | PASSED | 0.08 | 37030 | Pillow, Qt |  |
 | TIFF | HEIC | SUPPORTED | tiff-tiny | one HEIC file per page for the picture | 1 HEIC file(s), 24x16 | PASSED | 0.01 | 1047 | Pillow, Qt |  |
-| TIFF | WEBP | SUPPORTED | tiff-alias-extension | one WebP file per page for the picture | 1 WebP file(s), 300x200 | PASSED | 0.00 | 4632 | Pillow, Qt |  |
-| TIFF | WEBP | SUPPORTED | tiff-hires | one WebP file per page for the picture | 1 WebP file(s), 3200x2000 | PASSED | 0.20 | 65678 | Pillow, Qt |  |
+| TIFF | WEBP | SUPPORTED | tiff-alias-extension | one WebP file per page for the picture | 1 WebP file(s), 300x200 | PASSED | 0.01 | 4632 | Pillow, Qt |  |
+| TIFF | WEBP | SUPPORTED | tiff-hires | one WebP file per page for the picture | 1 WebP file(s), 3200x2000 | PASSED | 0.19 | 65678 | Pillow, Qt |  |
 | TIFF | WEBP | SUPPORTED | tiff-landscape | one WebP file per page for the picture, transparency kept | 1 WebP file(s), 640x400 | PASSED | 0.01 | 10522 | Pillow, Qt |  |
 | TIFF | WEBP | SUPPORTED | tiff-multipage | one WebP file per page for each page, transparency kept | 3 WebP file(s), 500x350, 300x450, 420x420 | PASSED | 0.02 | 26224 | Pillow, Qt |  |
 | TIFF | WEBP | SUPPORTED | tiff-portrait | one WebP file per page for the picture | 1 WebP file(s), 360x540 | PASSED | 0.01 | 8528 | Pillow, Qt |  |
 | TIFF | WEBP | SUPPORTED | tiff-tiny | one WebP file per page for the picture | 1 WebP file(s), 24x16 | PASSED | 0.00 | 202 | Pillow, Qt |  |
 | TIFF | AVIF | SUPPORTED | tiff-alias-extension | one AVIF file per page for the picture | 1 AVIF file(s), 300x200 | PASSED | 0.01 | 5011 | Pillow, sips |  |
-| TIFF | AVIF | SUPPORTED | tiff-hires | one AVIF file per page for the picture | 1 AVIF file(s), 3200x2000 | PASSED | 0.14 | 76438 | Pillow, sips |  |
+| TIFF | AVIF | SUPPORTED | tiff-hires | one AVIF file per page for the picture | 1 AVIF file(s), 3200x2000 | PASSED | 0.13 | 76438 | Pillow, sips |  |
 | TIFF | AVIF | SUPPORTED | tiff-landscape | one AVIF file per page for the picture, transparency kept | 1 AVIF file(s), 640x400 | PASSED | 0.02 | 12631 | Pillow, sips |  |
 | TIFF | AVIF | SUPPORTED | tiff-multipage | one AVIF file per page for each page, transparency kept | 3 AVIF file(s), 500x350, 300x450, 420x420 | PASSED | 0.05 | 28599 | Pillow, sips |  |
 | TIFF | AVIF | SUPPORTED | tiff-portrait | one AVIF file per page for the picture | 1 AVIF file(s), 360x540 | PASSED | 0.02 | 9114 | Pillow, sips |  |
@@ -434,7 +434,7 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
 | TIFF | BMP | SUPPORTED | tiff-alias-extension | one BMP file per page for the picture | 1 BMP file(s), 300x200 | PASSED | 0.00 | 180054 | Pillow, Qt |  |
 | TIFF | BMP | SUPPORTED | tiff-hires | one BMP file per page for the picture | 1 BMP file(s), 3200x2000 | PASSED | 0.03 | 19200054 | Pillow, Qt |  |
 | TIFF | BMP | SUPPORTED | tiff-landscape | one BMP file per page for the picture, transparency on white | 1 BMP file(s), 640x400 | PASSED | 0.00 | 768054 | Pillow, Qt |  |
-| TIFF | BMP | SUPPORTED | tiff-multipage | one BMP file per page for each page, transparency on white | 3 BMP file(s), 500x350, 300x450, 420x420 | PASSED | 0.00 | 1459362 | Pillow, Qt |  |
+| TIFF | BMP | SUPPORTED | tiff-multipage | one BMP file per page for each page, transparency on white | 3 BMP file(s), 500x350, 300x450, 420x420 | PASSED | 0.01 | 1459362 | Pillow, Qt |  |
 | TIFF | BMP | SUPPORTED | tiff-portrait | one BMP file per page for the picture | 1 BMP file(s), 360x540 | PASSED | 0.00 | 583254 | Pillow, Qt |  |
 | TIFF | BMP | SUPPORTED | tiff-tiny | one BMP file per page for the picture | 1 BMP file(s), 24x16 | PASSED | 0.00 | 1206 | Pillow, Qt |  |
 | TIFF | IPYNB | UNSUPPORTED_BY_DESIGN | tiff-alias-extension | not offered | Papyr never writes notebooks; there is no notebook output format | UNSUPPORTED_BY_DESIGN | 0.00 | 0 |  |  |
@@ -455,7 +455,7 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
 | BMP | PNG | SUPPORTED | bmp-landscape | one PNG file per page for the picture | 1 PNG file(s), 640x400 | PASSED | 0.00 | 12891 | Pillow, Qt |  |
 | BMP | PNG | SUPPORTED | bmp-portrait | one PNG file per page for the picture | 1 PNG file(s), 360x540 | PASSED | 0.00 | 10425 | Pillow, Qt |  |
 | BMP | PNG | SUPPORTED | bmp-tiny | one PNG file per page for the picture | 1 PNG file(s), 24x16 | PASSED | 0.00 | 159 | Pillow, Qt |  |
-| BMP | HEIC | SUPPORTED | bmp-hires | one HEIC file per page for the picture | 1 HEIC file(s), 3200x2000 | PASSED | 0.34 | 293187 | Pillow, Qt |  |
+| BMP | HEIC | SUPPORTED | bmp-hires | one HEIC file per page for the picture | 1 HEIC file(s), 3200x2000 | PASSED | 0.33 | 293187 | Pillow, Qt |  |
 | BMP | HEIC | SUPPORTED | bmp-landscape | one HEIC file per page for the picture | 1 HEIC file(s), 640x400 | PASSED | 0.07 | 44318 | Pillow, Qt |  |
 | BMP | HEIC | SUPPORTED | bmp-portrait | one HEIC file per page for the picture | 1 HEIC file(s), 360x540 | PASSED | 0.07 | 38943 | Pillow, Qt |  |
 | BMP | HEIC | SUPPORTED | bmp-tiny | one HEIC file per page for the picture | 1 HEIC file(s), 24x16 | PASSED | 0.00 | 772 | Pillow, Qt |  |
@@ -463,12 +463,12 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
 | BMP | WEBP | SUPPORTED | bmp-landscape | one WebP file per page for the picture | 1 WebP file(s), 640x400 | PASSED | 0.01 | 10298 | Pillow, Qt |  |
 | BMP | WEBP | SUPPORTED | bmp-portrait | one WebP file per page for the picture | 1 WebP file(s), 360x540 | PASSED | 0.01 | 9296 | Pillow, Qt |  |
 | BMP | WEBP | SUPPORTED | bmp-tiny | one WebP file per page for the picture | 1 WebP file(s), 24x16 | PASSED | 0.00 | 202 | Pillow, Qt |  |
-| BMP | AVIF | SUPPORTED | bmp-hires | one AVIF file per page for the picture | 1 AVIF file(s), 3200x2000 | PASSED | 0.13 | 79568 | Pillow, sips |  |
+| BMP | AVIF | SUPPORTED | bmp-hires | one AVIF file per page for the picture | 1 AVIF file(s), 3200x2000 | PASSED | 0.11 | 79568 | Pillow, sips |  |
 | BMP | AVIF | SUPPORTED | bmp-landscape | one AVIF file per page for the picture | 1 AVIF file(s), 640x400 | PASSED | 0.02 | 12211 | Pillow, sips |  |
 | BMP | AVIF | SUPPORTED | bmp-portrait | one AVIF file per page for the picture | 1 AVIF file(s), 360x540 | PASSED | 0.07 | 7441 | Pillow, sips |  |
 | BMP | AVIF | SUPPORTED | bmp-tiny | one AVIF file per page for the picture | 1 AVIF file(s), 24x16 | PASSED | 0.00 | 433 | Pillow, sips |  |
 | BMP | TIFF | SUPPORTED | bmp-hires | one TIFF file per page for the picture | 1 TIFF file(s), 3200x2000 | PASSED | 0.02 | 334868 | Pillow, Qt |  |
-| BMP | TIFF | SUPPORTED | bmp-landscape | one TIFF file per page for the picture | 1 TIFF file(s), 640x400 | PASSED | 0.00 | 56654 | Pillow, Qt |  |
+| BMP | TIFF | SUPPORTED | bmp-landscape | one TIFF file per page for the picture | 1 TIFF file(s), 640x400 | PASSED | 0.01 | 56654 | Pillow, Qt |  |
 | BMP | TIFF | SUPPORTED | bmp-portrait | one TIFF file per page for the picture | 1 TIFF file(s), 360x540 | PASSED | 0.00 | 49342 | Pillow, Qt |  |
 | BMP | TIFF | SUPPORTED | bmp-tiny | one TIFF file per page for the picture | 1 TIFF file(s), 24x16 | PASSED | 0.00 | 816 | Pillow, Qt |  |
 | BMP | GIF | SUPPORTED | bmp-hires | one GIF file per page for the picture | 1 GIF file(s), 3200x2000 | PASSED | 0.17 | 232389 | Pillow, Qt |  |
@@ -476,7 +476,7 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
 | BMP | GIF | SUPPORTED | bmp-portrait | one GIF file per page for the picture | 1 GIF file(s), 360x540 | PASSED | 0.02 | 37918 | Pillow, Qt |  |
 | BMP | GIF | SUPPORTED | bmp-tiny | one GIF file per page for the picture | 1 GIF file(s), 24x16 | PASSED | 0.00 | 1239 | Pillow, Qt |  |
 | BMP | GIF_SEPARATE | SUPPORTED | bmp-hires | one GIF file per page for the picture | 1 GIF file(s), 3200x2000 | PASSED | 0.17 | 232389 | Pillow, Qt |  |
-| BMP | GIF_SEPARATE | SUPPORTED | bmp-landscape | one GIF file per page for the picture | 1 GIF file(s), 640x400 | PASSED | 0.03 | 40577 | Pillow, Qt |  |
+| BMP | GIF_SEPARATE | SUPPORTED | bmp-landscape | one GIF file per page for the picture | 1 GIF file(s), 640x400 | PASSED | 0.02 | 40577 | Pillow, Qt |  |
 | BMP | GIF_SEPARATE | SUPPORTED | bmp-portrait | one GIF file per page for the picture | 1 GIF file(s), 360x540 | PASSED | 0.02 | 37918 | Pillow, Qt |  |
 | BMP | GIF_SEPARATE | SUPPORTED | bmp-tiny | one GIF file per page for the picture | 1 GIF file(s), 24x16 | PASSED | 0.00 | 1239 | Pillow, Qt |  |
 | BMP | BMP | SUPPORTED | bmp-hires | one BMP file per page for the picture | 1 BMP file(s), 3200x2000 | PASSED | 0.01 | 19200054 | Pillow, Qt |  |
@@ -487,52 +487,52 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
 | BMP | IPYNB | UNSUPPORTED_BY_DESIGN | bmp-landscape | not offered | Papyr never writes notebooks; there is no notebook output format | UNSUPPORTED_BY_DESIGN | 0.00 | 0 |  |  |
 | BMP | IPYNB | UNSUPPORTED_BY_DESIGN | bmp-portrait | not offered | Papyr never writes notebooks; there is no notebook output format | UNSUPPORTED_BY_DESIGN | 0.00 | 0 |  |  |
 | BMP | IPYNB | UNSUPPORTED_BY_DESIGN | bmp-tiny | not offered | Papyr never writes notebooks; there is no notebook output format | UNSUPPORTED_BY_DESIGN | 0.00 | 0 |  |  |
-| GIF | PDF | SUPPORTED | gif-animated | one PDF with the first frame only (animated inputs are read as their first frame) as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.00 | 5857 | PDFium, pypdf |  |
+| GIF | PDF | SUPPORTED | gif-animated | one PDF with the first frame only (Every frame is off by default) as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.00 | 5857 | PDFium, pypdf |  |
 | GIF | PDF | SUPPORTED | gif-hires | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.07 | 138689 | PDFium, pypdf |  |
 | GIF | PDF | SUPPORTED | gif-landscape | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.01 | 11707 | PDFium, pypdf |  |
 | GIF | PDF | SUPPORTED | gif-portrait | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 595x842 pt | PASSED | 0.00 | 8737 | PDFium, pypdf |  |
 | GIF | PDF | SUPPORTED | gif-tiny | one PDF with the picture as a page, on A4 | 1 PDF, 1 page(s), first page 842x595 pt | PASSED | 0.00 | 1291 | PDFium, pypdf |  |
-| GIF | JPEG | SUPPORTED | gif-animated | one JPEG file per page for the first frame only (animated inputs are read as their first frame) | 1 JPEG file(s), 320x240 | PASSED | 0.00 | 17398 | Pillow, Qt |  |
+| GIF | JPEG | SUPPORTED | gif-animated | one JPEG file per page for the first frame only (Every frame is off by default) | 1 JPEG file(s), 320x240 | PASSED | 0.00 | 17398 | Pillow, Qt |  |
 | GIF | JPEG | SUPPORTED | gif-hires | one JPEG file per page for the picture | 1 JPEG file(s), 3200x2000 | PASSED | 0.04 | 250284 | Pillow, Qt |  |
 | GIF | JPEG | SUPPORTED | gif-landscape | one JPEG file per page for the picture, transparency on white | 1 JPEG file(s), 640x400 | PASSED | 0.00 | 34048 | Pillow, Qt |  |
 | GIF | JPEG | SUPPORTED | gif-portrait | one JPEG file per page for the picture | 1 JPEG file(s), 360x540 | PASSED | 0.00 | 28785 | Pillow, Qt |  |
 | GIF | JPEG | SUPPORTED | gif-tiny | one JPEG file per page for the picture | 1 JPEG file(s), 24x16 | PASSED | 0.00 | 529 | Pillow, Qt |  |
-| GIF | PNG | SUPPORTED | gif-animated | one PNG file per page for the first frame only (animated inputs are read as their first frame) | 1 PNG file(s), 320x240 | PASSED | 0.00 | 7294 | Pillow, Qt |  |
+| GIF | PNG | SUPPORTED | gif-animated | one PNG file per page for the first frame only (Every frame is off by default) | 1 PNG file(s), 320x240 | PASSED | 0.00 | 7294 | Pillow, Qt |  |
 | GIF | PNG | SUPPORTED | gif-hires | one PNG file per page for the picture | 1 PNG file(s), 3200x2000 | PASSED | 0.06 | 54331 | Pillow, Qt |  |
 | GIF | PNG | SUPPORTED | gif-landscape | one PNG file per page for the picture, transparency kept | 1 PNG file(s), 640x400 | PASSED | 0.00 | 12496 | Pillow, Qt |  |
 | GIF | PNG | SUPPORTED | gif-portrait | one PNG file per page for the picture | 1 PNG file(s), 360x540 | PASSED | 0.00 | 9724 | Pillow, Qt |  |
 | GIF | PNG | SUPPORTED | gif-tiny | one PNG file per page for the picture | 1 PNG file(s), 24x16 | PASSED | 0.00 | 338 | Pillow, Qt |  |
-| GIF | HEIC | SUPPORTED | gif-animated | one HEIC file per page for the first frame only (animated inputs are read as their first frame) | 1 HEIC file(s), 320x240 | PASSED | 0.04 | 20239 | Pillow, Qt |  |
-| GIF | HEIC | SUPPORTED | gif-hires | one HEIC file per page for the picture | 1 HEIC file(s), 3200x2000 | PASSED | 0.36 | 134613 | Pillow, Qt |  |
+| GIF | HEIC | SUPPORTED | gif-animated | one HEIC file per page for the first frame only (Every frame is off by default) | 1 HEIC file(s), 320x240 | PASSED | 0.04 | 20239 | Pillow, Qt |  |
+| GIF | HEIC | SUPPORTED | gif-hires | one HEIC file per page for the picture | 1 HEIC file(s), 3200x2000 | PASSED | 0.35 | 134613 | Pillow, Qt |  |
 | GIF | HEIC | SUPPORTED | gif-landscape | one HEIC file per page for the picture, transparency kept | 1 HEIC file(s), 640x400 | PASSED | 0.06 | 35025 | Pillow, Qt |  |
 | GIF | HEIC | SUPPORTED | gif-portrait | one HEIC file per page for the picture | 1 HEIC file(s), 360x540 | PASSED | 0.06 | 28699 | Pillow, Qt |  |
 | GIF | HEIC | SUPPORTED | gif-tiny | one HEIC file per page for the picture | 1 HEIC file(s), 24x16 | PASSED | 0.01 | 1086 | Pillow, Qt |  |
-| GIF | WEBP | SUPPORTED | gif-animated | one WebP file per page for the first frame only (animated inputs are read as their first frame) | 1 WebP file(s), 320x240 | PASSED | 0.01 | 6626 | Pillow, Qt |  |
-| GIF | WEBP | SUPPORTED | gif-hires | one WebP file per page for the picture | 1 WebP file(s), 3200x2000 | PASSED | 0.17 | 55456 | Pillow, Qt |  |
+| GIF | WEBP | SUPPORTED | gif-animated | one animated WebP, all 4 frames, 200 ms each, loops forever | 1 animated WebP, 4 frames, durations [200] ms, loop 0 | PASSED | 0.02 | 27432 | Pillow, Qt |  |
+| GIF | WEBP | SUPPORTED | gif-hires | one WebP file per page for the picture | 1 WebP file(s), 3200x2000 | PASSED | 0.16 | 55456 | Pillow, Qt |  |
 | GIF | WEBP | SUPPORTED | gif-landscape | one WebP file per page for the picture, transparency kept | 1 WebP file(s), 640x400 | PASSED | 0.01 | 12564 | Pillow, Qt |  |
 | GIF | WEBP | SUPPORTED | gif-portrait | one WebP file per page for the picture | 1 WebP file(s), 360x540 | PASSED | 0.01 | 10050 | Pillow, Qt |  |
 | GIF | WEBP | SUPPORTED | gif-tiny | one WebP file per page for the picture | 1 WebP file(s), 24x16 | PASSED | 0.00 | 208 | Pillow, Qt |  |
-| GIF | AVIF | SUPPORTED | gif-animated | one AVIF file per page for the first frame only (animated inputs are read as their first frame) | 1 AVIF file(s), 320x240 | PASSED | 0.05 | 6168 | Pillow, sips |  |
+| GIF | AVIF | SUPPORTED | gif-animated | one AVIF file per page for the first frame only (Every frame is off by default) | 1 AVIF file(s), 320x240 | PASSED | 0.05 | 6168 | Pillow, sips |  |
 | GIF | AVIF | SUPPORTED | gif-hires | one AVIF file per page for the picture | 1 AVIF file(s), 3200x2000 | PASSED | 0.19 | 28562 | Pillow, sips |  |
 | GIF | AVIF | SUPPORTED | gif-landscape | one AVIF file per page for the picture, transparency kept | 1 AVIF file(s), 640x400 | PASSED | 0.07 | 10966 | Pillow, sips |  |
-| GIF | AVIF | SUPPORTED | gif-portrait | one AVIF file per page for the picture | 1 AVIF file(s), 360x540 | PASSED | 0.08 | 9124 | Pillow, sips |  |
+| GIF | AVIF | SUPPORTED | gif-portrait | one AVIF file per page for the picture | 1 AVIF file(s), 360x540 | PASSED | 0.07 | 9124 | Pillow, sips |  |
 | GIF | AVIF | SUPPORTED | gif-tiny | one AVIF file per page for the picture | 1 AVIF file(s), 24x16 | PASSED | 0.00 | 447 | Pillow, sips |  |
-| GIF | TIFF | SUPPORTED | gif-animated | one TIFF file per page for the first frame only (animated inputs are read as their first frame) | 1 TIFF file(s), 320x240 | PASSED | 0.00 | 6942 | Pillow, Qt |  |
+| GIF | TIFF | SUPPORTED | gif-animated | one TIFF file per page for the first frame only (Every frame is off by default) | 1 TIFF file(s), 320x240 | PASSED | 0.00 | 6942 | Pillow, Qt |  |
 | GIF | TIFF | SUPPORTED | gif-hires | one TIFF file per page for the picture | 1 TIFF file(s), 3200x2000 | PASSED | 0.03 | 248568 | Pillow, Qt |  |
 | GIF | TIFF | SUPPORTED | gif-landscape | one TIFF file per page for the picture, transparency kept | 1 TIFF file(s), 640x400 | PASSED | 0.00 | 16496 | Pillow, Qt |  |
 | GIF | TIFF | SUPPORTED | gif-portrait | one TIFF file per page for the picture | 1 TIFF file(s), 360x540 | PASSED | 0.00 | 12586 | Pillow, Qt |  |
 | GIF | TIFF | SUPPORTED | gif-tiny | one TIFF file per page for the picture | 1 TIFF file(s), 24x16 | PASSED | 0.00 | 740 | Pillow, Qt |  |
-| GIF | GIF | SUPPORTED | gif-animated | one GIF file per page for the first frame only (animated inputs are read as their first frame) | 1 GIF file(s), 320x240 | PASSED | 0.01 | 18606 | Pillow, Qt |  |
+| GIF | GIF | SUPPORTED | gif-animated | one animated GIF, all 4 frames, 200 ms each, loops forever | 1 animated GIF, 4 frames, durations [200] ms, loop 0 | PASSED | 0.02 | 55014 | GIF parser, Pillow, Qt |  |
 | GIF | GIF | SUPPORTED | gif-hires | one GIF file per page for the picture | 1 GIF file(s), 3200x2000 | PASSED | 0.16 | 233742 | Pillow, Qt |  |
 | GIF | GIF | SUPPORTED | gif-landscape | one GIF file per page for the picture, transparency kept | 1 GIF file(s), 640x400 | PASSED | 0.01 | 38721 | Pillow, Qt |  |
 | GIF | GIF | SUPPORTED | gif-portrait | one GIF file per page for the picture | 1 GIF file(s), 360x540 | PASSED | 0.01 | 37493 | Pillow, Qt |  |
 | GIF | GIF | SUPPORTED | gif-tiny | one GIF file per page for the picture | 1 GIF file(s), 24x16 | PASSED | 0.00 | 1239 | Pillow, Qt |  |
-| GIF | GIF_SEPARATE | SUPPORTED | gif-animated | one GIF file per page for the first frame only (animated inputs are read as their first frame) | 1 GIF file(s), 320x240 | PASSED | 0.01 | 18606 | Pillow, Qt |  |
+| GIF | GIF_SEPARATE | SUPPORTED | gif-animated | one GIF file per page for the first frame only (Every frame is off by default) | 1 GIF file(s), 320x240 | PASSED | 0.01 | 18606 | Pillow, Qt |  |
 | GIF | GIF_SEPARATE | SUPPORTED | gif-hires | one GIF file per page for the picture | 1 GIF file(s), 3200x2000 | PASSED | 0.16 | 233742 | Pillow, Qt |  |
 | GIF | GIF_SEPARATE | SUPPORTED | gif-landscape | one GIF file per page for the picture, transparency kept | 1 GIF file(s), 640x400 | PASSED | 0.01 | 38721 | Pillow, Qt |  |
 | GIF | GIF_SEPARATE | SUPPORTED | gif-portrait | one GIF file per page for the picture | 1 GIF file(s), 360x540 | PASSED | 0.01 | 37493 | Pillow, Qt |  |
 | GIF | GIF_SEPARATE | SUPPORTED | gif-tiny | one GIF file per page for the picture | 1 GIF file(s), 24x16 | PASSED | 0.00 | 1239 | Pillow, Qt |  |
-| GIF | BMP | SUPPORTED | gif-animated | one BMP file per page for the first frame only (animated inputs are read as their first frame) | 1 BMP file(s), 320x240 | PASSED | 0.00 | 230454 | Pillow, Qt |  |
+| GIF | BMP | SUPPORTED | gif-animated | one BMP file per page for the first frame only (Every frame is off by default) | 1 BMP file(s), 320x240 | PASSED | 0.00 | 230454 | Pillow, Qt |  |
 | GIF | BMP | SUPPORTED | gif-hires | one BMP file per page for the picture | 1 BMP file(s), 3200x2000 | PASSED | 0.02 | 19200054 | Pillow, Qt |  |
 | GIF | BMP | SUPPORTED | gif-landscape | one BMP file per page for the picture, transparency on white | 1 BMP file(s), 640x400 | PASSED | 0.00 | 768054 | Pillow, Qt |  |
 | GIF | BMP | SUPPORTED | gif-portrait | one BMP file per page for the picture | 1 BMP file(s), 360x540 | PASSED | 0.00 | 583254 | Pillow, Qt |  |
@@ -552,48 +552,48 @@ Rows are input formats Papyr reads, columns the outputs it offers. A cell is PAS
 | PDF | PNG | SUPPORTED | pdf-single-text | one PNG file per page for each page | 1 PNG file(s), 1653x2339 | PASSED | 0.02 | 68090 | Pillow, Qt |  |
 | PDF | PNG | SUPPORTED | pdf-twelve-pages | one PNG file per page for each page | 12 PNG file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700... | PASSED | 0.17 | 334852 | Pillow, Qt |  |
 | PDF | HEIC | SUPPORTED | pdf-mixed-content | one HEIC file per page for each page | 7 HEIC file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653... | PASSED | 1.24 | 959013 | Pillow, Qt |  |
-| PDF | HEIC | SUPPORTED | pdf-single-text | one HEIC file per page for each page | 1 HEIC file(s), 1653x2339 | PASSED | 0.16 | 47696 | Pillow, Qt |  |
-| PDF | HEIC | SUPPORTED | pdf-twelve-pages | one HEIC file per page for each page | 12 HEIC file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700... | PASSED | 1.35 | 187616 | Pillow, Qt |  |
-| PDF | WEBP | SUPPORTED | pdf-mixed-content | one WebP file per page for each page | 7 WebP file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653... | PASSED | 0.56 | 353514 | Pillow, Qt |  |
-| PDF | WEBP | SUPPORTED | pdf-single-text | one WebP file per page for each page | 1 WebP file(s), 1653x2339 | PASSED | 0.09 | 28688 | Pillow, Qt |  |
-| PDF | WEBP | SUPPORTED | pdf-twelve-pages | one WebP file per page for each page | 12 WebP file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700... | PASSED | 0.94 | 129552 | Pillow, Qt |  |
+| PDF | HEIC | SUPPORTED | pdf-single-text | one HEIC file per page for each page | 1 HEIC file(s), 1653x2339 | PASSED | 0.13 | 47696 | Pillow, Qt |  |
+| PDF | HEIC | SUPPORTED | pdf-twelve-pages | one HEIC file per page for each page | 12 HEIC file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700... | PASSED | 1.34 | 187616 | Pillow, Qt |  |
+| PDF | WEBP | SUPPORTED | pdf-mixed-content | one WebP file per page for each page | 7 WebP file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653... | PASSED | 0.55 | 353514 | Pillow, Qt |  |
+| PDF | WEBP | SUPPORTED | pdf-single-text | one WebP file per page for each page | 1 WebP file(s), 1653x2339 | PASSED | 0.08 | 28688 | Pillow, Qt |  |
+| PDF | WEBP | SUPPORTED | pdf-twelve-pages | one WebP file per page for each page | 12 WebP file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700... | PASSED | 0.91 | 129552 | Pillow, Qt |  |
 | PDF | AVIF | SUPPORTED | pdf-mixed-content | one AVIF file per page for each page | 7 AVIF file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653... | PASSED | 0.52 | 387060 | Pillow, sips |  |
 | PDF | AVIF | SUPPORTED | pdf-single-text | one AVIF file per page for each page | 1 AVIF file(s), 1653x2339 | PASSED | 0.04 | 26321 | Pillow, sips |  |
-| PDF | AVIF | SUPPORTED | pdf-twelve-pages | one AVIF file per page for each page | 12 AVIF file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700... | PASSED | 0.36 | 63871 | Pillow, sips |  |
-| PDF | TIFF | SUPPORTED | pdf-mixed-content | one TIFF file per page for each page | 7 TIFF file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653... | PASSED | 0.11 | 1584040 | Pillow, Qt |  |
+| PDF | AVIF | SUPPORTED | pdf-twelve-pages | one AVIF file per page for each page | 12 AVIF file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700... | PASSED | 0.37 | 63871 | Pillow, sips |  |
+| PDF | TIFF | SUPPORTED | pdf-mixed-content | one TIFF file per page for each page | 7 TIFF file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653... | PASSED | 0.12 | 1584040 | Pillow, Qt |  |
 | PDF | TIFF | SUPPORTED | pdf-single-text | one TIFF file per page for each page | 1 TIFF file(s), 1653x2339 | PASSED | 0.01 | 64380 | Pillow, Qt |  |
-| PDF | TIFF | SUPPORTED | pdf-twelve-pages | one TIFF file per page for each page | 12 TIFF file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700... | PASSED | 0.08 | 376974 | Pillow, Qt |  |
-| PDF | GIF | SUPPORTED | pdf-mixed-content | one animated GIF, each page as a frame, 1000 ms, loops forever | 1 GIF, 7 frames at 1000x1000, delays [1000] ms, loop 0 | PASSED | 0.24 | 258414 | GIF parser, Pillow, Qt |  |
+| PDF | TIFF | SUPPORTED | pdf-twelve-pages | one TIFF file per page for each page | 12 TIFF file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700... | PASSED | 0.09 | 376974 | Pillow, Qt |  |
+| PDF | GIF | SUPPORTED | pdf-mixed-content | one animated GIF, each page as a frame, 1000 ms, loops forever | 1 GIF, 7 frames at 1000x1000, delays [1000] ms, loop 0 | PASSED | 0.23 | 258414 | GIF parser, Pillow, Qt |  |
 | PDF | GIF | SUPPORTED | pdf-single-text | one animated GIF, each page as a frame, 1000 ms, loops forever | 1 GIF, 1 frames at 707x1000, delays [1000] ms, loop 0 | PASSED | 0.02 | 12661 | GIF parser, Pillow, Qt |  |
 | PDF | GIF | SUPPORTED | pdf-twelve-pages | one animated GIF, each page as a frame, 1000 ms, loops forever | 1 GIF, 12 frames at 1000x1000, delays [1000] ms, loop 0 | PASSED | 0.25 | 65067 | GIF parser, Pillow, Qt |  |
-| PDF | GIF_SEPARATE | SUPPORTED | pdf-mixed-content | one GIF file per page for each page | 7 GIF file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653... | PASSED | 0.65 | 804846 | Pillow, Qt |  |
+| PDF | GIF_SEPARATE | SUPPORTED | pdf-mixed-content | one GIF file per page for each page | 7 GIF file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653... | PASSED | 0.63 | 804846 | Pillow, Qt |  |
 | PDF | GIF_SEPARATE | SUPPORTED | pdf-single-text | one GIF file per page for each page | 1 GIF file(s), 1653x2339 | PASSED | 0.08 | 40754 | Pillow, Qt |  |
-| PDF | GIF_SEPARATE | SUPPORTED | pdf-twelve-pages | one GIF file per page for each page | 12 GIF file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700... | PASSED | 0.90 | 165493 | Pillow, Qt |  |
+| PDF | GIF_SEPARATE | SUPPORTED | pdf-twelve-pages | one GIF file per page for each page | 12 GIF file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700... | PASSED | 0.88 | 165493 | Pillow, Qt |  |
 | PDF | BMP | SUPPORTED | pdf-mixed-content | one BMP file per page for each page | 7 BMP file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653... | PASSED | 0.06 | 65821654 | Pillow, Qt |  |
 | PDF | BMP | SUPPORTED | pdf-single-text | one BMP file per page for each page | 1 BMP file(s), 1653x2339 | PASSED | 0.01 | 11601494 | Pillow, Qt |  |
 | PDF | BMP | SUPPORTED | pdf-twelve-pages | one BMP file per page for each page | 12 BMP file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700... | PASSED | 0.09 | 134640648 | Pillow, Qt |  |
 | PDF | IPYNB | UNSUPPORTED_BY_DESIGN | pdf-mixed-content | not offered | Papyr never writes notebooks; there is no notebook output format | UNSUPPORTED_BY_DESIGN | 0.00 | 0 |  |  |
 | PDF | IPYNB | UNSUPPORTED_BY_DESIGN | pdf-single-text | not offered | Papyr never writes notebooks; there is no notebook output format | UNSUPPORTED_BY_DESIGN | 0.00 | 0 |  |  |
 | PDF | IPYNB | UNSUPPORTED_BY_DESIGN | pdf-twelve-pages | not offered | Papyr never writes notebooks; there is no notebook output format | UNSUPPORTED_BY_DESIGN | 0.00 | 0 |  |  |
-| IPYNB | PDF | SUPPORTED | notebook-matrix | one PDF with each page as a page, text kept | 1 PDF, 5 page(s), first page 595x842 pt | PASSED | 0.18 | 176701 | PDFium, pypdf |  |
+| IPYNB | PDF | SUPPORTED | notebook-matrix | one PDF with each page as a page, text kept | 1 PDF, 5 page(s), first page 595x842 pt | PASSED | 0.17 | 176701 | PDFium, pypdf |  |
 | IPYNB | PDF | SUPPORTED | notebook-short | one PDF with each page as a page, text kept | 1 PDF, 1 page(s), first page 595x842 pt | PASSED | 0.03 | 58427 | PDFium, pypdf |  |
 | IPYNB | JPEG | SUPPORTED | notebook-matrix | one JPEG file per page for each page | 6 JPEG file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200... | PASSED | 0.30 | 1478584 | Pillow, Qt |  |
 | IPYNB | JPEG | SUPPORTED | notebook-short | one JPEG file per page for each page | 1 JPEG file(s), 1700x2200 | PASSED | 0.05 | 245699 | Pillow, Qt |  |
-| IPYNB | PNG | SUPPORTED | notebook-matrix | one PNG file per page for each page | 6 PNG file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200... | PASSED | 0.36 | 1682826 | Pillow, Qt |  |
+| IPYNB | PNG | SUPPORTED | notebook-matrix | one PNG file per page for each page | 6 PNG file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200... | PASSED | 0.34 | 1682826 | Pillow, Qt |  |
 | IPYNB | PNG | SUPPORTED | notebook-short | one PNG file per page for each page | 1 PNG file(s), 1700x2200 | PASSED | 0.06 | 273793 | Pillow, Qt |  |
-| IPYNB | HEIC | SUPPORTED | notebook-matrix | one HEIC file per page for each page | 6 HEIC file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200... | PASSED | 1.52 | 1161857 | Pillow, Qt |  |
-| IPYNB | HEIC | SUPPORTED | notebook-short | one HEIC file per page for each page | 1 HEIC file(s), 1700x2200 | PASSED | 0.26 | 196018 | Pillow, Qt |  |
-| IPYNB | WEBP | SUPPORTED | notebook-matrix | one WebP file per page for each page | 6 WebP file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200... | PASSED | 0.76 | 576260 | Pillow, Qt |  |
+| IPYNB | HEIC | SUPPORTED | notebook-matrix | one HEIC file per page for each page | 6 HEIC file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200... | PASSED | 1.50 | 1161857 | Pillow, Qt |  |
+| IPYNB | HEIC | SUPPORTED | notebook-short | one HEIC file per page for each page | 1 HEIC file(s), 1700x2200 | PASSED | 0.25 | 196018 | Pillow, Qt |  |
+| IPYNB | WEBP | SUPPORTED | notebook-matrix | one WebP file per page for each page | 6 WebP file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200... | PASSED | 0.75 | 576260 | Pillow, Qt |  |
 | IPYNB | WEBP | SUPPORTED | notebook-short | one WebP file per page for each page | 1 WebP file(s), 1700x2200 | PASSED | 0.13 | 97162 | Pillow, Qt |  |
-| IPYNB | AVIF | SUPPORTED | notebook-matrix | one AVIF file per page for each page | 6 AVIF file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200... | PASSED | 1.05 | 287108 | Pillow, sips |  |
-| IPYNB | AVIF | SUPPORTED | notebook-short | one AVIF file per page for each page | 1 AVIF file(s), 1700x2200 | PASSED | 0.10 | 100807 | Pillow, sips |  |
-| IPYNB | TIFF | SUPPORTED | notebook-matrix | one TIFF file per page for each page | 6 TIFF file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200... | PASSED | 0.27 | 1753708 | Pillow, Qt |  |
-| IPYNB | TIFF | SUPPORTED | notebook-short | one TIFF file per page for each page | 1 TIFF file(s), 1700x2200 | PASSED | 0.04 | 282938 | Pillow, Qt |  |
+| IPYNB | AVIF | SUPPORTED | notebook-matrix | one AVIF file per page for each page | 6 AVIF file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200... | PASSED | 1.02 | 287108 | Pillow, sips |  |
+| IPYNB | AVIF | SUPPORTED | notebook-short | one AVIF file per page for each page | 1 AVIF file(s), 1700x2200 | PASSED | 0.09 | 100807 | Pillow, sips |  |
+| IPYNB | TIFF | SUPPORTED | notebook-matrix | one TIFF file per page for each page | 6 TIFF file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200... | PASSED | 0.26 | 1753708 | Pillow, Qt |  |
+| IPYNB | TIFF | SUPPORTED | notebook-short | one TIFF file per page for each page | 1 TIFF file(s), 1700x2200 | PASSED | 0.05 | 282938 | Pillow, Qt |  |
 | IPYNB | GIF | SUPPORTED | notebook-matrix | one animated GIF, each page as a frame, 1000 ms, loops forever | 1 GIF, 6 frames at 773x1000, delays [1000] ms, loop 0 | PASSED | 0.30 | 242045 | GIF parser, Pillow, Qt |  |
 | IPYNB | GIF | SUPPORTED | notebook-short | one animated GIF, each page as a frame, 1000 ms, loops forever | 1 GIF, 1 frames at 773x1000, delays [1000] ms, loop 0 | PASSED | 0.05 | 41125 | GIF parser, Pillow, Qt |  |
-| IPYNB | GIF_SEPARATE | SUPPORTED | notebook-matrix | one GIF file per page for each page | 6 GIF file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200... | PASSED | 0.70 | 835248 | Pillow, Qt |  |
+| IPYNB | GIF_SEPARATE | SUPPORTED | notebook-matrix | one GIF file per page for each page | 6 GIF file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200... | PASSED | 0.67 | 835248 | Pillow, Qt |  |
 | IPYNB | GIF_SEPARATE | SUPPORTED | notebook-short | one GIF file per page for each page | 1 GIF file(s), 1700x2200 | PASSED | 0.12 | 138365 | Pillow, Qt |  |
-| IPYNB | BMP | SUPPORTED | notebook-matrix | one BMP file per page for each page | 6 BMP file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200... | PASSED | 0.23 | 67320324 | Pillow, Qt |  |
+| IPYNB | BMP | SUPPORTED | notebook-matrix | one BMP file per page for each page | 6 BMP file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200... | PASSED | 0.22 | 67320324 | Pillow, Qt |  |
 | IPYNB | BMP | SUPPORTED | notebook-short | one BMP file per page for each page | 1 BMP file(s), 1700x2200 | PASSED | 0.04 | 11220054 | Pillow, Qt |  |
 | IPYNB | IPYNB | UNSUPPORTED_BY_DESIGN | notebook-matrix | not offered | Papyr never writes notebooks; there is no notebook output format | UNSUPPORTED_BY_DESIGN | 0.00 | 0 |  |  |
 | IPYNB | IPYNB | UNSUPPORTED_BY_DESIGN | notebook-short | not offered | Papyr never writes notebooks; there is no notebook output format | UNSUPPORTED_BY_DESIGN | 0.00 | 0 |  |  |

@@ -87,3 +87,14 @@ def test_error_text_mapping(raw, friendly):
 def test_tracebacks_and_paths_never_reach_the_window():
     raw = 'Traceback (most recent call last):\n  File "/x.py", line 1\nKeyError: /Users/me/secret.jpg'
     assert friendly_error(raw) == GENERIC
+
+
+def test_a_save_folder_removed_mid_write_is_not_blamed_on_the_input():
+    raw = "[Errno 2] No such file or directory: '/Users/me/Out/.papyr-abc123.part'"
+    assert friendly_error(raw) == "The Save to folder was moved or deleted."
+    assert friendly_error("[Errno 2] No such file or directory: '/Users/me/photo.heic'") == \
+        "The file was moved or deleted."
+
+
+def test_a_name_too_long_is_named():
+    assert friendly_error("[Errno 63] File name too long: 'x'") == "The file's name is too long to save in this folder."

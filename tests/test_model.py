@@ -159,3 +159,22 @@ def test_a_merged_pdf_that_overwrites_a_queued_file_and_fails_leaves_every_file_
 
 def test_converting_counts_what_is_left():
     assert Converting(total=10, done=3).remaining == 7
+
+
+def test_every_frame_shows_only_for_animations_going_to_a_still_format():
+    animated = QueueSummary(count=1, has_animation=True)
+    for fmt in (OutputFormat.PDF, OutputFormat.JPEG, OutputFormat.PNG, OutputFormat.TIFF, OutputFormat.HEIC):
+        assert Control.EVERY_FRAME in controls_for(Options(format=fmt), animated), fmt
+        assert Control.EVERY_FRAME not in controls_for(Options(format=fmt), ONE), fmt
+    assert Control.EVERY_FRAME not in controls_for(Options(format=OutputFormat.WEBP), animated)
+    assert Control.EVERY_FRAME not in controls_for(Options(format=OutputFormat.GIF), animated)
+    assert Control.EVERY_FRAME in controls_for(Options(format=OutputFormat.GIF, gif_mode=GifMode.SEPARATE), animated)
+
+
+def test_every_frame_reaches_the_engine_and_is_remembered(tmp_path):
+    options = Options(format=OutputFormat.PNG, every_frame=True)
+    assert options.image_settings().every_frame and options.with_(format=OutputFormat.PDF).pdf_settings().every_frame
+    settings = QSettings(str(tmp_path / "s.ini"), QSettings.Format.IniFormat)
+    options.save(settings)
+    assert Options.load(settings).every_frame
+    assert not Options.load(QSettings(str(tmp_path / "empty.ini"), QSettings.Format.IniFormat)).every_frame

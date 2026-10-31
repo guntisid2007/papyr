@@ -23,11 +23,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: macOS
+          - name: macOS Apple Silicon
+            slug: macos-arm64
             os: macos-15
+          - name: macOS Intel
+            slug: macos-x64
+            os: macos-15-intel
           - name: Windows
+            slug: windows-x64
             os: windows-latest
           - name: Linux
+            slug: linux-x64
             os: ubuntu-22.04
     steps:
       - uses: actions/checkout@v5
@@ -50,23 +56,37 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements-dev.txt
 
-      - name: Record codec support
+      # A missing codec would turn its matrix pairs into skips, so it fails here, by name, instead.
+      - name: Check codec support
         run: >
           python -c "import PIL.features as f, pillow_heif;
-          print('avif', f.check('avif'), f.version('avif'), 'libheif', pillow_heif.libheif_version())"
+          print('avif', f.check('avif'), f.version('avif'), 'webp', f.version('webp'), 'libheif', pillow_heif.libheif_version());
+          assert f.check('avif') and f.check('webp') and pillow_heif.libheif_version(), 'a codec is missing'"
 
       - name: Conversion matrix
-        run: python -m pytest tests/test_conversion_matrix.py tests/test_validator_sensitivity.py -v -p no:cacheprovider --report-dir reports/${{ runner.os }}
+        run: python -m pytest tests/test_conversion_matrix.py tests/test_validator_sensitivity.py -v -rs -p no:cacheprovider --report-dir reports/${{ matrix.slug }}
+
+      - name: Every supported pair ran and passed
+        if: success() || failure()
+        shell: python
+        run: |
+          import json, pathlib
+          counts = json.loads(pathlib.Path("reports/${{ matrix.slug }}/run-summary.json").read_text())["counts"]
+          print(json.dumps(counts, indent=1))
+          supported = counts["declared"].get("SUPPORTED", 0)
+          assert supported and counts["pair_status"].get("PASSED", 0) == supported, "a supported pair did not pass"
+          assert counts["conversion_status"]["SKIPPED"] == 0, "a conversion was skipped"
+          assert counts["conversion_status"]["FAILED"] == 0, "a conversion failed"
 
       - name: Behavior, edge cases, and window
-        if: always()
+        if: success() || failure()
         run: >
-          python -m pytest tests -v -p no:cacheprovider
+          python -m pytest tests -v -rs -p no:cacheprovider
           --ignore=tests/test_conversion_matrix.py --ignore=tests/test_validator_sensitivity.py
 
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: conversion-matrix-${{ runner.os }}
-          path: reports/${{ runner.os }}
-          if-no-files-found: warn
+          name: conversion-matrix-${{ matrix.slug }}
+          path: reports/${{ matrix.slug }}
+          if-no-files-found: error

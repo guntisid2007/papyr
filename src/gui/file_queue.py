@@ -9,6 +9,7 @@ from PySide6.QtGui import QCursor, QFontMetrics, QImage, QKeySequence, QPainter,
 from PySide6.QtWidgets import QAbstractItemView, QListWidget, QListWidgetItem, QStyle, QStyledItemDelegate, QToolTip
 
 from converter import is_document
+from converter.images import is_animated
 from utils.files import human_size
 
 from .icons import Icon, paint_icon
@@ -32,6 +33,7 @@ class Role(IntEnum):
     KIND = _USER + 2
     STATE = _USER + 3
     REASON = _USER + 4
+    ANIMATED = _USER + 5
 
 
 class FileState(Enum):
@@ -94,6 +96,7 @@ class FileQueue(QListWidget):
                 item.setData(Role.PATH, str(path))
                 item.setData(Role.SIZE, path.stat().st_size)
                 item.setData(Role.KIND, kind_label(path))
+                item.setData(Role.ANIMATED, is_animated(path))
                 item.setToolTip(str(path))
                 self._set_state(item, FileState.PENDING, "")
                 self.addItem(item)
@@ -123,7 +126,8 @@ class FileQueue(QListWidget):
                             sum(item.data(Role.STATE) == FileState.UNREADABLE.value for item in items),
                             any(is_document(path) for path in paths),
                             sum(item.data(Role.SIZE) for item in items),
-                            any(path.suffix.lower() in (".tif", ".tiff") for path in paths))
+                            any(path.suffix.lower() in (".tif", ".tiff") for path in paths),
+                            any(bool(item.data(Role.ANIMATED)) for item in items))
 
     def mark_unreadable(self, path: str, reason: str) -> None:
         for i in range(self.count()):

@@ -90,7 +90,7 @@ The build was made on Ubuntu 22.04 and needs glibc 2.35 or newer plus the usual 
 2. Arrange the list. Drag rows, or select a row and press **⌘⌥↑** or **⌘⌥↓**. To remove a file, click its **×** or press **Delete**. To add more, drop them on the list or use the **+** and folder buttons above it.
 3. In the dock at the bottom, pick the format: **PDF**, **JPEG**, **PNG**, **WebP**, or **HEIC**, or **More** for AVIF, TIFF, GIF, and BMP. The row above it then shows only the settings for that format.
    - For **PDF**, the **Page** chip sets the page size and margins. With two or more files, turn on **Merge into one PDF**, then click the file name chip to rename the merged PDF. The pages follow the list order, and the list numbers its rows.
-   - For an image format, the **Quality** chip sets the quality where the format has one. If you added PDFs or notebooks, the **PDF pages** chip sets their resolution.
+   - For an image format, the **Quality** chip sets the quality where the format has one. If you added PDFs or notebooks, the **PDF pages** chip sets their resolution. If you added an animated GIF or WebP and the format can't animate, **Every frame** saves each frame as its own file (`name-frame-001.png`, …) instead of only the first.
 4. Click the folder chip to choose where the results go.
 5. Click **Convert to …** or press **⌘↩**. To stop, click **Cancel** or press **Esc**.
 6. When it finishes, click **Show in Finder**. **Convert More** starts over with an empty list, and **Back to Files** returns to the same files, for example to convert them to another format.
@@ -120,7 +120,7 @@ On Windows and Linux, use **Ctrl** for **⌘** and **Alt** for **⌥**.
 - No accounts, no telemetry, no analytics, no API keys.
 - Images that a notebook links from the web are not downloaded. Only images saved inside the notebook or next to it on your computer are shown.
 - Photo metadata such as GPS location, camera model, and date is **not** copied into the converted files.
-- The app writes nothing except the files you ask for. Each file is written to a temporary file in the destination folder and renamed when complete, so a cancelled or failed conversion leaves no partial files behind.
+- The app writes nothing except the files you ask for. Each file is written to a hidden temporary file in the destination folder. A source's files are moved into place only after all of them are complete, so a file that fails or is cancelled part way leaves none of its pages behind, and an existing file is never replaced unless you agree to replace a merged file.
 
 ## Supported systems
 
@@ -138,10 +138,12 @@ On Windows and Linux, use **Ctrl** for **⌘** and **Alt** for **⌥**.
 - **Not code-signed or notarized.** The macOS app has only an ad-hoc signature. It is not signed with an Apple Developer ID or notarized by Apple, so Gatekeeper asks you to approve it once (steps above). The Windows app is not signed either, so SmartScreen may warn. Signing needs paid certificates, which this project does not have.
 - Images become image pages in a PDF, so text in photos is not searchable (no OCR). PDFs you add keep their text.
 - Turning a PDF into an image renders it at the DPI you choose; the image has no selectable text.
-- Animated GIF and WebP files, and multi-image HEIC files such as bursts, convert their first image only. Multi-page TIFF files convert every page.
+- Animated GIF and WebP files stay animated, with their own frame timing and looping, when converted to WebP or to an animated GIF. Other formats and PDF take the first frame, or every frame when you turn on **Every frame**. Animated PNG files and multi-image HEIC files such as bursts convert their first image only. Multi-page TIFF files convert every page.
+- An animated WebP is made from every frame held in memory at once, so animations of more than about 134 million pixels in total (for example, 130 frames of 1000 × 1000) are refused.
 - In a combined PDF, page size and margins apply to image and notebook pages; pages from PDFs keep their original size.
 - Notebooks have no syntax highlighting. Interactive outputs such as JavaScript widgets and Plotly charts show only the static fallback saved with them, often a line of text. LaTeX math appears as its source, such as `$x^2$`. With "Original image size", or when a notebook becomes images, notebooks use US Letter in the US and A4 elsewhere.
 - Password-protected PDFs are not supported.
+- PDFs protected with AES encryption that open without a password, such as some statements and forms, can be turned into images or GIFs but not into a new PDF. Copying their pages would drop the owner's restrictions, and Papyr says so instead.
 - HDR and wide-gamut detail is converted to standard 8-bit sRGB.
 - Images larger than about 178 megapixels are refused to protect your computer's memory.
 - "Original image size" uses one image pixel per PDF point (1/72 inch), so a 12-megapixel photo makes a page about 142 × 107 cm. Choose A4 or Letter for printable pages.

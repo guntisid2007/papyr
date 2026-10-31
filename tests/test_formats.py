@@ -151,11 +151,13 @@ def test_image_output_is_upright_and_has_no_metadata(tmp_path):
 
 
 def test_cancel_image_conversion_keeps_finished_files_only(tmp_path):
-    doc = text_pdf(tmp_path / "long.pdf", [f"p{i}" for i in range(6)], size=(72, 72))
-    report = convert_images([doc], tmp_path / "out", ImageSettings(OutputFormat.PNG),
-                            cancelled=lambda: len(list((tmp_path / "out").glob("*.png"))) >= 2)
+    short = text_pdf(tmp_path / "short.pdf", ["a", "b"], size=(72, 72))
+    long = text_pdf(tmp_path / "long.pdf", [f"p{i}" for i in range(6)], size=(72, 72))
+    checks = []
+    report = convert_images([short, long], tmp_path / "out", ImageSettings(OutputFormat.PNG),
+                            cancelled=lambda: checks.append(1) or len(checks) > 6)
     assert report.cancelled
-    assert sorted(p.name for p in (tmp_path / "out").iterdir()) == ["long-page-1.png", "long-page-2.png"]
+    assert sorted(p.name for p in (tmp_path / "out").iterdir()) == ["short-page-1.png", "short-page-2.png"]
 
 
 def test_broken_pdf_is_reported(tmp_path):

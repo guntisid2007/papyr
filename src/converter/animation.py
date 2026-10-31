@@ -7,8 +7,8 @@ from typing import BinaryIO
 from PIL import GifImagePlugin, Image, ImageSequence
 
 from .formats import GifSettings, ImageLoadError, unreadable
-from .images import NOTEBOOK_IMAGE_SETTINGS, document_pdf, is_document, is_supported, iter_pages, pdf_page_sizes, \
-    pdf_pages, to_gif_palette
+from .images import NOTEBOOK_IMAGE_SETTINGS, Timing, animation_timing, document_pdf, is_document, is_supported, \
+    iter_pages, pdf_page_sizes, pdf_pages, to_gif_palette
 
 Size = tuple[int, int]
 _ORIENTATION = 274
@@ -23,6 +23,7 @@ class FrameSource:
     path: Path
     sizes: tuple[tuple[float, float], ...]
     pdf: Path | bytes | None = None
+    timing: Timing | None = None  # an animated GIF or WebP keeps its own frame durations
 
     @property
     def is_still(self) -> bool:
@@ -35,6 +36,9 @@ def measure(path: Path) -> FrameSource:
     if is_document(path):
         pdf = document_pdf(path, NOTEBOOK_IMAGE_SETTINGS)
         return FrameSource(path, tuple(pdf_page_sizes(pdf)), pdf)
+    timing = animation_timing(path)
+    if timing is not None:
+        return FrameSource(path, (timing.size,) * len(timing.durations), timing=timing)
     try:
         with Image.open(path) as image:
             frames = ImageSequence.Iterator(image) if image.format == "TIFF" else [image]
@@ -72,7 +76,8 @@ def frames(source: FrameSource, canvas: Size) -> Iterator[Image.Image]:
     """Each page scaled to fit the canvas and centred on it, on white, or on transparency for a picture
     that has some."""
     vector = source.pdf is not None
-    pages = pdf_pages(source.pdf, fit=canvas) if vector else iter_pages(source.path, keep_alpha=True)
+    pages = pdf_pages(source.pdf, fit=canvas) if vector else \
+        iter_pages(source.path, keep_alpha=True, every_frame=source.timing is not None)
     try:
         for page in pages:
             yield _on_canvas(page, canvas, vector)
@@ -106,19 +111,28 @@ class GifWriter:
         self._settings = settings
         self.frame_count = 0
 
-    def add(self, frame: Image.Image) -> None:
+    def add(self, frame: Image.Image, duration: int | None = None) -> None:
+        duration = self._settings.frame_ms if duration is None else duration
         # Every frame reserves a transparent index, even an opaque one. Disposal 2 then clears to transparency, so
         # an opaque page never shows through the clear areas of a transparent picture after it.
         paletted = to_gif_palette(frame, reserve_transparent=True)
-        params = {"duration": self._settings.frame_ms, "disposal": 2, "transparency": paletted.info["transparency"]}
+        params = {"duration": duration, "disposal": 2, "transparency": paletted.info["transparency"]}
         if self.frame_count == 0:
-            header, _ = GifImagePlugin.getheader(paletted, info={"loop": self._settings.loop,
-                                                                 "duration": self._settings.frame_ms})
+            header, _ = GifImagePlugin.getheader(paletted, info={"loop": self._settings.loop, "duration": duration})
             self._stream.writelines(header)
         else:
             params["include_color_table"] = True
         self._stream.writelines(GifImagePlugin.getdata(paletted, **params))
         self.frame_count += 1
+
+    def checkpoint(self) -> tuple[int, int]:
+        return self._stream.tell(), self.frame_count
+
+    def rollback(self, checkpoint: tuple[int, int]) -> None:
+        """Drop every frame added since checkpoint, so a source that fails part way leaves none of its frames."""
+        position, self.frame_count = checkpoint
+        self._stream.seek(position)
+        self._stream.truncate()
 
     def close(self) -> None:
         if not self.frame_count:

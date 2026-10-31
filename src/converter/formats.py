@@ -4,6 +4,7 @@ from enum import Enum
 INPUT_EXTENSIONS = frozenset({".heic", ".heif", ".jpg", ".jpeg", ".png", ".webp", ".tif", ".tiff",
                               ".bmp", ".gif", ".avif", ".pdf", ".ipynb"})
 LOSSLESS_INPUTS = frozenset({".png", ".tif", ".tiff", ".bmp", ".gif"})
+ANIMATED_INPUTS = frozenset({".gif", ".webp"})
 
 
 class ImageLoadError(Exception):
@@ -44,6 +45,12 @@ class ImageSettings:
     format: OutputFormat = OutputFormat.JPEG
     quality: int = 90
     pdf_dpi: int = 200
+    every_frame: bool = False  # an animated GIF or WebP gives every frame, not only the first
+
+    @property
+    def keeps_animation(self) -> bool:
+        """An animated GIF or WebP stays one animated file rather than becoming still images."""
+        return self.format is OutputFormat.WEBP
 
 
 class GifResolution(Enum):

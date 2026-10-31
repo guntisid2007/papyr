@@ -49,6 +49,21 @@ def self_test(sample: str) -> int:
             with Image.open(animation) as image:
                 if image.n_frames != 2 or image.info.get("loop") != 0 or image.info.get("duration") != 500:
                     problems.append(f"PDF to animated GIF: {image.n_frames} frames, {image.info}")
+        clip = Path(tmp) / "clip.gif"
+        Image.new("RGB", (40, 30), "red").save(clip, save_all=True, duration=[300, 600], loop=0,
+                                               append_images=[Image.new("RGB", (40, 30), "blue")])
+        report = convert_images([clip], Path(tmp) / "webp", ImageSettings(OutputFormat.WEBP))
+        if len(report.outputs) != 1 or report.failures:
+            problems.append(f"Animated GIF to WebP: {report.failures}")
+        else:
+            with Image.open(report.outputs[0]) as image:
+                durations = []
+                for index in range(image.n_frames):
+                    image.seek(index)
+                    image.load()
+                    durations.append(image.info.get("duration"))
+                if durations != [300, 600]:
+                    problems.append(f"Animated GIF to WebP: frame durations {durations}")
         wide_figure = io.BytesIO()
         Image.new("RGB", (4000, 400), "green").save(wide_figure, "PNG")
         square = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40"/></svg>'

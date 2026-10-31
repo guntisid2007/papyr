@@ -281,7 +281,8 @@ def _build_animated(b: _Builder, fmt: str) -> None:
     spec = FixtureSpec(name, fmt, RASTER_FORMATS[fmt][0], "raster",
                        (PageSpec("PAGE_001", (320, 240), PAGE_COLORS[0], b.reference(name, frames[0])),),
                        lossy=fmt == "WEBP", animated_frames=4,
-                       description="4-frame animation, 200 ms per frame, distinct frames")
+                       description="4-frame animation, 200 ms per frame, distinct frames",
+                       extra={"frames": [b.reference(f"{name}-frame-{i + 1}", f) for i, f in enumerate(frames)]})
     path = spec.path(b.root)
     options = {"quality": 92} if fmt == "WEBP" else {}
     frames[0].save(path, fmt, save_all=True, append_images=frames[1:], duration=200, loop=0, **options)

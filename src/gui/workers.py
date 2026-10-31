@@ -44,11 +44,17 @@ class _ThumbnailTask(QRunnable):
         try:
             image = pil_to_qimage(make_thumbnail(self._path, self._size))
         except ImageLoadError as exc:
-            self._loader.failed.emit(str(self._path), str(exc))
+            self._emit(self._loader.failed, str(exc))
         except Exception as exc:  # a preview failure must never take down the pool thread
-            self._loader.failed.emit(str(self._path), f"Could not read image: {exc}")
+            self._emit(self._loader.failed, f"Could not read image: {exc}")
         else:
-            self._loader.loaded.emit(str(self._path), image)
+            self._emit(self._loader.loaded, image)
+
+    def _emit(self, signal, value) -> None:
+        try:
+            signal.emit(str(self._path), value)
+        except RuntimeError:  # the window closed while this preview was still decoding
+            pass
 
 
 class ConversionWorker(QObject):

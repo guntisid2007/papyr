@@ -123,6 +123,13 @@ class Choice(QAbstractButton):
                        theme.accent_text, 1.8)
 
 
+def effective_gif_mode(options: Options, queue: QueueSummary) -> GifMode:
+    """Combine needs two files; with one, the file is animated on its own, so say that."""
+    if options.gif_mode is GifMode.COMBINE and not options.merges(queue):
+        return GifMode.ANIMATE_EACH
+    return options.gif_mode
+
+
 def merged_name_label(options: Options) -> str:
     return "Combined GIF name" if options.format is OutputFormat.GIF else "Merged PDF name"
 
@@ -303,7 +310,7 @@ class GifModePopover(Popover):
 
     def show_options(self, options: Options, queue: QueueSummary) -> None:
         self.choices[GifMode.COMBINE].setEnabled(queue.count >= 2)
-        self.choices[options.gif_mode].setChecked(True)
+        self.choices[effective_gif_mode(options, queue)].setChecked(True)
 
 
 class AnimationPopover(Popover):
@@ -313,9 +320,11 @@ class AnimationPopover(Popover):
         super().__init__(parent)
         self.body.addWidget(_section("Frame duration"))
         self.durations: dict[int, Choice] = {}
+        duration_group = QButtonGroup(self)  # exclusive, so clicking the chosen duration keeps it chosen
         for ms in FRAME_MS_CHOICES:
             choice = Choice(f"{ms} ms", {1000: "Default"}.get(ms, ""))
             choice.clicked.connect(lambda _=False, m=ms: on_frame_ms(m))
+            duration_group.addButton(choice)
             self.durations[ms] = choice
             self.body.addWidget(choice)
         self.custom_ms = _number(FRAME_MS_RANGE, " ms", "Custom frame duration",
@@ -323,6 +332,7 @@ class AnimationPopover(Popover):
         self.custom_ms.setSingleStep(10)
         self.custom_ms_choice = Choice("Custom")
         self.custom_ms_choice.clicked.connect(lambda: on_frame_ms(round_frame_ms(self.custom_ms.value())))
+        duration_group.addButton(self.custom_ms_choice)
         self.body.addLayout(self._row(self.custom_ms_choice, self.custom_ms))
 
         self.body.addSpacing(4)
@@ -336,6 +346,9 @@ class AnimationPopover(Popover):
         self.custom_plays = _number(PLAYS_RANGE, " times", "Number of plays", on_plays)
         self.custom_plays_choice = Choice("Play")
         self.custom_plays_choice.clicked.connect(lambda: on_plays(int(self.custom_plays.value())))
+        plays_group = QButtonGroup(self)
+        for choice in (self.loop_forever, self.play_once, self.custom_plays_choice):
+            plays_group.addButton(choice)
         self.body.addLayout(self._row(self.custom_plays_choice, self.custom_plays))
 
         self.body.addSpacing(4)
@@ -477,6 +490,9 @@ class Dock(Surface):
         self.gif_mode_chip = Chip()
         self.gif_mode_chip.setAccessibleName("GIF animation")
         self.gif_mode_chip.setToolTip("Animate pages, combine files, or save still GIFs")
+        self.every_frame = Toggle("Every frame")
+        self.every_frame.setToolTip("Save every frame of animated GIF and WebP files, not only the first")
+        self.every_frame.toggled.connect(lambda on: self._edit(every_frame=on))
         self.animation_chip = Chip("Frames")
         self.animation_chip.setToolTip("Frame duration, looping, and frame size")
         self.note = ElidedLabel(style=Type.CAPTION)
@@ -487,9 +503,10 @@ class Dock(Surface):
                                                Control.QUALITY: self.quality_chip, Control.PDF_DPI: self.dpi_chip,
                                                Control.GIF_MODE: self.gif_mode_chip,
                                                Control.FRAME_MS: self.animation_chip, Control.PLAYS: self.animation_chip,
-                                               Control.GIF_RESOLUTION: self.animation_chip}
+                                               Control.GIF_RESOLUTION: self.animation_chip,
+                                               Control.EVERY_FRAME: self.every_frame}
         for widget in (self.merge, self.gif_mode_chip, self.name_chip, self.page_chip, self.quality_chip,
-                       self.animation_chip, self.dpi_chip):
+                       self.animation_chip, self.dpi_chip, self.every_frame):
             options.addWidget(widget)
         options.addWidget(self.note, 1)
         options.addStretch(0)  # takes the spare room only while the note is hidden
@@ -582,13 +599,14 @@ class Dock(Surface):
         shown = {self._chips[control] for control in controls_for(options, queue)}
         for widget in set(self._chips.values()):
             widget.setVisible(widget in shown)
-        self.merge.blockSignals(True)
-        self.merge.setChecked(options.merge)
-        self.merge.blockSignals(False)
+        for toggle, on in ((self.merge, options.merge), (self.every_frame, options.every_frame)):
+            toggle.blockSignals(True)
+            toggle.setChecked(on)
+            toggle.blockSignals(False)
         self.name_chip.set_value(options.merged_file_name())
         self.name_chip.setAccessibleName(merged_name_label(options))
         self.name_chip.setToolTip(f"Name the {'combined GIF' if options.format is OutputFormat.GIF else 'merged PDF'}")
-        self.gif_mode_chip.set_value(options.gif_mode.short)
+        self.gif_mode_chip.set_value(effective_gif_mode(options, queue).short)
         self.animation_chip.set_value(f"{frame_ms_text(options.frame_ms)} · {plays_text(options.plays)}")
         self.animation_chip.setToolTip(f"Frame duration, looping, and frame size ({options.gif_resolution.label})")
         page = "Original" if options.page_size is PageSize.ORIGINAL else options.page_size.label
@@ -615,7 +633,16 @@ class Dock(Surface):
             other.removeWidget(self.destination)
         row.addWidget(self.destination)
 
+    def hideEvent(self, event) -> None:
+        self._close_popovers()  # popovers are windows of their own, so hiding the dock leaves them open
+        super().hideEvent(event)
+
+    def _close_popovers(self) -> None:
+        for _, popover in self._popovers:
+            popover.hide()
+
     def show_progress(self, state: Converting) -> None:
+        self._close_popovers()
         self._pages.setCurrentIndex(1)
         if state.cancelling:
             self.progress_title.setText("Cancelling…")
@@ -630,7 +657,7 @@ class Dock(Surface):
 
     def focus_chain(self) -> list[QWidget]:
         return [self.merge, self.gif_mode_chip, self.name_chip, self.page_chip, self.quality_chip,
-                self.animation_chip, self.dpi_chip, self.destination,
+                self.animation_chip, self.dpi_chip, self.every_frame, self.destination,
                 *self.formats.buttons.values(), self.formats.more, self.convert_button]
 
     def options(self) -> Options:

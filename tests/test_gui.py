@@ -820,3 +820,104 @@ def test_reduced_motion_is_read_once_and_defaults_to_animating(monkeypatch):
     monkeypatch.setattr(motion.subprocess, "run", missing)
     assert motion.animations_enabled() is True
     motion.animations_enabled.cache_clear()
+
+
+@pytest.mark.animation
+def test_every_frame_appears_for_an_animated_gif_and_reaches_the_files(app, window, tmp_path):
+    frames = [Image.new("RGB", (30, 20), color) for color in ("red", "green", "blue")]
+    clip = tmp_path / "clip.gif"
+    frames[0].save(clip, save_all=True, append_images=frames[1:], duration=100, loop=0)
+    still = tmp_path / "still.png"
+    Image.new("RGB", (30, 20), "white").save(still)
+    window.add_paths([still])
+    choose_format(window, OutputFormat.PNG)
+    assert not shown(window, window.dock.every_frame), "no animation queued"
+    window.add_paths([clip])
+    assert shown(window, window.dock.every_frame)
+    choose_format(window, OutputFormat.WEBP)
+    assert not shown(window, window.dock.every_frame), "WebP keeps the animation"
+    choose_format(window, OutputFormat.PNG)
+    window.dock.every_frame.click()
+    convert(app, window)
+    assert outputs(tmp_path) == ["clip-frame-001.png", "clip-frame-002.png", "clip-frame-003.png", "still.png"]
+
+
+def test_quit_during_a_conversion_stops_and_joins_the_worker(app, window, make, monkeypatch):
+    window.add_paths([make("a.png")])
+    started, release = threading.Event(), threading.Event()
+
+    def slow_job(progress, cancelled):
+        started.set()
+        release.wait(5)
+        return ConversionReport()
+    monkeypatch.setattr("gui.main_window.plan_job", lambda *a: slow_job)
+    quit_calls = []
+    monkeypatch.setattr("gui.main_window.QApplication.quit", lambda: quit_calls.append(1))
+    window.dock.convert_button.click()
+    assert started.wait(5)
+    threading.Timer(0.2, release.set).start()
+    window._quit_action.trigger()
+    assert quit_calls == [1] and not window.isVisible()
+    assert window._thread is None or not window._thread.isRunning(), "the worker thread was joined before quitting"
+
+
+def test_an_empty_folder_dropped_on_done_starts_an_empty_batch(app, window, make, tmp_path):
+    window.add_paths([make("a.png")])
+    convert(app, window)
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    window.add_paths([empty])
+    assert window.queue.count() == 0 and isinstance(window.state(), Welcome)
+    assert window.state().notice == "No supported files found there."
+
+
+@pytest.mark.filterwarnings("ignore:Function.*QDragEnterEvent:DeprecationWarning")  # the QPointF overload crashes
+def test_a_drag_without_local_files_is_refused(app, window):
+    mime = QMimeData()
+    mime.setUrls([QUrl("https://example.com/photo.png")])
+    enter = QDragEnterEvent(window.welcome.rect().center(), Qt.DropAction.CopyAction, mime,
+                            Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+    QCoreApplication.sendEvent(window.welcome, enter)
+    assert not enter.isAccepted()
+
+
+def test_combine_with_one_file_says_animated(app, window, make):
+    window.add_paths([make("a.png"), make("b.png")])
+    choose_format(window, OutputFormat.GIF)
+    window.dock.gif_mode_chip.click()
+    window.dock.gif_mode_popover.choices[GifMode.COMBINE].click()
+    assert window.dock.gif_mode_chip.value() == GifMode.COMBINE.short
+    window.queue.setCurrentRow(1)
+    window.queue.remove_selected()
+    assert window.dock.gif_mode_chip.value() == GifMode.ANIMATE_EACH.short
+    assert window.dock.gif_mode_popover.choices[GifMode.ANIMATE_EACH].isChecked()
+
+
+def test_clicking_the_chosen_frame_duration_keeps_it_chosen(app, window, make):
+    window.add_paths([make("a.png"), make("b.png")])
+    choose_format(window, OutputFormat.GIF)
+    window.dock.gif_mode_chip.click()
+    window.dock.gif_mode_popover.choices[GifMode.COMBINE].click()
+    window.dock.animation_chip.click()
+    popover = window.dock.animation_popover
+    popover.durations[1000].click()
+    popover.loop_forever.click()
+    assert popover.durations[1000].isChecked() and popover.loop_forever.isChecked()
+
+
+def test_an_open_popover_closes_when_converting_starts(app, window, make):
+    window.add_paths([make("a.png")])
+    choose_format(window, OutputFormat.JPEG)
+    window.dock.quality_chip.click()
+    assert window.dock.quality_popover.isVisible()
+    convert(app, window)
+    assert not window.dock.quality_popover.isVisible()
+
+
+def test_a_preview_finishing_after_the_window_closed_is_dropped(app, make):
+    from gui.workers import ThumbnailLoader, _ThumbnailTask
+    loader = ThumbnailLoader(32)
+    task = _ThumbnailTask(loader, make("a.png"), 32)
+    import shiboken6
+    shiboken6.delete(loader)
+    task.run()

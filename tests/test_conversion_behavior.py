@@ -375,10 +375,11 @@ def test_transparency_survives_in_formats_that_have_it_and_turns_white_elsewhere
 
 def test_missing_settings_are_documented_not_faked():
     """Papyr has no resize option for still pictures and no PNG compression level; the GIF frame size is the only
-    scaling control. If one is added, this test fails so the matrix and report learn about it."""
+    scaling control. If one is added, this test fails so the matrix and report learn about it. EVERY_FRAME is
+    covered by tests/test_animation_formats.py and the beta-readiness report."""
     from gui.model import Control
     assert {c.name for c in Control} == {"MERGE", "MERGED_NAME", "PAGE_SIZE", "MARGINS", "QUALITY", "PDF_DPI",
-                                         "GIF_MODE", "FRAME_MS", "PLAYS", "GIF_RESOLUTION"}
+                                         "GIF_MODE", "FRAME_MS", "PLAYS", "GIF_RESOLUTION", "EVERY_FRAME"}
 
 
 def _notebook_with(tmp_path, cells) -> Path:

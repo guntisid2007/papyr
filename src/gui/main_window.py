@@ -199,7 +199,7 @@ class MainWindow(QMainWindow):
         self._reveal_action = self._action(file_menu, REVEAL_LABEL, self._reveal_output)
         file_menu.addSeparator()
         self._close_action = self._action(file_menu, "Close Window", self.close, [QKeySequence.StandardKey.Close])
-        self._quit_action = self._action(file_menu, "Quit", QApplication.quit, [QKeySequence.StandardKey.Quit])
+        self._quit_action = self._action(file_menu, "Quit", self._quit, [QKeySequence.StandardKey.Quit])
         self._quit_action.setMenuRole(QAction.MenuRole.QuitRole)
 
         edit_menu = bar.addMenu("&Edit")
@@ -279,8 +279,8 @@ class MainWindow(QMainWindow):
         fresh = isinstance(self._state, Done)
         existing = set() if fresh else {p.resolve() for p in self.queue.paths()}
         new = [p for p in found if p.resolve() not in existing]
-        if fresh and new:
-            self.queue.replace_files(new)
+        if fresh:
+            self.queue.replace_files(new)  # even when nothing was found, the finished batch is over
         else:
             self.queue.add_files(new)
         for path in new:
@@ -344,14 +344,14 @@ class MainWindow(QMainWindow):
             self.welcome.tile.set_active(False)
 
     def dragEnterEvent(self, event) -> None:
-        if event.mimeData().hasUrls() and not isinstance(self._state, Converting):
+        if dropped_paths(event) and not isinstance(self._state, Converting):
             event.acceptProposedAction()
             self._show_drop_target(True)
         else:
             event.ignore()
 
     def dragMoveEvent(self, event) -> None:
-        if event.mimeData().hasUrls() and not isinstance(self._state, Converting):
+        if dropped_paths(event) and not isinstance(self._state, Converting):
             event.acceptProposedAction()
 
     def dragLeaveEvent(self, event) -> None:
@@ -450,6 +450,11 @@ class MainWindow(QMainWindow):
         QMessageBox.about(self, f"About {APP_NAME}",
                           f"<b>{APP_NAME} {__version__}</b><p>A free, offline converter for photos, PDFs, "
                           f"and Jupyter notebooks.</p><p>Your files never leave this computer.</p>")
+
+    def _quit(self) -> None:
+        """Close the window first, so a running conversion is stopped and joined before Qt exits."""
+        if self.close():
+            QApplication.quit()
 
     def closeEvent(self, event) -> None:
         self._settings.setValue("output_dir", str(self._output_dir))

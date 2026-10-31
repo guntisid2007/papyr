@@ -3,6 +3,7 @@ import math
 import threading
 import zlib
 from collections.abc import Callable, Iterator
+from dataclasses import dataclass
 from pathlib import Path
 from typing import BinaryIO
 
@@ -10,7 +11,7 @@ import pillow_heif
 import pypdfium2 as pdfium
 from PIL import Image, ImageCms, ImageMath, ImageOps, ImageSequence, UnidentifiedImageError
 
-from .formats import INPUT_EXTENSIONS, LOSSLESS_INPUTS, ImageLoadError, OutputFormat, unreadable
+from .formats import ANIMATED_INPUTS, INPUT_EXTENSIONS, LOSSLESS_INPUTS, ImageLoadError, OutputFormat, unreadable
 from .layout import PageSize, PdfSettings
 from .notebook import render_notebook
 from .pdf_writer import EncodedImage
@@ -21,6 +22,7 @@ DEEP_GRAY_MODES = frozenset({"I", "I;16", "I;16B", "I;16L"})
 PDF_EMBED_JPEG_QUALITY = 92
 DEFAULT_PDF_DPI = 200
 NOTEBOOK_IMAGE_SETTINGS = PdfSettings(PageSize.ORIGINAL, 15)
+MAX_ANIMATION_PIXELS = 128 * 1024 * 1024  # an animated WebP is encoded from every frame held at once, 4 bytes each
 _PDFIUM_LOCK = threading.Lock()  # PDFium is not thread-safe; thumbnails and conversion use it concurrently
 _DOCUMENTS: dict[str, Callable[[Path, PdfSettings], Path | bytes]] = {
     ".pdf": lambda path, settings: path,
@@ -166,10 +168,11 @@ def pdf_pages(source: Path | bytes, dpi: float = DEFAULT_PDF_DPI,
             document.close()
 
 
-def _image_pages(path: Path, keep_alpha: bool) -> Iterator[Image.Image]:
+def _image_pages(path: Path, keep_alpha: bool, every_frame: bool) -> Iterator[Image.Image]:
     try:
         with Image.open(path) as source:
-            frames = ImageSequence.Iterator(source) if source.format == "TIFF" else [source]
+            sequence = source.format == "TIFF" or (every_frame and getattr(source, "is_animated", False))
+            frames = ImageSequence.Iterator(source) if sequence else [source]
             for frame in frames:
                 frame.load()
                 icc = frame.info.get("icc_profile") or source.info.get("icc_profile")
@@ -180,17 +183,65 @@ def _image_pages(path: Path, keep_alpha: bool) -> Iterator[Image.Image]:
         raise unreadable(exc, "image") from exc
 
 
-def iter_pages(path: Path, *, keep_alpha: bool = False, pdf_dpi: int = DEFAULT_PDF_DPI) -> Iterator[Image.Image]:
+def iter_pages(path: Path, *, keep_alpha: bool = False, pdf_dpi: int = DEFAULT_PDF_DPI,
+               every_frame: bool = False) -> Iterator[Image.Image]:
     """Yield every page of a file upright in sRGB: each PDF or notebook page, each TIFF frame, or the single image.
 
-    Animated GIF, WebP, and multi-image HEIC files yield their first image only.
+    An animated GIF or WebP yields its first frame, or with every_frame each frame as the animation shows it, with
+    earlier frames and disposal already composited in. Multi-image HEIC files yield their first image only.
     """
     if not is_supported(path):
         raise ImageLoadError(f"Unsupported file type: {path.suffix or 'no extension'}")
     if is_document(path):
         yield from pdf_pages(document_pdf(path, NOTEBOOK_IMAGE_SETTINGS), pdf_dpi)
     else:
-        yield from _image_pages(path, keep_alpha)
+        yield from _image_pages(path, keep_alpha, every_frame)
+
+
+@dataclass(frozen=True)
+class Timing:
+    """How an animated picture plays: each frame's duration, and how many times it plays (0 forever)."""
+
+    durations: tuple[int, ...]
+    plays: int
+    size: tuple[int, int]
+
+
+def animation_timing(path: Path) -> Timing | None:
+    """The timing of an animated GIF or WebP, or None for anything else, a single-frame GIF or WebP included."""
+    if path.suffix.lower() not in ANIMATED_INPUTS:
+        return None
+    try:
+        with Image.open(path) as image:
+            if not getattr(image, "is_animated", False):
+                return None
+            loop = image.info.get("loop")
+            size = image.size
+            durations = tuple(_duration(frame) for frame in ImageSequence.Iterator(image))
+            gif = image.format == "GIF"
+    except Image.DecompressionBombError as exc:
+        raise ImageLoadError("Image is too large to convert safely") from exc
+    except Exception as exc:
+        raise unreadable(exc, "image") from exc
+    # A GIF without a loop field plays once, and its field counts repeats after the first play. WebP counts plays.
+    plays = (1 if loop is None else 0 if loop == 0 else loop + 1) if gif else int(loop or 0)
+    return Timing(durations, plays, size)
+
+
+def _duration(frame: Image.Image) -> int:
+    frame.load()  # WebP reads a frame's duration only as it decodes it
+    return int(frame.info.get("duration") or 0)
+
+
+def is_animated(path: Path) -> bool:
+    """Whether a file is an animated GIF or WebP, judged from its header. An unreadable file is not."""
+    if path.suffix.lower() not in ANIMATED_INPUTS:
+        return False
+    try:
+        with Image.open(path) as image:
+            return bool(getattr(image, "is_animated", False))
+    except Exception:
+        return False
 
 
 def load_image(path: Path) -> Image.Image:
@@ -235,6 +286,24 @@ def save_image(image: Image.Image, stream: BinaryIO, fmt: OutputFormat, quality:
     elif fmt is OutputFormat.GIF and image.mode in ("RGB", "RGBA", "LA"):
         image = to_gif_palette(image)
     image.save(stream, fmt.pillow_format, **options)
+
+
+def save_animation(path: Path, timing: Timing, stream: BinaryIO, quality: int) -> None:
+    """Write an animated GIF or WebP as an animated WebP with the same frames, durations, and plays."""
+    width, height = timing.size
+    if width * height * len(timing.durations) > MAX_ANIMATION_PIXELS:
+        raise ImageLoadError("Animation is too large to convert safely")
+    frames = [frame.convert("RGBA") for frame in iter_pages(path, keep_alpha=True, every_frame=True)]
+    if len(frames) != len(timing.durations):
+        raise ImageLoadError(f"Could not read image: expected {len(timing.durations)} frames, read {len(frames)}")
+    options = {}
+    if any(frame.getchannel("A").getextrema()[0] < 255 for frame in frames):
+        # libwebp crops each frame to what changed and then leaves out the file's alpha flag when no frame's own
+        # pixels are transparent, and readers that trust the flag (Pillow among them) draw the clear areas black.
+        # Whole keyframes keep the transparent pixels in the frames, so the flag is set.
+        options = {"kmin": 0, "kmax": 1}
+    frames[0].save(stream, "WEBP", save_all=True, append_images=frames[1:], duration=list(timing.durations),
+                   loop=timing.plays, quality=quality, lossless=quality >= 100, method=4, **options)
 
 
 def to_gif_palette(image: Image.Image, reserve_transparent: bool = False) -> Image.Image:
