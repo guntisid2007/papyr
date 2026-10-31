@@ -142,7 +142,7 @@ def _open_pdf(source: Path | bytes, export: bool = True) -> pdfium.PdfDocument:
     except pdfium.PdfiumError as exc:
         text = str(exc).lower()
         if "password" in text:
-            message = "PDF is password-protected"
+            message = _password_or_damaged(source)
         elif "security scheme" in text:
             message = f"PDF uses a protection scheme Papyr can't open: {exc}"
         else:
@@ -152,6 +152,21 @@ def _open_pdf(source: Path | bytes, export: bool = True) -> pdfium.PdfDocument:
         document.close()
         raise ImageLoadError(PDF_NO_COPYING)
     return document
+
+
+def _password_or_damaged(source: Path | bytes) -> str:
+    """PDFium reports damaged encryption settings as a wrong password. pypdf reads the settings without decrypting
+    anything, so it can tell a PDF that needs a password from one whose protection is damaged."""
+    import pypdf
+    try:
+        reader = pypdf.PdfReader(io.BytesIO(source) if isinstance(source, bytes) else source)
+        if reader.is_encrypted and reader.decrypt("") != pypdf.PasswordType.NOT_DECRYPTED:
+            return "Could not read PDF: its protection settings are damaged"
+    except (pypdf.errors.DependencyError, pypdf.errors.FileNotDecryptedError):
+        pass  # AES that pypdf can't check here, or a real password: trust PDFium
+    except Exception as exc:
+        return f"Could not read PDF: its protection settings are damaged ({exc})"
+    return "PDF is password-protected"
 
 
 def is_encrypted_pdf(document: pdfium.PdfDocument) -> bool:

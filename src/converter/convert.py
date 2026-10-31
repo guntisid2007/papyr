@@ -76,7 +76,10 @@ class _Staged:
             yield stream
             stream.flush()
             os.fsync(stream.fileno())
-        os.chmod(temp, _FILE_MODE)
+        try:
+            os.chmod(temp, _FILE_MODE)
+        except OSError:  # some disks (FAT on Linux) fix every file's mode and refuse to change it
+            pass
         if os.path.getsize(temp) == 0:
             raise OSError(f"Writing {destination.name} produced an empty file")
 
@@ -109,17 +112,21 @@ def _identity(info: os.stat_result) -> _Identity:
 def _place(temp: str, wanted: Path, taken: set[Path], replace: bool) -> tuple[Path, _Identity]:
     """Give temp its name. Without replace this never replaces a file, even one that appears at the chosen name
     while Papyr moves into it: the move is an atomic no-replace rename, else a hard link, else a copy into a file
-    created exclusively. Only the copy is not atomic. A crash during it can leave a partial file under the name."""
+    created exclusively. Only the copy is not atomic. A crash during it can leave a partial file under the name.
+
+    The identity is read from temp before it moves: a rename or hard link keeps the device and inode, and reading
+    the name afterwards could record a file another program saved there in between as Papyr's own."""
+    identity = _identity(os.stat(temp))
     if replace:
         os.replace(temp, wanted)
         taken.add(wanted)
-        return wanted, _identity(os.stat(wanted))
+        return wanted, identity
     while True:
         destination = unique_path(wanted, taken)
         taken.add(destination)
         try:  # a real failure to move propagates; only an unsupported move falls back
             if rename_no_replace(temp, destination):
-                return destination, _identity(os.stat(destination))
+                return destination, identity
         except FileExistsError:
             continue  # the name appeared since unique_path looked
         try:
@@ -132,7 +139,7 @@ def _place(temp: str, wanted: Path, taken: set[Path], replace: bool) -> tuple[Pa
             except FileExistsError:
                 continue
         _remove(Path(temp))
-        return destination, _identity(os.stat(destination))
+        return destination, identity
 
 
 def _copy_exclusive(temp: str, destination: Path) -> _Identity:
@@ -148,9 +155,10 @@ def _copy_exclusive(temp: str, destination: Path) -> _Identity:
         if _identity(os.stat(destination)) != identity:  # renamed over while copying: that file is not Papyr's
             raise FileExistsError(f"{destination} was replaced while Papyr wrote it")
     except BaseException:
-        info = os.fstat(fd)
-        os.close(fd)
-        _remove_if_ours(destination, _identity(info))
+        try:
+            _remove_if_ours(destination, _identity(os.fstat(fd)))
+        finally:
+            os.close(fd)
         raise
     os.close(fd)
     _remove(Path(temp))
@@ -158,9 +166,10 @@ def _copy_exclusive(temp: str, destination: Path) -> _Identity:
 
 
 def _remove_if_ours(path: Path, identity: _Identity) -> None:
-    """Remove a file Papyr placed, unless something else now has its name."""
+    """Remove a file Papyr placed, unless something else now has its name. A disk that reports no inode numbers
+    (some network shares) can't prove which file is there, so the file is left and logged instead."""
     try:
-        if _identity(os.stat(path)) != identity:
+        if not identity[1] or _identity(os.stat(path)) != identity:
             log.warning("Left %s in place: another program replaced it after Papyr wrote it", path)
             return
     except FileNotFoundError:

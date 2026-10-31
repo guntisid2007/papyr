@@ -406,3 +406,62 @@ def test_without_atomic_moves_files_get_the_usual_permissions_too(tmp_path, monk
     os.umask(umask)
     report = convert_images([good_png(tmp_path / "photo.png")], tmp_path / "out", ImageSettings(OutputFormat.PNG))
     assert stat.S_IMODE(report.outputs[0].stat().st_mode) == 0o666 & ~umask
+
+
+def test_a_file_saved_over_papyrs_just_after_the_move_is_not_taken_back(tmp_path, monkeypatch):
+    """Found in review: the placed file's identity was read from its name after the move, so a file another program
+    saved there in that instant was recorded as Papyr's and deleted when a later page failed to move."""
+    real_rename = convert.rename_no_replace
+    moved = []
+
+    def rename(src, dst):
+        if moved:
+            raise OSError(errno.ENOSPC, "No space left on device")
+        result = real_rename(src, dst)
+        moved.append(Path(dst))
+        (Path(dst).parent / "theirs").write_bytes(b"someone else's file")
+        os.replace(Path(dst).parent / "theirs", dst)  # lands before Papyr looks at the name
+        return result
+    monkeypatch.setattr(convert, "rename_no_replace", rename)
+    out = tmp_path / "out"
+    report = convert_images([tiff_with_broken_page(tmp_path / "scan.tiff", None)], out,
+                            ImageSettings(OutputFormat.PNG))
+    assert report.outputs == [] and len(report.failures) == 1
+    assert (out / "scan-page-1.png").read_bytes() == b"someone else's file"
+
+
+def test_a_failure_while_placing_a_later_page_takes_back_the_earlier_ones(tmp_path, monkeypatch):
+    """Found in review: a stat failing right after a move escaped before the file was recorded, so rollback missed
+    it. Placement now reads everything it needs before moving, so any failure leaves the source with no files."""
+    real_stat = os.stat
+    out = tmp_path / "out"
+    seen = []
+
+    def stat(path, *args, **kwargs):
+        if Path(path).parent == out and Path(path).name.startswith(".papyr-"):
+            seen.append(path)
+            if len(seen) == 2:
+                raise OSError(errno.EIO, "I/O error")
+        return real_stat(path, *args, **kwargs)
+    monkeypatch.setattr(convert.os, "stat", stat)
+    report = convert_images([tiff_with_broken_page(tmp_path / "scan.tiff", None)], out,
+                            ImageSettings(OutputFormat.PNG))
+    monkeypatch.undo()
+    assert report.outputs == [] and len(report.failures) == 1
+    assert files_in(out) == []
+
+
+def test_a_disk_that_refuses_mode_changes_still_gets_its_files(tmp_path, monkeypatch):
+    """FAT drives on Linux give every file a fixed mode and refuse chmod. That must not fail the conversion."""
+    def no_chmod(*args, **kwargs):
+        raise PermissionError(errno.EPERM, "Operation not permitted")
+    monkeypatch.setattr(convert.os, "chmod", no_chmod)
+    report = convert_images([good_png(tmp_path / "photo.png")], tmp_path / "out", ImageSettings(OutputFormat.PNG))
+    assert not report.failures and [p.name for p in report.outputs] == ["photo.png"]
+
+
+def test_without_inode_numbers_rollback_leaves_files_rather_than_guess(tmp_path, monkeypatch):
+    """Some network shares report inode 0 for every file, so Papyr can't prove a file is still its own."""
+    path = good_png(tmp_path / "placed.png")
+    convert._remove_if_ours(path, (path.stat().st_dev, 0, path.stat().st_size))
+    assert path.exists()

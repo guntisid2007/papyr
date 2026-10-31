@@ -251,23 +251,28 @@ def _malformed_encryption(path: Path, key: str, value) -> Path:
     return path
 
 
-MALFORMED = {"unknown-filter": ("/Filter", "bogus-name"), "unknown-version": ("/V", "99"),
-             "unknown-revision": ("/R", "99"), "no-owner-key": ("/O", None), "no-permissions": ("/P", None),
-             "permissions-not-a-number": ("/P", "text"), "short-user-key": ("/U", "text")}
+DAMAGED = "The file appears to be damaged."
+# What each damage reads as. PDFium calls most of them a wrong password; pypdf can tell they are damaged instead. A
+# user key cut short is indistinguishable from a wrong password, so that one keeps the password sentence.
+MALFORMED = {"unknown-filter": ("/Filter", "bogus-name", "This PDF uses a kind of protection Papyr can't open."),
+             "unknown-version": ("/V", "99", DAMAGED), "unknown-revision": ("/R", "99", DAMAGED),
+             "no-owner-key": ("/O", None, DAMAGED), "no-permissions": ("/P", None, DAMAGED),
+             "permissions-not-a-number": ("/P", "text", DAMAGED),
+             "short-user-key": ("/U", "text", "This PDF is password-protected.")}
 
 
 @pytest.mark.pdf
 @pytest.mark.parametrize("case", sorted(MALFORMED))
 def test_malformed_encryption_fails_that_file_with_a_reason_and_the_batch_goes_on(tmp_path, case):
-    bad = _malformed_encryption(tmp_path / f"{case}.pdf", *MALFORMED[case])
+    key, value, expected = MALFORMED[case]
+    bad = _malformed_encryption(tmp_path / f"{case}.pdf", key, value)
     good = tmp_path / "good.png"
     Image.new("RGB", (40, 30), "blue").save(good)
     for name, run in ENTRY_POINTS:
         report = run([bad, good], tmp_path / name)
         assert report.outputs, f"{name}: the good file was not converted: {report}"
         assert [p.name for p, _ in report.failures] == [bad.name], f"{name}: {report.failures}"
-        reason = friendly_error(report.failures[0][1])
-        assert reason not in (GENERIC,), f"{name}: {report.failures[0][1]}"
+        assert friendly_error(report.failures[0][1]) == expected, f"{name}: {report.failures[0][1]}"
         assert not any("MALFORMED" in "".join(pdf_facts(o).texts) for o in report.outputs if o.suffix == ".pdf")
 
 
