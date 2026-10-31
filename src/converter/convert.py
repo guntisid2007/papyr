@@ -87,24 +87,44 @@ def _read_document(source: Path, settings: PdfSettings) -> pypdf.PdfReader:
     pdf = document_pdf(source, settings)
     try:
         reader = pypdf.PdfReader(io.BytesIO(pdf) if isinstance(pdf, bytes) else pdf)
+        if reader.is_encrypted and _uses_aes(reader) and importlib.util.find_spec("cryptography") is None:
+            raise ImageLoadError(_AES)
+        if reader.is_encrypted and reader.decrypt("") == pypdf.PasswordType.NOT_DECRYPTED:
+            raise ImageLoadError("PDF is password-protected")
+        if not reader.pages:
+            raise ImageLoadError("PDF has no pages")
+    except ImageLoadError:
+        raise
     except pypdf.errors.DependencyError as exc:  # AES-256 is checked as the file opens
         raise ImageLoadError(_AES) from exc
-    if reader.is_encrypted and _uses_aes(reader) and importlib.util.find_spec("cryptography") is None:
-        raise ImageLoadError(_AES)
-    if reader.is_encrypted and reader.decrypt("") == pypdf.PasswordType.NOT_DECRYPTED:
-        raise ImageLoadError("PDF is password-protected")
-    if not reader.pages:
-        raise ImageLoadError("PDF has no pages")
+    except Exception as exc:  # pypdf raises assorted types on files it can't read, such as NotImplementedError
+        raise ImageLoadError(f"Could not read PDF: {exc}") from exc
     return reader
 
 
 def _uses_aes(reader: pypdf.PdfReader) -> bool:
     """pypdf decrypts AES only with the cryptography package, and only as each object is copied, so a PDF that
-    opens without a password would fail part way through. Decide before copying anything."""
+    opens without a password would fail part way through. Decide before copying anything, from the filters the
+    file actually uses for streams, strings, and attachments."""
     encrypt = reader.trailer["/Encrypt"].get_object()
+    if encrypt.get("/V", 0) >= 5:
+        return True
     filters = encrypt["/CF"].get_object() if "/CF" in encrypt else {}
-    return encrypt.get("/V", 0) >= 5 or any(f.get_object().get("/CFM") in ("/AESV2", "/AESV3")
-                                             for f in filters.values())
+    stream = encrypt.get("/StmF", "/Identity")
+    active = {stream, encrypt.get("/StrF", "/Identity"), encrypt.get("/EFF", stream)}
+    return any(name in filters and filters[name].get_object().get("/CFM") in ("/AESV2", "/AESV3") for name in active)
+
+
+def _copy_pages(combined: pypdf.PdfWriter, reader: pypdf.PdfReader) -> None:
+    """Copy every page, or none: pypdf reads objects as it copies them, so a damaged one fails part way."""
+    before = len(combined.pages)
+    try:
+        for page in reader.pages:
+            combined.add_page(page)
+    except Exception as exc:
+        while len(combined.pages) > before:
+            combined.remove_page(len(combined.pages) - 1)
+        raise ImageLoadError(f"Could not read PDF: {exc}") from exc
 
 
 def _write_pdf(stream: BinaryIO, sources: list[Path], settings: PdfSettings, report: ConversionReport,
@@ -144,8 +164,7 @@ def _write_pdf(stream: BinaryIO, sources: list[Path], settings: PdfSettings, rep
                     image_writer.add_page(encoded, placement)
                 image_writer.close()
                 reader = pypdf.PdfReader(buffer)
-            for page in reader.pages:
-                combined.add_page(page)
+            _copy_pages(combined, reader)
         except _ERRORS as exc:
             _fail(report, source, exc)
     if not combined.pages:

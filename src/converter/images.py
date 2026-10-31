@@ -176,7 +176,7 @@ def _image_pages(path: Path, keep_alpha: bool) -> Iterator[Image.Image]:
                 yield _normalize(ImageOps.exif_transpose(frame), icc, keep_alpha)
     except Image.DecompressionBombError as exc:
         raise ImageLoadError("Image is too large to convert safely") from exc
-    except (UnidentifiedImageError, OSError, SyntaxError, ValueError, EOFError) as exc:
+    except Exception as exc:  # Pillow's plugins raise whatever type a malformed file trips (TypeError, struct.error)
         raise ImageLoadError(f"Could not read image: {exc}") from exc
 
 

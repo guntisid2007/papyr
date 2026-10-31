@@ -39,6 +39,9 @@ LOSSY_OUTPUTS = {OutputFormat.JPEG, OutputFormat.WEBP, OutputFormat.HEIC, Output
 SLOW_SECONDS = 120
 DPI = 200  # the window's default page resolution for PDFs and notebooks turned into pictures
 A4 = (595.2756, 841.8898)
+# Lossless, then lossy or palette. Measured on these fixtures: at most 0.0 lossless, and 1.2 (worst quarter 1.4) for
+# WebP, GIF palettes, and animation frames. Erasing a page body below its band measures far above either.
+RENDER_TOLERANCE = {False: (1.0, 2.0), True: (2.5, 5.0)}
 MARGIN_PT = 10 * 72 / 25.4
 
 
@@ -332,6 +335,7 @@ def _check_pictures(spec, target, files, problems, facts) -> None:
                 problems.append(f"{where}: {decoded.size}, expected about {want} at {DPI} dpi")
             if (seen := band_color(decoded)) and color_distance(seen, page.color) > 45:
                 problems.append(f"{where}: shows the band {seen}, which is not {page.id}'s {page.color}")
+            _compare_render(spec, index, fmt, decoded, pdf_render(spec.path(), index, DPI), problems, where)
             if page.has_text and ink(decoded) < 0.003:
                 problems.append(f"{where}: blank page")
         else:
@@ -359,6 +363,36 @@ def _compare_picture(spec, index, fmt, decoded, problems, where) -> None:
         problems.append(f"{where}: differs from the source by {diff:.1f} (worst quarter {worst:.1f}); "
                         f"allowed {whole}/{quarter}")
     _check_alpha(spec, index, fmt, decoded, problems, where)
+
+
+def _compare_render(spec, index, fmt, decoded, reference, problems, where) -> None:
+    """A PDF page against PDFium's own drawing of the source page. PDFium is the renderer Papyr uses, so this
+    catches what happens after rendering (scaling, colour, encoding, lost content), not a PDFium fault."""
+    if decoded.size != reference.size:
+        reference = reference.resize(decoded.size, Image.Resampling.LANCZOS)
+    lossy = fmt in LOSSY_OUTPUTS or fmt is OutputFormat.GIF
+    whole, quarter = RENDER_TOLERANCE[lossy]
+    diff, worst = mae(decoded, reference, 512), quadrant_mae(decoded, reference)
+    if diff > whole or worst > quarter:
+        problems.append(f"{where}: differs from the source page by {diff:.1f} (worst quarter {worst:.1f}); "
+                        f"allowed {whole}/{quarter}")
+
+
+def _expected_frame(spec, index, canvas: tuple[int, int]) -> Image.Image:
+    """The page as the animation should show it: as large as fits the canvas (PDF pages may grow, pictures may
+    not), centred on white."""
+    if spec.kind == "pdf":
+        width, height = spec.pages[index].size
+        scale = min(canvas[0] / width, canvas[1] / height)
+        page = pdf_render(spec.path(), index, 72 * scale)
+    else:
+        page = spec.reference(index)
+        scale = min(1.0, canvas[0] / page.width, canvas[1] / page.height)
+    size = (max(1, round(spec.pages[index].size[0] * scale)), max(1, round(spec.pages[index].size[1] * scale)))
+    page = page.convert("RGBA").resize(size, Image.Resampling.LANCZOS)
+    frame = Image.new("RGBA", canvas, (255, 255, 255, 255))
+    frame.alpha_composite(page, ((canvas[0] - size[0]) // 2, (canvas[1] - size[1]) // 2))
+    return frame
 
 
 def _presence(image: Image.Image, color, tolerance: int = 30) -> float:
@@ -428,6 +462,12 @@ def _check_animation(spec, file, pages, problems, facts) -> None:
     if spec.kind == "notebook":
         _check_section_order(spec, frames, problems)
     else:
+        for index, frame in enumerate(frames[:len(spec.pages)]):
+            expected = _expected_frame(spec, index, (info.width, info.height))
+            diff, worst = mae(frame, expected, 512), quadrant_mae(frame, expected)
+            whole, quarter = RENDER_TOLERANCE[True]
+            if diff > whole or worst > quarter:
+                problems.append(f"frame {index + 1} differs from its page by {diff:.1f} (worst quarter {worst:.1f})")
         colors = [page.color for page in spec.pages]
         for number, frame in enumerate(frames[:len(colors)], start=1):
             scores = [_presence(frame, color) for color in colors]

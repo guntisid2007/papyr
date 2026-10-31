@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import BinaryIO
 
-from PIL import GifImagePlugin, Image, ImageSequence, UnidentifiedImageError
+from PIL import GifImagePlugin, Image, ImageSequence
 
 from .formats import GifSettings, ImageLoadError
 from .images import NOTEBOOK_IMAGE_SETTINGS, document_pdf, is_document, is_supported, iter_pages, pdf_page_sizes, \
@@ -41,7 +41,7 @@ def measure(path: Path) -> FrameSource:
             sizes = tuple(_upright(frame) for frame in frames)
     except Image.DecompressionBombError as exc:
         raise ImageLoadError("Image is too large to convert safely") from exc
-    except (UnidentifiedImageError, OSError, SyntaxError, ValueError, EOFError) as exc:
+    except Exception as exc:  # as in images._image_pages: any error while decoding is this file's
         raise ImageLoadError(f"Could not read image: {exc}") from exc
     return FrameSource(path, sizes)
 
