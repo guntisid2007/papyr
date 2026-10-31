@@ -104,10 +104,11 @@ def _place(temp: str, wanted: Path, taken: set[Path], replace: bool) -> Path:
             continue
         except OSError:  # a disk without hard links (FAT, some network shares): claim the name, then replace it
             try:
-                os.close(os.open(destination, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+                claim = os.open(destination, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
             except FileExistsError:
                 continue
             try:
+                os.close(claim)
                 os.replace(temp, destination)
             except BaseException:
                 _remove(destination)

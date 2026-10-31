@@ -318,3 +318,20 @@ def test_without_hard_links_a_name_taken_mid_run_is_still_not_overwritten(tmp_pa
     assert (out / "photo.png").read_bytes() == b"someone else's file"
     assert [p.name for p in report.outputs] == ["photo (1).png"]
     assert Image.open(report.outputs[0]).size == (40, 30)
+
+
+def test_a_failed_name_claim_leaves_no_empty_file(tmp_path, monkeypatch):
+    def no_links(src, dst, **kw):
+        raise OSError(errno.ENOTSUP, "Operation not supported")
+    real_close = os.close
+
+    def close_then_fail(fd):
+        real_close(fd)
+        raise OSError(errno.EIO, "I/O error")
+    monkeypatch.setattr(os, "link", no_links)
+    monkeypatch.setattr(os, "close", close_then_fail)
+    out = tmp_path / "out"
+    report = convert_images([good_png(tmp_path / "photo.png")], out, ImageSettings(OutputFormat.PNG))
+    monkeypatch.undo()
+    assert report.outputs == [] and len(report.failures) == 1
+    assert files_in(out) == []
