@@ -1112,8 +1112,8 @@
   "output_targets": 11,
   "possible_pairs": 121,
   "declared": {
-   "UNSUPPORTED_BY_DESIGN": 11,
-   "SUPPORTED": 110
+   "SUPPORTED": 110,
+   "UNSUPPORTED_BY_DESIGN": 11
   },
   "pair_status": {
    "PASSED": 110,

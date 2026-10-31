@@ -1,0 +1,90 @@
+[
+ {
+  "source": "pdf/pdf-twelve-pages.pdf",
+  "output": "GIF",
+  "seconds": 0.28,
+  "peak_rss_mb": 141,
+  "outputs": 1,
+  "failures": 0
+ },
+ {
+  "source": "pdf/pdf-mixed-content.pdf",
+  "output": "AVIF",
+  "seconds": 0.59,
+  "peak_rss_mb": 369,
+  "outputs": 7,
+  "failures": 0
+ },
+ {
+  "source": "pdf/pdf-mixed-content.pdf",
+  "output": "HEIC",
+  "seconds": 1.19,
+  "peak_rss_mb": 364,
+  "outputs": 7,
+  "failures": 0
+ },
+ {
+  "source": "pdf/pdf-mixed-content.pdf",
+  "output": "PNG",
+  "seconds": 0.22,
+  "peak_rss_mb": 237,
+  "outputs": 7,
+  "failures": 0
+ },
+ {
+  "source": "ipynb/notebook-matrix.ipynb",
+  "output": "PDF",
+  "seconds": 0.73,
+  "peak_rss_mb": 187,
+  "outputs": 1,
+  "failures": 0
+ },
+ {
+  "source": "ipynb/notebook-matrix.ipynb",
+  "output": "GIF",
+  "seconds": 0.71,
+  "peak_rss_mb": 206,
+  "outputs": 1,
+  "failures": 0
+ },
+ {
+  "source": "png/png-hires.png",
+  "output": "AVIF",
+  "seconds": 0.17,
+  "peak_rss_mb": 373,
+  "outputs": 1,
+  "failures": 0
+ },
+ {
+  "source": "png/png-hires.png",
+  "output": "HEIC",
+  "seconds": 0.49,
+  "peak_rss_mb": 459,
+  "outputs": 1,
+  "failures": 0
+ },
+ {
+  "source": "bmp/bmp-hires.bmp",
+  "output": "PDF",
+  "seconds": 0.07,
+  "peak_rss_mb": 224,
+  "outputs": 1,
+  "failures": 0
+ },
+ {
+  "source": "tiff/tiff-hires.tiff",
+  "output": "WEBP",
+  "seconds": 0.23,
+  "peak_rss_mb": 246,
+  "outputs": 1,
+  "failures": 0
+ },
+ {
+  "source": "jpeg/jpeg-hires.jpg",
+  "output": "JPEG",
+  "seconds": 0.05,
+  "peak_rss_mb": 198,
+  "outputs": 1,
+  "failures": 0
+ }
+]
