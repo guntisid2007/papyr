@@ -97,11 +97,7 @@ def test_a_pdf_cut_short_fails_with_a_reason(fixture_specs, tmp_path):
     data = fixture_specs["pdf-mixed-content"].path().read_bytes()
     source = tmp_path / "cut.pdf"
     source.write_bytes(data[:len(data) // 4])
-    for target, report in run_everywhere(source, tmp_path / "out"):
-        assert report.failures or report.outputs, target.key
-        if report.failures:
-            assert friendly_error(report.failures[0][1]) == "The file appears to be damaged.", report.failures
-    assert not [n for n in leftovers(tmp_path / "out") if n.endswith(".part")]
+    assert_fails_cleanly(source, tmp_path / "out", "The file appears to be damaged.")
 
 
 @pytest.mark.notebook
