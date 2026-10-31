@@ -107,3 +107,31 @@ def test_the_matrix_check_catches_wrong_frame_timing(fixture_specs, monkeypatch,
     result = run_pair(fixture_specs["pdf-twelve-pages"], TARGET["GIF"], tmp_path / "out")
     RESULTS.remove(result)
     assert "delays" in result.failure and "loop" in result.failure, result.failure
+
+
+def erased_body(original):
+    def save(image, stream, fmt, quality):
+        wrong = image.copy()
+        wrong.paste("white", (0, round(wrong.height * 0.12), wrong.width, wrong.height))
+        original(wrong, stream, fmt, quality)
+    return save
+
+
+def test_the_matrix_check_catches_pdf_pages_with_their_content_erased(fixture_specs, monkeypatch, tmp_path):
+    _planted(monkeypatch, convert, "save_image", erased_body)
+    result = run_pair(fixture_specs["pdf-mixed-content"], TARGET["PNG"], tmp_path / "out")
+    RESULTS.remove(result)
+    assert result.validation == "FAILED", result.actual
+
+
+def test_the_matrix_check_catches_animation_frames_with_their_content_erased(fixture_specs, monkeypatch, tmp_path):
+    original = animation.GifWriter.add
+
+    def add(self, frame):
+        wrong = frame.copy()
+        wrong.paste("white", (0, round(wrong.height * 0.25), wrong.width, wrong.height))
+        original(self, wrong)
+    monkeypatch.setattr(animation.GifWriter, "add", add)
+    result = run_pair(fixture_specs["pdf-mixed-content"], TARGET["GIF"], tmp_path / "out")
+    RESULTS.remove(result)
+    assert result.validation == "FAILED", result.actual

@@ -1,0 +1,1130 @@
+{
+ "environment": {
+  "python": "3.12.14",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "machine": "arm64",
+  "libraries": {
+   "Pillow": "13.0.0",
+   "pillow-heif": "1.8.1",
+   "pypdf": "6.21.4",
+   "pypdfium2": "5.14.0",
+   "PySide6-Essentials": "6.12.0",
+   "ziamath": "0.13",
+   "Pygments": "2.21.0",
+   "pytest": "9.2.0",
+   "libavif": "1.4.2",
+   "libheif": "1.23.6"
+  }
+ },
+ "pairs": [
+  {
+   "input_format": "HEIC",
+   "output_format": "PDF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "HEIC",
+   "output_format": "JPEG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "HEIC",
+   "output_format": "PNG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "HEIC",
+   "output_format": "HEIC",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "HEIC",
+   "output_format": "WEBP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "HEIC",
+   "output_format": "AVIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "HEIC",
+   "output_format": "TIFF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "HEIC",
+   "output_format": "GIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "HEIC",
+   "output_format": "GIF_SEPARATE",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "HEIC",
+   "output_format": "BMP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "HEIC",
+   "output_format": "IPYNB",
+   "declared": "UNSUPPORTED_BY_DESIGN",
+   "status": "UNSUPPORTED_BY_DESIGN",
+   "fixtures": 5,
+   "passed": 0,
+   "failures": []
+  },
+  {
+   "input_format": "HEIF",
+   "output_format": "PDF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "HEIF",
+   "output_format": "JPEG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "HEIF",
+   "output_format": "PNG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "HEIF",
+   "output_format": "HEIC",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "HEIF",
+   "output_format": "WEBP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "HEIF",
+   "output_format": "AVIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "HEIF",
+   "output_format": "TIFF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "HEIF",
+   "output_format": "GIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "HEIF",
+   "output_format": "GIF_SEPARATE",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "HEIF",
+   "output_format": "BMP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "HEIF",
+   "output_format": "IPYNB",
+   "declared": "UNSUPPORTED_BY_DESIGN",
+   "status": "UNSUPPORTED_BY_DESIGN",
+   "fixtures": 4,
+   "passed": 0,
+   "failures": []
+  },
+  {
+   "input_format": "JPEG",
+   "output_format": "PDF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "JPEG",
+   "output_format": "JPEG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "JPEG",
+   "output_format": "PNG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "JPEG",
+   "output_format": "HEIC",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "JPEG",
+   "output_format": "WEBP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "JPEG",
+   "output_format": "AVIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "JPEG",
+   "output_format": "TIFF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "JPEG",
+   "output_format": "GIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "JPEG",
+   "output_format": "GIF_SEPARATE",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "JPEG",
+   "output_format": "BMP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "JPEG",
+   "output_format": "IPYNB",
+   "declared": "UNSUPPORTED_BY_DESIGN",
+   "status": "UNSUPPORTED_BY_DESIGN",
+   "fixtures": 6,
+   "passed": 0,
+   "failures": []
+  },
+  {
+   "input_format": "PNG",
+   "output_format": "PDF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "PNG",
+   "output_format": "JPEG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "PNG",
+   "output_format": "PNG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "PNG",
+   "output_format": "HEIC",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "PNG",
+   "output_format": "WEBP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "PNG",
+   "output_format": "AVIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "PNG",
+   "output_format": "TIFF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "PNG",
+   "output_format": "GIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "PNG",
+   "output_format": "GIF_SEPARATE",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "PNG",
+   "output_format": "BMP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "PNG",
+   "output_format": "IPYNB",
+   "declared": "UNSUPPORTED_BY_DESIGN",
+   "status": "UNSUPPORTED_BY_DESIGN",
+   "fixtures": 6,
+   "passed": 0,
+   "failures": []
+  },
+  {
+   "input_format": "WEBP",
+   "output_format": "PDF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "WEBP",
+   "output_format": "JPEG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "WEBP",
+   "output_format": "PNG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "WEBP",
+   "output_format": "HEIC",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "WEBP",
+   "output_format": "WEBP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "WEBP",
+   "output_format": "AVIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "WEBP",
+   "output_format": "TIFF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "WEBP",
+   "output_format": "GIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "WEBP",
+   "output_format": "GIF_SEPARATE",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "WEBP",
+   "output_format": "BMP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "WEBP",
+   "output_format": "IPYNB",
+   "declared": "UNSUPPORTED_BY_DESIGN",
+   "status": "UNSUPPORTED_BY_DESIGN",
+   "fixtures": 5,
+   "passed": 0,
+   "failures": []
+  },
+  {
+   "input_format": "AVIF",
+   "output_format": "PDF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "AVIF",
+   "output_format": "JPEG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "AVIF",
+   "output_format": "PNG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "AVIF",
+   "output_format": "HEIC",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "AVIF",
+   "output_format": "WEBP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "AVIF",
+   "output_format": "AVIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "AVIF",
+   "output_format": "TIFF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "AVIF",
+   "output_format": "GIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "AVIF",
+   "output_format": "GIF_SEPARATE",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "AVIF",
+   "output_format": "BMP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "AVIF",
+   "output_format": "IPYNB",
+   "declared": "UNSUPPORTED_BY_DESIGN",
+   "status": "UNSUPPORTED_BY_DESIGN",
+   "fixtures": 4,
+   "passed": 0,
+   "failures": []
+  },
+  {
+   "input_format": "TIFF",
+   "output_format": "PDF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "TIFF",
+   "output_format": "JPEG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "TIFF",
+   "output_format": "PNG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "TIFF",
+   "output_format": "HEIC",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "TIFF",
+   "output_format": "WEBP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "TIFF",
+   "output_format": "AVIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "TIFF",
+   "output_format": "TIFF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "TIFF",
+   "output_format": "GIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "TIFF",
+   "output_format": "GIF_SEPARATE",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "TIFF",
+   "output_format": "BMP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 6,
+   "passed": 6,
+   "failures": []
+  },
+  {
+   "input_format": "TIFF",
+   "output_format": "IPYNB",
+   "declared": "UNSUPPORTED_BY_DESIGN",
+   "status": "UNSUPPORTED_BY_DESIGN",
+   "fixtures": 6,
+   "passed": 0,
+   "failures": []
+  },
+  {
+   "input_format": "BMP",
+   "output_format": "PDF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "BMP",
+   "output_format": "JPEG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "BMP",
+   "output_format": "PNG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "BMP",
+   "output_format": "HEIC",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "BMP",
+   "output_format": "WEBP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "BMP",
+   "output_format": "AVIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "BMP",
+   "output_format": "TIFF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "BMP",
+   "output_format": "GIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "BMP",
+   "output_format": "GIF_SEPARATE",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "BMP",
+   "output_format": "BMP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 4,
+   "passed": 4,
+   "failures": []
+  },
+  {
+   "input_format": "BMP",
+   "output_format": "IPYNB",
+   "declared": "UNSUPPORTED_BY_DESIGN",
+   "status": "UNSUPPORTED_BY_DESIGN",
+   "fixtures": 4,
+   "passed": 0,
+   "failures": []
+  },
+  {
+   "input_format": "GIF",
+   "output_format": "PDF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "GIF",
+   "output_format": "JPEG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "GIF",
+   "output_format": "PNG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "GIF",
+   "output_format": "HEIC",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "GIF",
+   "output_format": "WEBP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "GIF",
+   "output_format": "AVIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "GIF",
+   "output_format": "TIFF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "GIF",
+   "output_format": "GIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "GIF",
+   "output_format": "GIF_SEPARATE",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "GIF",
+   "output_format": "BMP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 5,
+   "passed": 5,
+   "failures": []
+  },
+  {
+   "input_format": "GIF",
+   "output_format": "IPYNB",
+   "declared": "UNSUPPORTED_BY_DESIGN",
+   "status": "UNSUPPORTED_BY_DESIGN",
+   "fixtures": 5,
+   "passed": 0,
+   "failures": []
+  },
+  {
+   "input_format": "PDF",
+   "output_format": "PDF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 3,
+   "passed": 3,
+   "failures": []
+  },
+  {
+   "input_format": "PDF",
+   "output_format": "JPEG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 3,
+   "passed": 3,
+   "failures": []
+  },
+  {
+   "input_format": "PDF",
+   "output_format": "PNG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 3,
+   "passed": 3,
+   "failures": []
+  },
+  {
+   "input_format": "PDF",
+   "output_format": "HEIC",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 3,
+   "passed": 3,
+   "failures": []
+  },
+  {
+   "input_format": "PDF",
+   "output_format": "WEBP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 3,
+   "passed": 3,
+   "failures": []
+  },
+  {
+   "input_format": "PDF",
+   "output_format": "AVIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 3,
+   "passed": 3,
+   "failures": []
+  },
+  {
+   "input_format": "PDF",
+   "output_format": "TIFF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 3,
+   "passed": 3,
+   "failures": []
+  },
+  {
+   "input_format": "PDF",
+   "output_format": "GIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 3,
+   "passed": 3,
+   "failures": []
+  },
+  {
+   "input_format": "PDF",
+   "output_format": "GIF_SEPARATE",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 3,
+   "passed": 3,
+   "failures": []
+  },
+  {
+   "input_format": "PDF",
+   "output_format": "BMP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 3,
+   "passed": 3,
+   "failures": []
+  },
+  {
+   "input_format": "PDF",
+   "output_format": "IPYNB",
+   "declared": "UNSUPPORTED_BY_DESIGN",
+   "status": "UNSUPPORTED_BY_DESIGN",
+   "fixtures": 3,
+   "passed": 0,
+   "failures": []
+  },
+  {
+   "input_format": "IPYNB",
+   "output_format": "PDF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 2,
+   "passed": 2,
+   "failures": []
+  },
+  {
+   "input_format": "IPYNB",
+   "output_format": "JPEG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 2,
+   "passed": 2,
+   "failures": []
+  },
+  {
+   "input_format": "IPYNB",
+   "output_format": "PNG",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 2,
+   "passed": 2,
+   "failures": []
+  },
+  {
+   "input_format": "IPYNB",
+   "output_format": "HEIC",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 2,
+   "passed": 2,
+   "failures": []
+  },
+  {
+   "input_format": "IPYNB",
+   "output_format": "WEBP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 2,
+   "passed": 2,
+   "failures": []
+  },
+  {
+   "input_format": "IPYNB",
+   "output_format": "AVIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 2,
+   "passed": 2,
+   "failures": []
+  },
+  {
+   "input_format": "IPYNB",
+   "output_format": "TIFF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 2,
+   "passed": 2,
+   "failures": []
+  },
+  {
+   "input_format": "IPYNB",
+   "output_format": "GIF",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 2,
+   "passed": 2,
+   "failures": []
+  },
+  {
+   "input_format": "IPYNB",
+   "output_format": "GIF_SEPARATE",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 2,
+   "passed": 2,
+   "failures": []
+  },
+  {
+   "input_format": "IPYNB",
+   "output_format": "BMP",
+   "declared": "SUPPORTED",
+   "status": "PASSED",
+   "fixtures": 2,
+   "passed": 2,
+   "failures": []
+  },
+  {
+   "input_format": "IPYNB",
+   "output_format": "IPYNB",
+   "declared": "UNSUPPORTED_BY_DESIGN",
+   "status": "UNSUPPORTED_BY_DESIGN",
+   "fixtures": 2,
+   "passed": 0,
+   "failures": []
+  }
+ ],
+ "counts": {
+  "input_formats": 11,
+  "output_targets": 11,
+  "possible_pairs": 121,
+  "declared": {
+   "UNSUPPORTED_BY_DESIGN": 11,
+   "SUPPORTED": 110
+  },
+  "pair_status": {
+   "PASSED": 110,
+   "UNSUPPORTED_BY_DESIGN": 11
+  },
+  "conversions_run": 500,
+  "conversion_status": {
+   "PASSED": 500,
+   "FAILED": 0,
+   "SKIPPED": 0,
+   "UNSUPPORTED_BY_DESIGN": 50
+  }
+ }
+}

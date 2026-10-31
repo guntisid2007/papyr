@@ -305,3 +305,85 @@ def test_cancelling_keeps_finished_files_and_leaves_no_partial_one(fixture_specs
             assert pdf_facts(path).pages >= 1
     if job in ("merged", "combined"):
         assert on_disk == [], "a merged file is all or nothing"
+
+
+ENTRY_POINTS = [
+    ("images", lambda s, out: convert_images(s, out, ImageSettings(OutputFormat.PNG))),
+    ("individual", lambda s, out: convert_individual(s, out, PdfSettings())),
+    ("merged", lambda s, out: convert_merged(s, out / "All.pdf", PdfSettings())),
+    ("animated", lambda s, out: convert_animated_gifs(s, out, GifSettings())),
+    ("combined", lambda s, out: convert_combined_gif(s, out / "All.gif", GifSettings())),
+]
+
+
+def _tiff_with_broken_second_page(path: Path) -> Path:
+    """Three frames; the second frame's width tag is renamed, so Pillow raises TypeError while reading it."""
+    frames = [Image.new("RGB", (24, 16), color) for color in ("red", "green", "blue")]
+    frames[0].save(path, save_all=True, append_images=frames[1:])
+    data = bytearray(path.read_bytes())
+    first = struct.unpack_from("<I", data, 4)[0]
+    second = struct.unpack_from("<I", data, first + 2 + 12 * struct.unpack_from("<H", data, first)[0])[0]
+    for index in range(struct.unpack_from("<H", data, second)[0]):
+        entry = second + 2 + 12 * index
+        if struct.unpack_from("<H", data, entry)[0] == 256:
+            struct.pack_into("<H", data, entry, 65000)
+    path.write_bytes(bytes(data))
+    return path
+
+
+@pytest.mark.parametrize("name, run", ENTRY_POINTS, ids=[e[0] for e in ENTRY_POINTS])
+def test_any_decoder_error_in_one_picture_is_that_files_failure(tmp_path, name, run):
+    """Pillow raises whatever type its plugin hits on a malformed file (here TypeError). A list of expected types
+    missed it, and the whole batch ended."""
+    bad = _tiff_with_broken_second_page(tmp_path / "broken.tiff")
+    good = tmp_path / "good.png"
+    Image.new("RGB", (40, 30), "blue").save(good)
+    report = run([bad, good], tmp_path / "out")
+    assert report.outputs, f"{name}: the good file was not converted: {report}"
+    assert [(p.name, friendly_error(r)) for p, r in report.failures] == \
+        [("broken.tiff", "The file appears to be damaged.")], name
+
+
+def _encrypted_with(path: Path, edit) -> Path:
+    source = text_pdf(path.with_name(f"plain-{path.name}"), ["RESTRICTED_BUT_COPYABLE"])
+    writer = pypdf.PdfWriter(clone_from=source)
+    writer.encrypt("", "owner", algorithm="RC4-128")
+    edit(writer)
+    writer.write(path)
+    return path
+
+
+@pytest.mark.pdf
+def test_a_pdf_pypdf_cannot_open_is_one_failure_on_pdf_output(tmp_path):
+    from pypdf.generic import NameObject
+
+    def unusual_handler(writer):
+        writer._encrypt_entry[NameObject("/SubFilter")] = NameObject("/adbe.pkcs7.s4")
+    bad = _encrypted_with(tmp_path / "unusual.pdf", unusual_handler)
+    good = text_pdf(tmp_path / "good.pdf", ["VALID_AFTER_BAD"])
+    for name, run in ENTRY_POINTS:
+        report = run([bad, good], tmp_path / name)
+        assert report.outputs, f"{name}: {report}"
+        for path, reason in report.failures:
+            assert path.name == "unusual.pdf" and friendly_error(reason) != GENERIC, f"{name}: {reason}"
+    merged = convert_merged([bad, good], tmp_path / "m" / "All.pdf", PdfSettings())
+    assert "VALID_AFTER_BAD" in "".join(pdf_facts(merged.outputs[0]).texts)
+
+
+@pytest.mark.pdf
+def test_an_rc4_pdf_that_also_lists_an_unused_aes_filter_still_copies(tmp_path):
+    from pypdf.generic import DictionaryObject, NameObject
+
+    def rc4_v4_with_spare_aes(writer):
+        writer.encrypt("", "owner", algorithm="AES-128")
+        writer._encryption.StmF = writer._encryption.StrF = writer._encryption.EFF = "/V2"
+        entry = writer._encrypt_entry
+        entry["/CF"]["/StdCF"][NameObject("/CFM")] = NameObject("/V2")
+        entry["/CF"][NameObject("/UnusedAES")] = DictionaryObject({NameObject("/CFM"): NameObject("/AESV2")})
+    try:
+        restricted = _encrypted_with(tmp_path / "rc4-v4.pdf", rc4_v4_with_spare_aes)
+    except pypdf.errors.DependencyError:
+        pytest.skip("this pypdf needs cryptography even to write the AES-128 dictionary")
+    report = convert_individual([restricted], tmp_path / "out", PdfSettings())
+    assert not report.failures, report.failures
+    assert "RESTRICTED_BUT_COPYABLE" in pdf_facts(report.outputs[0]).texts[0]
