@@ -25,7 +25,7 @@ from fixture_factory import ALPHA_PROBES, EXECUTION_SENTINEL, PAGE_COLORS, Fixtu
 from gui.model import GifMode, Options, QueueSummary, plan_job
 from validators import (alpha_at, band_color, color_distance, fit_on_page, gif_frames, ink, is_solid, mae,
                         parse_gif, pdf_facts, pdf_page_count_pdfium, pdf_render, quadrant_mae, second_decoder, sniff,
-                        text_darkness, ink_recall)
+                        text_darkness, ink_match)
 
 EXTENSION_ROWS = {".heic": "HEIC", ".heif": "HEIF", ".jpg": "JPEG", ".jpeg": "JPEG", ".png": "PNG", ".webp": "WEBP",
                   ".avif": "AVIF", ".tif": "TIFF", ".tiff": "TIFF", ".bmp": "BMP", ".gif": "GIF", ".pdf": "PDF",
@@ -42,7 +42,9 @@ A4 = (595.2756, 841.8898)
 # Lossless, then lossy or palette. Measured on these fixtures: at most 0.0 lossless, and 1.2 (worst quarter 1.4) for
 # WebP, GIF palettes, and animation frames. Erasing a page body below its band measures far above either.
 RENDER_TOLERANCE = {False: (1.0, 2.0), True: (2.5, 5.0)}
-MIN_INK_RECALL = 0.95
+# Ink recall and precision. Every real output on these fixtures scores 1.000 on both; text erased scores 0, text
+# blacked out into bars at most 0.94 precision, strokes thickened 7 px at most 0.93.
+MIN_INK_MATCH = 0.98
 MARGIN_PT = 10 * 72 / 25.4
 
 
@@ -381,10 +383,15 @@ def _compare_render(spec, index, fmt, decoded, reference, problems, where) -> No
 
 
 def _check_ink(output, reference, problems, where) -> None:
-    """Every real output on these fixtures keeps all of its page's dark ink; a page with its text erased keeps none."""
-    recall = ink_recall(output, reference)
-    if recall is not None and recall < MIN_INK_RECALL:
+    """Text and lines must survive (recall) and nothing dark may be added (precision); see MIN_INK_MATCH."""
+    match = ink_match(output, reference)
+    if match is None:
+        return
+    recall, precision = match
+    if recall < MIN_INK_MATCH:
         problems.append(f"{where}: only {recall:.0%} of the source's text and line ink survived")
+    if precision < MIN_INK_MATCH:
+        problems.append(f"{where}: only {precision:.0%} of its dark ink is in the source; text was drawn over")
 
 
 def _expected_frame(spec, index, canvas: tuple[int, int]) -> Image.Image:

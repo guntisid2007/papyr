@@ -311,14 +311,17 @@ def _dark(image: Image.Image, below: int) -> Image.Image:
     return ImageChops.lighter(ImageChops.lighter(r, g), b).point(lambda v: 255 if v < below else 0)
 
 
-def ink_recall(output: Image.Image, reference: Image.Image) -> float | None:
-    """Of the reference's dark ink, the share still dark in the output within one pixel. None when the reference
-    has no dark ink. Unlike an average difference, this falls to zero when one line of text on a page is lost."""
+def ink_match(output: Image.Image, reference: Image.Image) -> tuple[float, float] | None:
+    """(recall, precision) of dark text and line ink, each within one pixel: the share of the reference's ink still
+    dark in the output, and the share of the output's ink that the reference has too. None when the reference has
+    no dark ink. An average difference barely moves when one line of text on a page is lost (recall falls) or
+    painted over into a bar (precision falls)."""
     if output.size != reference.size:
         reference = reference.resize(output.size, Image.Resampling.LANCZOS)
-    wanted = _dark(reference, 100)
-    total = wanted.histogram()[255]
-    if not total:
+    wanted, drawn = _dark(reference, 100), _dark(output, 100)
+    wanted_total, drawn_total = wanted.histogram()[255], drawn.histogram()[255]
+    if not wanted_total:
         return None
-    kept = _dark(output, 160).filter(ImageFilter.MaxFilter(3))
-    return ImageChops.multiply(wanted, kept).histogram()[255] / total
+    kept = ImageChops.multiply(wanted, _dark(output, 160).filter(ImageFilter.MaxFilter(3))).histogram()[255]
+    true = ImageChops.multiply(drawn, _dark(reference, 160).filter(ImageFilter.MaxFilter(3))).histogram()[255]
+    return kept / wanted_total, (true / drawn_total if drawn_total else 0.0)
