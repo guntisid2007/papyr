@@ -7,3 +7,4 @@ dist/
 *.part
 .DS_Store
 .audit/
+tests/fixtures/generated/
