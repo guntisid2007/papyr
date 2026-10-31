@@ -2,6 +2,9 @@
 pages apart after they become images), and encrypted files.
 
 fixtures/twelve-pages.pdf is colored_pdf(path, TWELVE_COLORS), committed so the GIF tests read a real file.
+fixtures/restricted-aes-128.pdf and restricted-aes-256.pdf are text_pdf(path, ["PAGE_001", "PAGE_002"]) encrypted by
+pypdf with an empty user password and owner password "owner". Writing AES needs the cryptography package, which
+Papyr does not ship, so they are committed rather than built here.
 """
 from pathlib import Path
 
