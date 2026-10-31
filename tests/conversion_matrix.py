@@ -307,9 +307,21 @@ def _check_alpha(spec: FixtureSpec, index: int, fmt: OutputFormat, image: Image.
         problems.append(f"{where}: an opaque source came out with transparent pixels")
 
 
+def _notebook_layout(spec, out_dir: Path) -> Path:
+    """The notebook laid out the way picture and GIF outputs lay it out, checked for its text, so the pictures can
+    be compared with it page by page. Pictures carry no searchable text of their own."""
+    path = out_dir.parent / f"{out_dir.name}-layout.pdf"
+    path.write_bytes(render_notebook(spec.path(), NOTEBOOK_IMAGE_SETTINGS))
+    return path
+
+
 def _check_pictures(spec, target, files, problems, facts) -> None:
     fmt = target.format
     sizes = []
+    layout = None
+    if spec.kind == "notebook":
+        layout = _notebook_layout(spec, files[0].parent)
+        _check_notebook_text(spec, layout, pdf_facts(layout), problems, "layout: ")
     for index, file in enumerate(files):
         where = file.name
         if (kind := sniff(file)) != SNIFFED[fmt]:
@@ -344,6 +356,7 @@ def _check_pictures(spec, target, files, problems, facts) -> None:
         else:
             if ink(decoded) < 0.003:
                 problems.append(f"{where}: blank notebook page")
+            _compare_render(spec, index, fmt, decoded, pdf_render(layout, index, DPI), problems, where)
     if spec.kind == "notebook":
         _check_section_order(spec, [_open_rgb(f) for f in files], problems)
     facts["actual"] = f"{len(files)} {fmt.label} file(s), " + ", ".join(f"{w}x{h}" for w, h in sizes[:4]) + \
@@ -394,17 +407,19 @@ def _check_ink(output, reference, problems, where) -> None:
         problems.append(f"{where}: only {precision:.0%} of its dark ink is in the source; text was drawn over")
 
 
-def _expected_frame(spec, index, canvas: tuple[int, int]) -> Image.Image:
+def _expected_frame(spec, index, canvas: tuple[int, int], pdf: Path | None = None) -> Image.Image:
     """The page as the animation should show it: as large as fits the canvas (PDF pages may grow, pictures may
-    not), centred on white."""
-    if spec.kind == "pdf":
-        width, height = spec.pages[index].size
+    not), centred on white. pdf is the document behind the frames when it is not the fixture itself."""
+    if spec.kind != "raster":
+        pdf = pdf or spec.path()
+        width, height = pdf_facts(pdf).sizes[index]
         scale = min(canvas[0] / width, canvas[1] / height)
-        page = pdf_render(spec.path(), index, 72 * scale)
+        page = pdf_render(pdf, index, 72 * scale)
     else:
+        width, height = spec.pages[index].size
         page = spec.reference(index)
         scale = min(1.0, canvas[0] / page.width, canvas[1] / page.height)
-    size = (max(1, round(spec.pages[index].size[0] * scale)), max(1, round(spec.pages[index].size[1] * scale)))
+    size = (max(1, round(width * scale)), max(1, round(height * scale)))
     page = page.convert("RGBA").resize(size, Image.Resampling.LANCZOS)
     frame = Image.new("RGBA", canvas, (255, 255, 255, 255))
     frame.alpha_composite(page, ((canvas[0] - size[0]) // 2, (canvas[1] - size[1]) // 2))
@@ -475,21 +490,23 @@ def _check_animation(spec, file, pages, problems, facts) -> None:
     for number, frame in enumerate(frames, start=1):
         if ink(frame) < 0.003 or is_solid(frame):
             problems.append(f"frame {number} is blank")
+    layout = None
     if spec.kind == "notebook":
         _check_section_order(spec, frames, problems)
-    else:
-        for index, frame in enumerate(frames[:len(spec.pages)]):
-            expected = _expected_frame(spec, index, (info.width, info.height))
-            diff, worst = mae(frame, expected, 512), quadrant_mae(frame, expected)
-            whole, quarter = RENDER_TOLERANCE[True]
-            if diff > whole or worst > quarter:
-                problems.append(f"frame {index + 1} differs from its page by {diff:.1f} (worst quarter {worst:.1f})")
-            _check_ink(frame, expected, problems, f"frame {index + 1}")
-        colors = [page.color for page in spec.pages]
-        for number, frame in enumerate(frames[:len(colors)], start=1):
-            scores = [_presence(frame, color) for color in colors]
-            if scores.index(max(scores)) != number - 1 or max(scores) < 0.01:
-                problems.append(f"frame {number} looks like page {scores.index(max(scores)) + 1}")
+        layout = _notebook_layout(spec, file.parent)
+        _check_notebook_text(spec, layout, pdf_facts(layout), problems, "layout: ")
+    for index, frame in enumerate(frames[:pages]):
+        expected = _expected_frame(spec, index, (info.width, info.height), layout)
+        diff, worst = mae(frame, expected, 512), quadrant_mae(frame, expected)
+        whole, quarter = RENDER_TOLERANCE[True]
+        if diff > whole or worst > quarter:
+            problems.append(f"frame {index + 1} differs from its page by {diff:.1f} (worst quarter {worst:.1f})")
+        _check_ink(frame, expected, problems, f"frame {index + 1}")
+    colors = [page.color for page in spec.pages]
+    for number, frame in enumerate(frames[:len(colors)], start=1):
+        scores = [_presence(frame, color) for color in colors]
+        if scores.index(max(scores)) != number - 1 or max(scores) < 0.01:
+            problems.append(f"frame {number} looks like page {scores.index(max(scores)) + 1}")
     facts["actual"] = f"1 GIF, {info.frames} frames at {info.width}x{info.height}, delays " \
                       f"{sorted(set(info.delays_ms))} ms, loop {info.loop}"
 
@@ -566,15 +583,24 @@ def notebook_text_markers(spec: FixtureSpec) -> list[str]:
     return markers
 
 
-def _check_notebook_pdf(spec, file, out, problems) -> None:
+def _check_notebook_text(spec, file, out, problems, where="") -> None:
+    """Every Markdown heading and saved output, in cell order, and visibly dark."""
     text = "\n".join(out.texts)
     position = -1
     for marker in notebook_text_markers(spec):
         found = text.find(marker, position + 1)
         if found < 0:
-            problems.append(f"text {marker} missing or out of order")
+            problems.append(f"{where}text {marker} missing or out of order")
         else:
             position = found
+    for marker in ("NB_TITLE", "SAVED_OUTPUT_01"):
+        darkest = text_darkness(file, marker)
+        if darkest is None or darkest > 100:
+            problems.append(f"{where}text {marker} is not visible on the page (darkest pixel {darkest})")
+
+
+def _check_notebook_pdf(spec, file, out, problems) -> None:
+    _check_notebook_text(spec, file, out, problems)
     if spec.extra["sections"] > 1 and out.pages < 2:
         problems.append(f"{out.pages} page for a long notebook")
     figures = sum(1 for page in out.images for w, h in page if (w, h) == (480, 140))
@@ -587,10 +613,6 @@ def _check_notebook_pdf(spec, file, out, problems) -> None:
         if ink(rendered) < 0.003:
             problems.append(f"page {index + 1} is blank")
     _check_section_order(spec, pages, problems)
-    for marker in ("NB_TITLE", "SAVED_OUTPUT_01"):
-        darkest = text_darkness(file, marker)
-        if darkest is None or darkest > 100:
-            problems.append(f"text {marker} is not visible on the page (darkest pixel {darkest})")
     for folder in (spec.path().parent, Path.cwd()):
         if (folder / EXECUTION_SENTINEL).exists():
             problems.append(f"notebook code ran: {folder / EXECUTION_SENTINEL} exists")

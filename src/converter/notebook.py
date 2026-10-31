@@ -7,6 +7,7 @@ to the web cannot make Papyr fetch anything.
 
 import base64
 import json
+import math
 import re
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
@@ -79,8 +80,20 @@ def _text(value) -> str:
 
 
 def _display_width(raw: dict, mime: str) -> float | None:
+    """The width the notebook asked for, or None to use the picture's own. A width no float can hold is ignored."""
     width = ((raw.get("metadata") or {}).get(mime) or {}).get("width")
-    return float(width) if isinstance(width, (int, float)) and width > 0 else None
+    if not isinstance(width, (int, float)) or isinstance(width, bool) or width <= 0:
+        return None
+    try:
+        width = float(width)
+    except OverflowError:
+        return None
+    return width if math.isfinite(width) else None
+
+
+def _attachment(mime: str, data) -> bytes:
+    """nbformat stores SVG as text and every other picture as base64."""
+    return _text(data).encode() if mime == "image/svg+xml" else base64.b64decode(_text(data))
 
 
 def _shows_something(html: str) -> bool:
@@ -123,7 +136,7 @@ def _parse_cell(raw: dict) -> Cell | None:
     kind = raw.get("cell_type")
     source = _text(raw.get("source"))
     if kind == "markdown":
-        attachments = {name: base64.b64decode(_text(data))
+        attachments = {name: _attachment(mime, data)
                        for name, bundle in (raw.get("attachments") or {}).items()
                        for mime, data in bundle.items() if mime.startswith("image/")}
         return Cell(kind, source, attachments=attachments)
@@ -160,7 +173,7 @@ def parse_notebook(raw: bytes) -> Notebook:
     try:
         cells = tuple(cell for cell in map(_parse_cell, notebook["cells"])
                       if cell is not None and (cell.source.strip() or cell.outputs))
-    except (AttributeError, TypeError, ValueError) as exc:
+    except Exception as exc:  # cells are untrusted JSON; whatever a malformed one trips, the notebook is damaged
         raise ImageLoadError(f"Notebook is damaged: {exc}") from exc
     if not cells:
         raise ImageLoadError("Notebook has no cells with any content")
