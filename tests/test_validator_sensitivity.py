@@ -152,3 +152,26 @@ def test_the_matrix_check_catches_lost_text_on_sparse_pages(fixture, target, fix
     result = run_pair(fixture_specs[fixture], TARGET[target], tmp_path / "out")
     RESULTS.remove(result)
     assert result.validation == "FAILED", result.actual
+
+
+def blacked_out_lines(original):
+    """Each line of body text becomes one solid black bar: the ink is all still there, the words are not."""
+    def save(image, stream, fmt, quality):
+        from validators import _dark
+        wrong = image.convert("RGB")
+        mask = _dark(wrong, 100).load()
+        top = round(wrong.height * 0.17)
+        for y in range(top, wrong.height):
+            xs = [x for x in range(wrong.width) if mask[x, y]]
+            if xs:
+                wrong.paste("black", (min(xs), y, max(xs) + 1, y + 1))
+        original(wrong, stream, fmt, quality)
+    return save
+
+
+@pytest.mark.parametrize("target", ["JPEG", "PNG", "GIF_SEPARATE"])
+def test_the_matrix_check_catches_text_blacked_out(target, fixture_specs, monkeypatch, tmp_path):
+    _planted(monkeypatch, convert, "save_image", blacked_out_lines)
+    result = run_pair(fixture_specs["pdf-twelve-pages"], TARGET[target], tmp_path / "out")
+    RESULTS.remove(result)
+    assert result.validation == "FAILED", result.actual
