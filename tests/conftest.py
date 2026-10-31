@@ -1,12 +1,16 @@
+import tempfile
 from pathlib import Path
 
 import pillow_heif
 import pytest
 from PIL import Image
 
-from gui.app import use_headless_platform
+from gui.app import use_headless_platform, use_settings_dir
 
 use_headless_platform()
+# Set before any test can build a window, whatever fixtures it asks for: tests never touch the real preferences.
+SETTINGS_DIR = Path(tempfile.mkdtemp(prefix="papyr-test-settings-"))
+use_settings_dir(SETTINGS_DIR)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -23,12 +27,7 @@ def make_image(path: Path, size: tuple[int, int], color="red", **save_kwargs) ->
 @pytest.fixture(scope="session")
 def app(tmp_path_factory):
     """The one Qt application for the whole run. Notebook rendering and the window both need it."""
-    from PySide6.QtCore import QSettings
-
     from gui.app import create_app
-    QSettings.setDefaultFormat(QSettings.Format.IniFormat)
-    QSettings.setPath(QSettings.Format.IniFormat, QSettings.Scope.UserScope,
-                      str(tmp_path_factory.mktemp("settings")))  # never touch the real preferences
     return create_app(["test"])
 
 

@@ -18,13 +18,26 @@ def self_test(sample: str) -> int:
 
     from converter import (GifSettings, ImageSettings, OutputFormat, PageSize, PdfSettings, convert_combined_gif,
                            convert_images, convert_merged)
-    from gui.app import create_app, use_headless_platform
+    from gui.app import create_app, use_headless_platform, use_settings_dir
     from gui.main_window import MainWindow
+    from utils.errors import friendly_error
+    from utils.noreplace import rename_no_replace
 
     use_headless_platform()
+    settings = tempfile.TemporaryDirectory()
+    use_settings_dir(settings.name)  # the window below must not read or change the user's real preferences
     app = create_app([sys.argv[0]])  # notebooks are laid out with Qt, so the app must exist before converting
     problems = []
     with tempfile.TemporaryDirectory() as tmp:
+        (Path(tmp) / "a").write_bytes(b"a")
+        (Path(tmp) / "b").write_bytes(b"b")
+        try:
+            rename_no_replace(Path(tmp) / "a", Path(tmp) / "b")
+            problems.append("No-replace move replaced a file")
+        except FileExistsError:
+            pass
+        if not rename_no_replace(Path(tmp) / "a", Path(tmp) / "c") or (Path(tmp) / "b").read_bytes() != b"b":
+            problems.append("No-replace move is unavailable on this system's disk")
         pdf = Path(tmp) / "self-test.pdf"
         report = convert_merged([Path(sample)], pdf, PdfSettings(PageSize.A4, 10))
         if report.outputs != [pdf] or report.failures or b"/Count 1" not in pdf.read_bytes():
@@ -108,11 +121,21 @@ def self_test(sample: str) -> int:
                     colors.add(tuple(c.value for c in rgba))
             if len(colors) < 4:
                 problems.append(f"Notebook to PDF: code is not highlighted ({len(colors)} text colors)")
+        import pypdf
+        locked = pypdf.PdfWriter()
+        locked.add_blank_page(200, 200)
+        locked.encrypt("", "owner", algorithm="RC4-128")
+        locked.write(Path(tmp) / "locked.pdf")
+        report = convert_merged([Path(tmp) / "locked.pdf"], Path(tmp) / "unlocked.pdf", PdfSettings())
+        reasons = [friendly_error(r) for path, r in report.failures if path.name == "locked.pdf"]
+        if report.outputs or len(reasons) != 1 or not reasons[0].startswith("This PDF is protected"):
+            problems.append(f"Encrypted PDF to PDF was not refused: {report}")
     window = MainWindow()
     window.show()
     app.processEvents()
     window.close()
     del window
+    settings.cleanup()
     print("self-test", "passed" if not problems else "failed: " + "; ".join(problems))
     return 0 if not problems else 1
 

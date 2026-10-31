@@ -1,3 +1,4 @@
+import os
 import sys
 import threading
 import time
@@ -537,6 +538,39 @@ def test_launch_falls_back_to_documents_when_the_saved_folder_is_gone(app, tmp_p
     win = MainWindow()
     assert win.output_dir() == (documents if documents.is_dir() else Path.home())
     win.deleteLater()
+
+
+def test_tests_keep_preferences_in_their_own_folder(app):
+    from conftest import SETTINGS_DIR
+    assert QSettings().format() is QSettings.Format.IniFormat
+    assert Path(QSettings().fileName()).is_relative_to(SETTINGS_DIR), QSettings().fileName()
+
+
+def test_a_first_launch_saves_to_documents_and_shows_it(app):
+    from PySide6.QtCore import QStandardPaths
+
+    QSettings().clear()
+    documents = Path(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DocumentsLocation))
+    win = MainWindow()
+    expected = documents if documents.is_dir() else Path.home()
+    assert win.output_dir() == expected and str(expected) in win.dock.destination.toolTip()
+    assert QSettings().value("output_dir") is None, "only choosing a folder saves one"
+    win.deleteLater()
+
+
+def test_the_settings_folder_variable_keeps_the_real_app_off_real_preferences(tmp_path):
+    """Automated runs of the real or packaged app set PAPYR_SETTINGS_DIR, so a test run can't change where the
+    user's files are saved."""
+    import subprocess
+    code = ("import sys; sys.path.insert(0, 'src'); from gui.app import use_headless_platform, create_app; "
+            "use_headless_platform(); app = create_app(['t']); from PySide6.QtCore import QSettings; "
+            "QSettings().setValue('output_dir', '/tmp/x'); QSettings().sync(); print(QSettings().fileName())")
+    env = {**os.environ, "PAPYR_SETTINGS_DIR": str(tmp_path)}
+    result = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True, text=True, timeout=60,
+                            cwd=Path(__file__).resolve().parents[1])
+    assert result.returncode == 0, result.stderr
+    assert Path(result.stdout.strip().splitlines()[-1]).is_relative_to(tmp_path)
+    assert "output_dir=/tmp/x" in Path(result.stdout.strip().splitlines()[-1]).read_text()
 
 
 def test_each_gif_control_reaches_the_engine(app, window, make, engine, tmp_path):

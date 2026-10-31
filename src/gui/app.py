@@ -3,7 +3,7 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 
-from PySide6.QtCore import QEvent
+from PySide6.QtCore import QEvent, QSettings
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
@@ -70,7 +70,19 @@ class Application(QApplication):
         return super().event(event)
 
 
+SETTINGS_DIR_VARIABLE = "PAPYR_SETTINGS_DIR"
+
+
+def use_settings_dir(folder: str | os.PathLike) -> None:
+    """Keep preferences in an INI file under folder instead of the user's real ones. Tests and automated runs of
+    the real app use this, so they can never change where the user's files are saved."""
+    QSettings.setDefaultFormat(QSettings.Format.IniFormat)
+    QSettings.setPath(QSettings.Format.IniFormat, QSettings.Scope.UserScope, os.fspath(folder))
+
+
 def create_app(argv: list[str]) -> Application:
+    if os.environ.get(SETTINGS_DIR_VARIABLE):
+        use_settings_dir(os.environ[SETTINGS_DIR_VARIABLE])
     app = Application(argv)
     app.setFont(app_font())
     app.setApplicationName(APP_NAME)
