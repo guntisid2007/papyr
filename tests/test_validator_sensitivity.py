@@ -135,3 +135,20 @@ def test_the_matrix_check_catches_animation_frames_with_their_content_erased(fix
     result = run_pair(fixture_specs["pdf-mixed-content"], TARGET["GIF"], tmp_path / "out")
     RESULTS.remove(result)
     assert result.validation == "FAILED", result.actual
+
+
+@pytest.mark.parametrize("fixture, target", [("pdf-single-text", "JPEG"), ("pdf-single-text", "GIF"),
+                                             ("pdf-twelve-pages", "PNG"), ("pdf-twelve-pages", "GIF_SEPARATE")])
+def test_the_matrix_check_catches_lost_text_on_sparse_pages(fixture, target, fixture_specs, monkeypatch, tmp_path):
+    """One line of text is about 1% of a page, too little to move an average, and the check must still catch its loss."""
+    _planted(monkeypatch, convert, "save_image", erased_body)
+    original = animation.GifWriter.add
+
+    def add(self, frame):
+        wrong = frame.copy()
+        wrong.paste("white", (0, round(wrong.height * 0.25), wrong.width, wrong.height))
+        original(self, wrong)
+    monkeypatch.setattr(animation.GifWriter, "add", add)
+    result = run_pair(fixture_specs[fixture], TARGET[target], tmp_path / "out")
+    RESULTS.remove(result)
+    assert result.validation == "FAILED", result.actual

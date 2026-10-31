@@ -387,3 +387,53 @@ def test_an_rc4_pdf_that_also_lists_an_unused_aes_filter_still_copies(tmp_path):
     report = convert_individual([restricted], tmp_path / "out", PdfSettings())
     assert not report.failures, report.failures
     assert "RESTRICTED_BUT_COPYABLE" in pdf_facts(report.outputs[0]).texts[0]
+
+
+def _rc4_with_spare_aes_declarations(writer, variant):
+    from pypdf.generic import DictionaryObject, NameObject
+    aes = DictionaryObject({NameObject("/CFM"): NameObject("/AESV2")})
+    entry = writer._encrypt_entry
+    if variant == "v2":  # /V 2 ignores crypt filters entirely
+        entry[NameObject("/CF")] = DictionaryObject({NameObject("/SpareAES"): aes})
+        for key in ("/StmF", "/StrF", "/EFF"):
+            entry[NameObject(key)] = NameObject("/SpareAES")
+    else:  # /V 4, AES only for attachments, and there are none
+        writer.encrypt("", "owner", algorithm="AES-128")
+        entry = writer._encrypt_entry
+        writer._encryption.StmF = writer._encryption.StrF = "/V2"
+        writer._encryption.EFF = "/AESV2"
+        entry["/CF"]["/StdCF"][NameObject("/CFM")] = NameObject("/V2")
+        entry["/CF"][NameObject("/AttachmentAES")] = aes
+        entry[NameObject("/EFF")] = NameObject("/AttachmentAES")
+
+
+@pytest.mark.pdf
+@pytest.mark.parametrize("variant", ["v2", "v4-attachments-only"])
+def test_restricted_pdfs_copy_whenever_their_pages_need_no_aes(tmp_path, variant):
+    try:
+        restricted = _encrypted_with(tmp_path / f"{variant}.pdf", lambda w: _rc4_with_spare_aes_declarations(w, variant))
+    except pypdf.errors.DependencyError:
+        pytest.skip("this pypdf needs cryptography even to write the AES-128 dictionary")
+    report = convert_merged([restricted, text_pdf(tmp_path / "next.pdf", ["NEXT"])], tmp_path / "All.pdf",
+                            PdfSettings())
+    assert not report.failures, report.failures
+    assert pdf_facts(tmp_path / "All.pdf").pages == 2
+
+
+def test_running_out_of_memory_on_one_file_says_so_and_the_batch_goes_on(fixture_specs, tmp_path, monkeypatch):
+    import converter.animation as animation
+    import converter.images as images
+    huge, good = fixture_specs["png-hires"].path(), fixture_specs["png-tiny"].path()
+    real_open = images.Image.open
+
+    def open_image(path, *args, **kwargs):
+        if Path(path) == huge:
+            raise MemoryError
+        return real_open(path, *args, **kwargs)
+    monkeypatch.setattr(images.Image, "open", open_image)
+    monkeypatch.setattr(animation.Image, "open", open_image)
+    for name, run in ENTRY_POINTS:
+        report = run([huge, good], tmp_path / name)
+        assert report.outputs, name
+        assert [(p.name, friendly_error(r)) for p, r in report.failures] == \
+            [(huge.name, "There isn't enough memory to convert this file.")], f"{name}: {report.failures}"
