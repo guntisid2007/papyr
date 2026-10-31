@@ -1,51 +1,51 @@
 input_format,output_format,declared,fixture,expected,actual,execution,validation,failure,seconds,output_bytes,output_files,decoders,warnings,status
-HEIC,PDF,SUPPORTED,heic-exif-rotated,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.013,34349,1,"PDFium, pypdf",,PASSED
-HEIC,PDF,SUPPORTED,heic-hires,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.129,283130,1,"PDFium, pypdf",,PASSED
-HEIC,PDF,SUPPORTED,heic-landscape,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.012,35922,1,"PDFium, pypdf",,PASSED
+HEIC,PDF,SUPPORTED,heic-exif-rotated,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.012,34349,1,"PDFium, pypdf",,PASSED
+HEIC,PDF,SUPPORTED,heic-hires,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.13,283130,1,"PDFium, pypdf",,PASSED
+HEIC,PDF,SUPPORTED,heic-landscape,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.011,35922,1,"PDFium, pypdf",,PASSED
 HEIC,PDF,SUPPORTED,heic-portrait,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 595x842 pt",OK,PASSED,,0.01,27279,1,"PDFium, pypdf",,PASSED
-HEIC,PDF,SUPPORTED,heic-tiny,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.001,1301,1,"PDFium, pypdf",,PASSED
-HEIC,JPEG,SUPPORTED,heic-exif-rotated,one JPEG file per page for the picture,"1 JPEG file(s), 640x400",OK,PASSED,,0.012,29635,1,"Pillow, Qt",,PASSED
-HEIC,JPEG,SUPPORTED,heic-hires,one JPEG file per page for the picture,"1 JPEG file(s), 3200x2000",OK,PASSED,,0.128,261866,1,"Pillow, Qt",,PASSED
+HEIC,PDF,SUPPORTED,heic-tiny,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.002,1301,1,"PDFium, pypdf",,PASSED
+HEIC,JPEG,SUPPORTED,heic-exif-rotated,one JPEG file per page for the picture,"1 JPEG file(s), 640x400",OK,PASSED,,0.011,29635,1,"Pillow, Qt",,PASSED
+HEIC,JPEG,SUPPORTED,heic-hires,one JPEG file per page for the picture,"1 JPEG file(s), 3200x2000",OK,PASSED,,0.124,261866,1,"Pillow, Qt",,PASSED
 HEIC,JPEG,SUPPORTED,heic-landscape,"one JPEG file per page for the picture, transparency on white","1 JPEG file(s), 640x400",OK,PASSED,,0.012,31214,1,"Pillow, Qt",,PASSED
-HEIC,JPEG,SUPPORTED,heic-portrait,one JPEG file per page for the picture,"1 JPEG file(s), 360x540",OK,PASSED,,0.009,23167,1,"Pillow, Qt",,PASSED
+HEIC,JPEG,SUPPORTED,heic-portrait,one JPEG file per page for the picture,"1 JPEG file(s), 360x540",OK,PASSED,,0.01,23167,1,"Pillow, Qt",,PASSED
 HEIC,JPEG,SUPPORTED,heic-tiny,one JPEG file per page for the picture,"1 JPEG file(s), 24x16",OK,PASSED,,0.001,499,1,"Pillow, Qt",,PASSED
-HEIC,PNG,SUPPORTED,heic-exif-rotated,one PNG file per page for the picture,"1 PNG file(s), 640x400",OK,PASSED,,0.016,52301,1,"Pillow, Qt",,PASSED
-HEIC,PNG,SUPPORTED,heic-hires,one PNG file per page for the picture,"1 PNG file(s), 3200x2000",OK,PASSED,,0.152,177701,1,"Pillow, Qt",,PASSED
+HEIC,PNG,SUPPORTED,heic-exif-rotated,one PNG file per page for the picture,"1 PNG file(s), 640x400",OK,PASSED,,0.017,52301,1,"Pillow, Qt",,PASSED
+HEIC,PNG,SUPPORTED,heic-hires,one PNG file per page for the picture,"1 PNG file(s), 3200x2000",OK,PASSED,,0.155,177701,1,"Pillow, Qt",,PASSED
 HEIC,PNG,SUPPORTED,heic-landscape,"one PNG file per page for the picture, transparency kept","1 PNG file(s), 640x400",OK,PASSED,,0.018,60214,1,"Pillow, Qt",,PASSED
-HEIC,PNG,SUPPORTED,heic-portrait,one PNG file per page for the picture,"1 PNG file(s), 360x540",OK,PASSED,,0.013,44679,1,"Pillow, Qt",,PASSED
+HEIC,PNG,SUPPORTED,heic-portrait,one PNG file per page for the picture,"1 PNG file(s), 360x540",OK,PASSED,,0.014,44679,1,"Pillow, Qt",,PASSED
 HEIC,PNG,SUPPORTED,heic-tiny,one PNG file per page for the picture,"1 PNG file(s), 24x16",OK,PASSED,,0.001,620,1,"Pillow, Qt",,PASSED
-HEIC,HEIC,SUPPORTED,heic-exif-rotated,one HEIC file per page for the picture,"1 HEIC file(s), 640x400",OK,PASSED,,0.074,45944,1,"Pillow, Qt",,PASSED
-HEIC,HEIC,SUPPORTED,heic-hires,one HEIC file per page for the picture,"1 HEIC file(s), 3200x2000",OK,PASSED,,0.52,292237,1,"Pillow, Qt",,PASSED
-HEIC,HEIC,SUPPORTED,heic-landscape,"one HEIC file per page for the picture, transparency kept","1 HEIC file(s), 640x400",OK,PASSED,,0.085,46560,1,"Pillow, Qt",,PASSED
+HEIC,HEIC,SUPPORTED,heic-exif-rotated,one HEIC file per page for the picture,"1 HEIC file(s), 640x400",OK,PASSED,,0.075,45944,1,"Pillow, Qt",,PASSED
+HEIC,HEIC,SUPPORTED,heic-hires,one HEIC file per page for the picture,"1 HEIC file(s), 3200x2000",OK,PASSED,,0.523,292237,1,"Pillow, Qt",,PASSED
+HEIC,HEIC,SUPPORTED,heic-landscape,"one HEIC file per page for the picture, transparency kept","1 HEIC file(s), 640x400",OK,PASSED,,0.09,46560,1,"Pillow, Qt",,PASSED
 HEIC,HEIC,SUPPORTED,heic-portrait,one HEIC file per page for the picture,"1 HEIC file(s), 360x540",OK,PASSED,,0.086,38499,1,"Pillow, Qt",,PASSED
 HEIC,HEIC,SUPPORTED,heic-tiny,one HEIC file per page for the picture,"1 HEIC file(s), 24x16",OK,PASSED,,0.007,1068,1,"Pillow, Qt",,PASSED
 HEIC,WEBP,SUPPORTED,heic-exif-rotated,one WebP file per page for the picture,"1 WebP file(s), 640x400",OK,PASSED,,0.019,11356,1,"Pillow, Qt",,PASSED
-HEIC,WEBP,SUPPORTED,heic-hires,one WebP file per page for the picture,"1 WebP file(s), 3200x2000",OK,PASSED,,0.268,75906,1,"Pillow, Qt",,PASSED
+HEIC,WEBP,SUPPORTED,heic-hires,one WebP file per page for the picture,"1 WebP file(s), 3200x2000",OK,PASSED,,0.269,75906,1,"Pillow, Qt",,PASSED
 HEIC,WEBP,SUPPORTED,heic-landscape,"one WebP file per page for the picture, transparency kept","1 WebP file(s), 640x400",OK,PASSED,,0.02,12046,1,"Pillow, Qt",,PASSED
 HEIC,WEBP,SUPPORTED,heic-portrait,one WebP file per page for the picture,"1 WebP file(s), 360x540",OK,PASSED,,0.015,9468,1,"Pillow, Qt",,PASSED
 HEIC,WEBP,SUPPORTED,heic-tiny,one WebP file per page for the picture,"1 WebP file(s), 24x16",OK,PASSED,,0.001,202,1,"Pillow, Qt",,PASSED
-HEIC,AVIF,SUPPORTED,heic-exif-rotated,one AVIF file per page for the picture,"1 AVIF file(s), 640x400",OK,PASSED,,0.029,13304,1,"Pillow, sips",,PASSED
-HEIC,AVIF,SUPPORTED,heic-hires,one AVIF file per page for the picture,"1 AVIF file(s), 3200x2000",OK,PASSED,,0.217,95121,1,"Pillow, sips",,PASSED
-HEIC,AVIF,SUPPORTED,heic-landscape,"one AVIF file per page for the picture, transparency kept","1 AVIF file(s), 640x400",OK,PASSED,,0.03,14577,1,"Pillow, sips",,PASSED
+HEIC,AVIF,SUPPORTED,heic-exif-rotated,one AVIF file per page for the picture,"1 AVIF file(s), 640x400",OK,PASSED,,0.028,13304,1,"Pillow, sips",,PASSED
+HEIC,AVIF,SUPPORTED,heic-hires,one AVIF file per page for the picture,"1 AVIF file(s), 3200x2000",OK,PASSED,,0.218,95121,1,"Pillow, sips",,PASSED
+HEIC,AVIF,SUPPORTED,heic-landscape,"one AVIF file per page for the picture, transparency kept","1 AVIF file(s), 640x400",OK,PASSED,,0.031,14577,1,"Pillow, sips",,PASSED
 HEIC,AVIF,SUPPORTED,heic-portrait,one AVIF file per page for the picture,"1 AVIF file(s), 360x540",OK,PASSED,,0.025,10191,1,"Pillow, sips",,PASSED
 HEIC,AVIF,SUPPORTED,heic-tiny,one AVIF file per page for the picture,"1 AVIF file(s), 24x16",OK,PASSED,,0.002,427,1,"Pillow, sips",,PASSED
 HEIC,TIFF,SUPPORTED,heic-exif-rotated,one TIFF file per page for the picture,"1 TIFF file(s), 640x400",OK,PASSED,,0.013,94676,1,"Pillow, Qt",,PASSED
 HEIC,TIFF,SUPPORTED,heic-hires,one TIFF file per page for the picture,"1 TIFF file(s), 3200x2000",OK,PASSED,,0.128,551080,1,"Pillow, Qt",,PASSED
-HEIC,TIFF,SUPPORTED,heic-landscape,"one TIFF file per page for the picture, transparency kept","1 TIFF file(s), 640x400",OK,PASSED,,0.013,104450,1,"Pillow, Qt",,PASSED
+HEIC,TIFF,SUPPORTED,heic-landscape,"one TIFF file per page for the picture, transparency kept","1 TIFF file(s), 640x400",OK,PASSED,,0.014,104450,1,"Pillow, Qt",,PASSED
 HEIC,TIFF,SUPPORTED,heic-portrait,one TIFF file per page for the picture,"1 TIFF file(s), 360x540",OK,PASSED,,0.011,94184,1,"Pillow, Qt",,PASSED
 HEIC,TIFF,SUPPORTED,heic-tiny,one TIFF file per page for the picture,"1 TIFF file(s), 24x16",OK,PASSED,,0.001,1354,1,"Pillow, Qt",,PASSED
-HEIC,GIF,SUPPORTED,heic-exif-rotated,one GIF file per page for the picture,"1 GIF file(s), 640x400",OK,PASSED,,0.03,44420,1,"Pillow, Qt",,PASSED
-HEIC,GIF,SUPPORTED,heic-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.256,267879,1,"Pillow, Qt",,PASSED
+HEIC,GIF,SUPPORTED,heic-exif-rotated,one GIF file per page for the picture,"1 GIF file(s), 640x400",OK,PASSED,,0.034,44420,1,"Pillow, Qt",,PASSED
+HEIC,GIF,SUPPORTED,heic-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.278,267879,1,"Pillow, Qt",,PASSED
 HEIC,GIF,SUPPORTED,heic-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.03,44633,1,"Pillow, Qt",,PASSED
-HEIC,GIF,SUPPORTED,heic-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.028,42924,1,"Pillow, Qt",,PASSED
-HEIC,GIF,SUPPORTED,heic-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.003,1233,1,"Pillow, Qt",,PASSED
-HEIC,GIF_SEPARATE,SUPPORTED,heic-exif-rotated,one GIF file per page for the picture,"1 GIF file(s), 640x400",OK,PASSED,,0.03,44420,1,"Pillow, Qt",,PASSED
+HEIC,GIF,SUPPORTED,heic-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.027,42924,1,"Pillow, Qt",,PASSED
+HEIC,GIF,SUPPORTED,heic-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.004,1233,1,"Pillow, Qt",,PASSED
+HEIC,GIF_SEPARATE,SUPPORTED,heic-exif-rotated,one GIF file per page for the picture,"1 GIF file(s), 640x400",OK,PASSED,,0.031,44420,1,"Pillow, Qt",,PASSED
 HEIC,GIF_SEPARATE,SUPPORTED,heic-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.255,267879,1,"Pillow, Qt",,PASSED
 HEIC,GIF_SEPARATE,SUPPORTED,heic-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.03,44633,1,"Pillow, Qt",,PASSED
 HEIC,GIF_SEPARATE,SUPPORTED,heic-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.027,42924,1,"Pillow, Qt",,PASSED
-HEIC,GIF_SEPARATE,SUPPORTED,heic-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.003,1233,1,"Pillow, Qt",,PASSED
+HEIC,GIF_SEPARATE,SUPPORTED,heic-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.004,1233,1,"Pillow, Qt",,PASSED
 HEIC,BMP,SUPPORTED,heic-exif-rotated,one BMP file per page for the picture,"1 BMP file(s), 640x400",OK,PASSED,,0.013,768054,1,"Pillow, Qt",,PASSED
-HEIC,BMP,SUPPORTED,heic-hires,one BMP file per page for the picture,"1 BMP file(s), 3200x2000",OK,PASSED,,0.103,19200054,1,"Pillow, Qt",,PASSED
+HEIC,BMP,SUPPORTED,heic-hires,one BMP file per page for the picture,"1 BMP file(s), 3200x2000",OK,PASSED,,0.1,19200054,1,"Pillow, Qt",,PASSED
 HEIC,BMP,SUPPORTED,heic-landscape,"one BMP file per page for the picture, transparency on white","1 BMP file(s), 640x400",OK,PASSED,,0.011,768054,1,"Pillow, Qt",,PASSED
 HEIC,BMP,SUPPORTED,heic-portrait,one BMP file per page for the picture,"1 BMP file(s), 360x540",OK,PASSED,,0.009,583254,1,"Pillow, Qt",,PASSED
 HEIC,BMP,SUPPORTED,heic-tiny,one BMP file per page for the picture,"1 BMP file(s), 24x16",OK,PASSED,,0.001,1206,1,"Pillow, Qt",,PASSED
@@ -56,42 +56,42 @@ HEIC,IPYNB,UNSUPPORTED_BY_DESIGN,heic-portrait,not offered,Papyr never writes no
 HEIC,IPYNB,UNSUPPORTED_BY_DESIGN,heic-tiny,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 HEIF,PDF,SUPPORTED,heif-hires,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.123,282514,1,"PDFium, pypdf",,PASSED
 HEIF,PDF,SUPPORTED,heif-landscape,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.012,32515,1,"PDFium, pypdf",,PASSED
-HEIF,PDF,SUPPORTED,heif-portrait,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 595x842 pt",OK,PASSED,,0.009,26559,1,"PDFium, pypdf",,PASSED
+HEIF,PDF,SUPPORTED,heif-portrait,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 595x842 pt",OK,PASSED,,0.01,26559,1,"PDFium, pypdf",,PASSED
 HEIF,PDF,SUPPORTED,heif-tiny,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.001,1301,1,"PDFium, pypdf",,PASSED
 HEIF,JPEG,SUPPORTED,heif-hires,one JPEG file per page for the picture,"1 JPEG file(s), 3200x2000",OK,PASSED,,0.122,260840,1,"Pillow, Qt",,PASSED
-HEIF,JPEG,SUPPORTED,heif-landscape,"one JPEG file per page for the picture, transparency on white","1 JPEG file(s), 640x400",OK,PASSED,,0.011,28061,1,"Pillow, Qt",,PASSED
-HEIF,JPEG,SUPPORTED,heif-portrait,one JPEG file per page for the picture,"1 JPEG file(s), 360x540",OK,PASSED,,0.009,22495,1,"Pillow, Qt",,PASSED
+HEIF,JPEG,SUPPORTED,heif-landscape,"one JPEG file per page for the picture, transparency on white","1 JPEG file(s), 640x400",OK,PASSED,,0.012,28061,1,"Pillow, Qt",,PASSED
+HEIF,JPEG,SUPPORTED,heif-portrait,one JPEG file per page for the picture,"1 JPEG file(s), 360x540",OK,PASSED,,0.01,22495,1,"Pillow, Qt",,PASSED
 HEIF,JPEG,SUPPORTED,heif-tiny,one JPEG file per page for the picture,"1 JPEG file(s), 24x16",OK,PASSED,,0.001,499,1,"Pillow, Qt",,PASSED
-HEIF,PNG,SUPPORTED,heif-hires,one PNG file per page for the picture,"1 PNG file(s), 3200x2000",OK,PASSED,,0.155,169787,1,"Pillow, Qt",,PASSED
-HEIF,PNG,SUPPORTED,heif-landscape,"one PNG file per page for the picture, transparency kept","1 PNG file(s), 640x400",OK,PASSED,,0.017,56271,1,"Pillow, Qt",,PASSED
+HEIF,PNG,SUPPORTED,heif-hires,one PNG file per page for the picture,"1 PNG file(s), 3200x2000",OK,PASSED,,0.152,169787,1,"Pillow, Qt",,PASSED
+HEIF,PNG,SUPPORTED,heif-landscape,"one PNG file per page for the picture, transparency kept","1 PNG file(s), 640x400",OK,PASSED,,0.018,56271,1,"Pillow, Qt",,PASSED
 HEIF,PNG,SUPPORTED,heif-portrait,one PNG file per page for the picture,"1 PNG file(s), 360x540",OK,PASSED,,0.014,43655,1,"Pillow, Qt",,PASSED
 HEIF,PNG,SUPPORTED,heif-tiny,one PNG file per page for the picture,"1 PNG file(s), 24x16",OK,PASSED,,0.001,620,1,"Pillow, Qt",,PASSED
-HEIF,HEIC,SUPPORTED,heif-hires,one HEIC file per page for the picture,"1 HEIC file(s), 3200x2000",OK,PASSED,,0.525,292376,1,"Pillow, Qt",,PASSED
-HEIF,HEIC,SUPPORTED,heif-landscape,"one HEIC file per page for the picture, transparency kept","1 HEIC file(s), 640x400",OK,PASSED,,0.086,44661,1,"Pillow, Qt",,PASSED
+HEIF,HEIC,SUPPORTED,heif-hires,one HEIC file per page for the picture,"1 HEIC file(s), 3200x2000",OK,PASSED,,0.567,292376,1,"Pillow, Qt",,PASSED
+HEIF,HEIC,SUPPORTED,heif-landscape,"one HEIC file per page for the picture, transparency kept","1 HEIC file(s), 640x400",OK,PASSED,,0.087,44661,1,"Pillow, Qt",,PASSED
 HEIF,HEIC,SUPPORTED,heif-portrait,one HEIC file per page for the picture,"1 HEIC file(s), 360x540",OK,PASSED,,0.084,37629,1,"Pillow, Qt",,PASSED
 HEIF,HEIC,SUPPORTED,heif-tiny,one HEIC file per page for the picture,"1 HEIC file(s), 24x16",OK,PASSED,,0.007,1068,1,"Pillow, Qt",,PASSED
-HEIF,WEBP,SUPPORTED,heif-hires,one WebP file per page for the picture,"1 WebP file(s), 3200x2000",OK,PASSED,,0.274,76356,1,"Pillow, Qt",,PASSED
-HEIF,WEBP,SUPPORTED,heif-landscape,"one WebP file per page for the picture, transparency kept","1 WebP file(s), 640x400",OK,PASSED,,0.02,10430,1,"Pillow, Qt",,PASSED
+HEIF,WEBP,SUPPORTED,heif-hires,one WebP file per page for the picture,"1 WebP file(s), 3200x2000",OK,PASSED,,0.268,76356,1,"Pillow, Qt",,PASSED
+HEIF,WEBP,SUPPORTED,heif-landscape,"one WebP file per page for the picture, transparency kept","1 WebP file(s), 640x400",OK,PASSED,,0.021,10430,1,"Pillow, Qt",,PASSED
 HEIF,WEBP,SUPPORTED,heif-portrait,one WebP file per page for the picture,"1 WebP file(s), 360x540",OK,PASSED,,0.016,9060,1,"Pillow, Qt",,PASSED
 HEIF,WEBP,SUPPORTED,heif-tiny,one WebP file per page for the picture,"1 WebP file(s), 24x16",OK,PASSED,,0.001,202,1,"Pillow, Qt",,PASSED
-HEIF,AVIF,SUPPORTED,heif-hires,one AVIF file per page for the picture,"1 AVIF file(s), 3200x2000",OK,PASSED,,0.212,94217,1,"Pillow, sips",,PASSED
+HEIF,AVIF,SUPPORTED,heif-hires,one AVIF file per page for the picture,"1 AVIF file(s), 3200x2000",OK,PASSED,,0.238,94217,1,"Pillow, sips",,PASSED
 HEIF,AVIF,SUPPORTED,heif-landscape,"one AVIF file per page for the picture, transparency kept","1 AVIF file(s), 640x400",OK,PASSED,,0.03,13426,1,"Pillow, sips",,PASSED
 HEIF,AVIF,SUPPORTED,heif-portrait,one AVIF file per page for the picture,"1 AVIF file(s), 360x540",OK,PASSED,,0.025,10018,1,"Pillow, sips",,PASSED
 HEIF,AVIF,SUPPORTED,heif-tiny,one AVIF file per page for the picture,"1 AVIF file(s), 24x16",OK,PASSED,,0.002,427,1,"Pillow, sips",,PASSED
-HEIF,TIFF,SUPPORTED,heif-hires,one TIFF file per page for the picture,"1 TIFF file(s), 3200x2000",OK,PASSED,,0.124,544696,1,"Pillow, Qt",,PASSED
+HEIF,TIFF,SUPPORTED,heif-hires,one TIFF file per page for the picture,"1 TIFF file(s), 3200x2000",OK,PASSED,,0.123,544696,1,"Pillow, Qt",,PASSED
 HEIF,TIFF,SUPPORTED,heif-landscape,"one TIFF file per page for the picture, transparency kept","1 TIFF file(s), 640x400",OK,PASSED,,0.013,101272,1,"Pillow, Qt",,PASSED
 HEIF,TIFF,SUPPORTED,heif-portrait,one TIFF file per page for the picture,"1 TIFF file(s), 360x540",OK,PASSED,,0.011,93706,1,"Pillow, Qt",,PASSED
 HEIF,TIFF,SUPPORTED,heif-tiny,one TIFF file per page for the picture,"1 TIFF file(s), 24x16",OK,PASSED,,0.001,1354,1,"Pillow, Qt",,PASSED
-HEIF,GIF,SUPPORTED,heif-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.254,268781,1,"Pillow, Qt",,PASSED
-HEIF,GIF,SUPPORTED,heif-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.029,44723,1,"Pillow, Qt",,PASSED
-HEIF,GIF,SUPPORTED,heif-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.027,42944,1,"Pillow, Qt",,PASSED
-HEIF,GIF,SUPPORTED,heif-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.004,1233,1,"Pillow, Qt",,PASSED
-HEIF,GIF_SEPARATE,SUPPORTED,heif-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.253,268781,1,"Pillow, Qt",,PASSED
-HEIF,GIF_SEPARATE,SUPPORTED,heif-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.029,44723,1,"Pillow, Qt",,PASSED
-HEIF,GIF_SEPARATE,SUPPORTED,heif-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.027,42944,1,"Pillow, Qt",,PASSED
-HEIF,GIF_SEPARATE,SUPPORTED,heif-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.003,1233,1,"Pillow, Qt",,PASSED
-HEIF,BMP,SUPPORTED,heif-hires,one BMP file per page for the picture,"1 BMP file(s), 3200x2000",OK,PASSED,,0.104,19200054,1,"Pillow, Qt",,PASSED
-HEIF,BMP,SUPPORTED,heif-landscape,"one BMP file per page for the picture, transparency on white","1 BMP file(s), 640x400",OK,PASSED,,0.012,768054,1,"Pillow, Qt",,PASSED
+HEIF,GIF,SUPPORTED,heif-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.255,268781,1,"Pillow, Qt",,PASSED
+HEIF,GIF,SUPPORTED,heif-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.03,44723,1,"Pillow, Qt",,PASSED
+HEIF,GIF,SUPPORTED,heif-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.028,42944,1,"Pillow, Qt",,PASSED
+HEIF,GIF,SUPPORTED,heif-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.003,1233,1,"Pillow, Qt",,PASSED
+HEIF,GIF_SEPARATE,SUPPORTED,heif-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.27,268781,1,"Pillow, Qt",,PASSED
+HEIF,GIF_SEPARATE,SUPPORTED,heif-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.035,44723,1,"Pillow, Qt",,PASSED
+HEIF,GIF_SEPARATE,SUPPORTED,heif-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.032,42944,1,"Pillow, Qt",,PASSED
+HEIF,GIF_SEPARATE,SUPPORTED,heif-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.004,1233,1,"Pillow, Qt",,PASSED
+HEIF,BMP,SUPPORTED,heif-hires,one BMP file per page for the picture,"1 BMP file(s), 3200x2000",OK,PASSED,,0.1,19200054,1,"Pillow, Qt",,PASSED
+HEIF,BMP,SUPPORTED,heif-landscape,"one BMP file per page for the picture, transparency on white","1 BMP file(s), 640x400",OK,PASSED,,0.01,768054,1,"Pillow, Qt",,PASSED
 HEIF,BMP,SUPPORTED,heif-portrait,one BMP file per page for the picture,"1 BMP file(s), 360x540",OK,PASSED,,0.009,583254,1,"Pillow, Qt",,PASSED
 HEIF,BMP,SUPPORTED,heif-tiny,one BMP file per page for the picture,"1 BMP file(s), 24x16",OK,PASSED,,0.001,1206,1,"Pillow, Qt",,PASSED
 HEIF,IPYNB,UNSUPPORTED_BY_DESIGN,heif-hires,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
@@ -100,62 +100,62 @@ HEIF,IPYNB,UNSUPPORTED_BY_DESIGN,heif-portrait,not offered,Papyr never writes no
 HEIF,IPYNB,UNSUPPORTED_BY_DESIGN,heif-tiny,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 JPEG,PDF,SUPPORTED,jpeg-alias-extension,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.003,11951,1,"PDFium, pypdf",,PASSED
 JPEG,PDF,SUPPORTED,jpeg-exif-rotated,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.003,33875,1,"PDFium, pypdf",,PASSED
-JPEG,PDF,SUPPORTED,jpeg-hires,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.035,285078,1,"PDFium, pypdf",,PASSED
-JPEG,PDF,SUPPORTED,jpeg-landscape,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.003,33446,1,"PDFium, pypdf",,PASSED
+JPEG,PDF,SUPPORTED,jpeg-hires,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.036,285078,1,"PDFium, pypdf",,PASSED
+JPEG,PDF,SUPPORTED,jpeg-landscape,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.002,33446,1,"PDFium, pypdf",,PASSED
 JPEG,PDF,SUPPORTED,jpeg-portrait,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 595x842 pt",OK,PASSED,,0.002,26457,1,"PDFium, pypdf",,PASSED
 JPEG,PDF,SUPPORTED,jpeg-tiny,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.001,1271,1,"PDFium, pypdf",,PASSED
 JPEG,JPEG,SUPPORTED,jpeg-alias-extension,one JPEG file per page for the picture,"1 JPEG file(s), 300x200",OK,PASSED,,0.001,10416,1,"Pillow, Qt",,PASSED
 JPEG,JPEG,SUPPORTED,jpeg-exif-rotated,one JPEG file per page for the picture,"1 JPEG file(s), 640x400",OK,PASSED,,0.002,30918,1,"Pillow, Qt",,PASSED
-JPEG,JPEG,SUPPORTED,jpeg-hires,one JPEG file per page for the picture,"1 JPEG file(s), 3200x2000",OK,PASSED,,0.034,270498,1,"Pillow, Qt",,PASSED
+JPEG,JPEG,SUPPORTED,jpeg-hires,one JPEG file per page for the picture,"1 JPEG file(s), 3200x2000",OK,PASSED,,0.035,270498,1,"Pillow, Qt",,PASSED
 JPEG,JPEG,SUPPORTED,jpeg-landscape,one JPEG file per page for the picture,"1 JPEG file(s), 640x400",OK,PASSED,,0.002,30778,1,"Pillow, Qt",,PASSED
-JPEG,JPEG,SUPPORTED,jpeg-portrait,one JPEG file per page for the picture,"1 JPEG file(s), 360x540",OK,PASSED,,0.002,23885,1,"Pillow, Qt",,PASSED
+JPEG,JPEG,SUPPORTED,jpeg-portrait,one JPEG file per page for the picture,"1 JPEG file(s), 360x540",OK,PASSED,,0.003,23885,1,"Pillow, Qt",,PASSED
 JPEG,JPEG,SUPPORTED,jpeg-tiny,one JPEG file per page for the picture,"1 JPEG file(s), 24x16",OK,PASSED,,0.001,479,1,"Pillow, Qt",,PASSED
 JPEG,PNG,SUPPORTED,jpeg-alias-extension,one PNG file per page for the picture,"1 PNG file(s), 300x200",OK,PASSED,,0.004,50159,1,"Pillow, Qt",,PASSED
-JPEG,PNG,SUPPORTED,jpeg-exif-rotated,one PNG file per page for the picture,"1 PNG file(s), 640x400",OK,PASSED,,0.011,139387,1,"Pillow, Qt",,PASSED
-JPEG,PNG,SUPPORTED,jpeg-hires,one PNG file per page for the picture,"1 PNG file(s), 3200x2000",OK,PASSED,,0.079,597344,1,"Pillow, Qt",,PASSED
+JPEG,PNG,SUPPORTED,jpeg-exif-rotated,one PNG file per page for the picture,"1 PNG file(s), 640x400",OK,PASSED,,0.012,139387,1,"Pillow, Qt",,PASSED
+JPEG,PNG,SUPPORTED,jpeg-hires,one PNG file per page for the picture,"1 PNG file(s), 3200x2000",OK,PASSED,,0.081,597344,1,"Pillow, Qt",,PASSED
 JPEG,PNG,SUPPORTED,jpeg-landscape,one PNG file per page for the picture,"1 PNG file(s), 640x400",OK,PASSED,,0.011,136907,1,"Pillow, Qt",,PASSED
 JPEG,PNG,SUPPORTED,jpeg-portrait,one PNG file per page for the picture,"1 PNG file(s), 360x540",OK,PASSED,,0.009,110482,1,"Pillow, Qt",,PASSED
 JPEG,PNG,SUPPORTED,jpeg-tiny,one PNG file per page for the picture,"1 PNG file(s), 24x16",OK,PASSED,,0.001,770,1,"Pillow, Qt",,PASSED
 JPEG,HEIC,SUPPORTED,jpeg-alias-extension,one HEIC file per page for the picture,"1 HEIC file(s), 300x200",OK,PASSED,,0.036,19996,1,"Pillow, Qt",,PASSED
 JPEG,HEIC,SUPPORTED,jpeg-exif-rotated,one HEIC file per page for the picture,"1 HEIC file(s), 640x400",OK,PASSED,,0.075,65161,1,"Pillow, Qt",,PASSED
-JPEG,HEIC,SUPPORTED,jpeg-hires,one HEIC file per page for the picture,"1 HEIC file(s), 3200x2000",OK,PASSED,,0.356,343881,1,"Pillow, Qt",,PASSED
+JPEG,HEIC,SUPPORTED,jpeg-hires,one HEIC file per page for the picture,"1 HEIC file(s), 3200x2000",OK,PASSED,,0.359,343881,1,"Pillow, Qt",,PASSED
 JPEG,HEIC,SUPPORTED,jpeg-landscape,one HEIC file per page for the picture,"1 HEIC file(s), 640x400",OK,PASSED,,0.078,64125,1,"Pillow, Qt",,PASSED
-JPEG,HEIC,SUPPORTED,jpeg-portrait,one HEIC file per page for the picture,"1 HEIC file(s), 360x540",OK,PASSED,,0.074,51564,1,"Pillow, Qt",,PASSED
+JPEG,HEIC,SUPPORTED,jpeg-portrait,one HEIC file per page for the picture,"1 HEIC file(s), 360x540",OK,PASSED,,0.075,51564,1,"Pillow, Qt",,PASSED
 JPEG,HEIC,SUPPORTED,jpeg-tiny,one HEIC file per page for the picture,"1 HEIC file(s), 24x16",OK,PASSED,,0.004,827,1,"Pillow, Qt",,PASSED
 JPEG,WEBP,SUPPORTED,jpeg-alias-extension,one WebP file per page for the picture,"1 WebP file(s), 300x200",OK,PASSED,,0.004,4940,1,"Pillow, Qt",,PASSED
 JPEG,WEBP,SUPPORTED,jpeg-exif-rotated,one WebP file per page for the picture,"1 WebP file(s), 640x400",OK,PASSED,,0.01,12172,1,"Pillow, Qt",,PASSED
-JPEG,WEBP,SUPPORTED,jpeg-hires,one WebP file per page for the picture,"1 WebP file(s), 3200x2000",OK,PASSED,,0.186,85330,1,"Pillow, Qt",,PASSED
-JPEG,WEBP,SUPPORTED,jpeg-landscape,one WebP file per page for the picture,"1 WebP file(s), 640x400",OK,PASSED,,0.011,12560,1,"Pillow, Qt",,PASSED
-JPEG,WEBP,SUPPORTED,jpeg-portrait,one WebP file per page for the picture,"1 WebP file(s), 360x540",OK,PASSED,,0.008,10100,1,"Pillow, Qt",,PASSED
+JPEG,WEBP,SUPPORTED,jpeg-hires,one WebP file per page for the picture,"1 WebP file(s), 3200x2000",OK,PASSED,,0.184,85330,1,"Pillow, Qt",,PASSED
+JPEG,WEBP,SUPPORTED,jpeg-landscape,one WebP file per page for the picture,"1 WebP file(s), 640x400",OK,PASSED,,0.01,12560,1,"Pillow, Qt",,PASSED
+JPEG,WEBP,SUPPORTED,jpeg-portrait,one WebP file per page for the picture,"1 WebP file(s), 360x540",OK,PASSED,,0.009,10100,1,"Pillow, Qt",,PASSED
 JPEG,WEBP,SUPPORTED,jpeg-tiny,one WebP file per page for the picture,"1 WebP file(s), 24x16",OK,PASSED,,0.001,196,1,"Pillow, Qt",,PASSED
-JPEG,AVIF,SUPPORTED,jpeg-alias-extension,one AVIF file per page for the picture,"1 AVIF file(s), 300x200",OK,PASSED,,0.01,5926,1,"Pillow, sips",,PASSED
-JPEG,AVIF,SUPPORTED,jpeg-exif-rotated,one AVIF file per page for the picture,"1 AVIF file(s), 640x400",OK,PASSED,,0.02,15019,1,"Pillow, sips",,PASSED
-JPEG,AVIF,SUPPORTED,jpeg-hires,one AVIF file per page for the picture,"1 AVIF file(s), 3200x2000",OK,PASSED,,0.147,124445,1,"Pillow, sips",,PASSED
+JPEG,AVIF,SUPPORTED,jpeg-alias-extension,one AVIF file per page for the picture,"1 AVIF file(s), 300x200",OK,PASSED,,0.011,5926,1,"Pillow, sips",,PASSED
+JPEG,AVIF,SUPPORTED,jpeg-exif-rotated,one AVIF file per page for the picture,"1 AVIF file(s), 640x400",OK,PASSED,,0.019,15019,1,"Pillow, sips",,PASSED
+JPEG,AVIF,SUPPORTED,jpeg-hires,one AVIF file per page for the picture,"1 AVIF file(s), 3200x2000",OK,PASSED,,0.146,124445,1,"Pillow, sips",,PASSED
 JPEG,AVIF,SUPPORTED,jpeg-landscape,one AVIF file per page for the picture,"1 AVIF file(s), 640x400",OK,PASSED,,0.019,15360,1,"Pillow, sips",,PASSED
 JPEG,AVIF,SUPPORTED,jpeg-portrait,one AVIF file per page for the picture,"1 AVIF file(s), 360x540",OK,PASSED,,0.019,12167,1,"Pillow, sips",,PASSED
 JPEG,AVIF,SUPPORTED,jpeg-tiny,one AVIF file per page for the picture,"1 AVIF file(s), 24x16",OK,PASSED,,0.001,442,1,"Pillow, sips",,PASSED
-JPEG,TIFF,SUPPORTED,jpeg-alias-extension,one TIFF file per page for the picture,"1 TIFF file(s), 300x200",OK,PASSED,,0.003,84274,1,"Pillow, Qt",,PASSED
-JPEG,TIFF,SUPPORTED,jpeg-exif-rotated,one TIFF file per page for the picture,"1 TIFF file(s), 640x400",OK,PASSED,,0.006,192240,1,"Pillow, Qt",,PASSED
-JPEG,TIFF,SUPPORTED,jpeg-hires,one TIFF file per page for the picture,"1 TIFF file(s), 3200x2000",OK,PASSED,,0.046,944708,1,"Pillow, Qt",,PASSED
-JPEG,TIFF,SUPPORTED,jpeg-landscape,one TIFF file per page for the picture,"1 TIFF file(s), 640x400",OK,PASSED,,0.006,189454,1,"Pillow, Qt",,PASSED
+JPEG,TIFF,SUPPORTED,jpeg-alias-extension,one TIFF file per page for the picture,"1 TIFF file(s), 300x200",OK,PASSED,,0.002,84274,1,"Pillow, Qt",,PASSED
+JPEG,TIFF,SUPPORTED,jpeg-exif-rotated,one TIFF file per page for the picture,"1 TIFF file(s), 640x400",OK,PASSED,,0.005,192240,1,"Pillow, Qt",,PASSED
+JPEG,TIFF,SUPPORTED,jpeg-hires,one TIFF file per page for the picture,"1 TIFF file(s), 3200x2000",OK,PASSED,,0.048,944708,1,"Pillow, Qt",,PASSED
+JPEG,TIFF,SUPPORTED,jpeg-landscape,one TIFF file per page for the picture,"1 TIFF file(s), 640x400",OK,PASSED,,0.005,189454,1,"Pillow, Qt",,PASSED
 JPEG,TIFF,SUPPORTED,jpeg-portrait,one TIFF file per page for the picture,"1 TIFF file(s), 360x540",OK,PASSED,,0.005,173578,1,"Pillow, Qt",,PASSED
 JPEG,TIFF,SUPPORTED,jpeg-tiny,one TIFF file per page for the picture,"1 TIFF file(s), 24x16",OK,PASSED,,0.001,1230,1,"Pillow, Qt",,PASSED
-JPEG,GIF,SUPPORTED,jpeg-alias-extension,one GIF file per page for the picture,"1 GIF file(s), 300x200",OK,PASSED,,0.018,21688,1,"Pillow, Qt",,PASSED
-JPEG,GIF,SUPPORTED,jpeg-exif-rotated,one GIF file per page for the picture,"1 GIF file(s), 640x400",OK,PASSED,,0.03,54781,1,"Pillow, Qt",,PASSED
-JPEG,GIF,SUPPORTED,jpeg-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.206,362043,1,"Pillow, Qt",,PASSED
-JPEG,GIF,SUPPORTED,jpeg-landscape,one GIF file per page for the picture,"1 GIF file(s), 640x400",OK,PASSED,,0.032,54691,1,"Pillow, Qt",,PASSED
+JPEG,GIF,SUPPORTED,jpeg-alias-extension,one GIF file per page for the picture,"1 GIF file(s), 300x200",OK,PASSED,,0.017,21688,1,"Pillow, Qt",,PASSED
+JPEG,GIF,SUPPORTED,jpeg-exif-rotated,one GIF file per page for the picture,"1 GIF file(s), 640x400",OK,PASSED,,0.031,54781,1,"Pillow, Qt",,PASSED
+JPEG,GIF,SUPPORTED,jpeg-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.202,362043,1,"Pillow, Qt",,PASSED
+JPEG,GIF,SUPPORTED,jpeg-landscape,one GIF file per page for the picture,"1 GIF file(s), 640x400",OK,PASSED,,0.03,54691,1,"Pillow, Qt",,PASSED
 JPEG,GIF,SUPPORTED,jpeg-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.027,49007,1,"Pillow, Qt",,PASSED
-JPEG,GIF,SUPPORTED,jpeg-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.004,1238,1,"Pillow, Qt",,PASSED
-JPEG,GIF_SEPARATE,SUPPORTED,jpeg-alias-extension,one GIF file per page for the picture,"1 GIF file(s), 300x200",OK,PASSED,,0.016,21688,1,"Pillow, Qt",,PASSED
+JPEG,GIF,SUPPORTED,jpeg-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.003,1238,1,"Pillow, Qt",,PASSED
+JPEG,GIF_SEPARATE,SUPPORTED,jpeg-alias-extension,one GIF file per page for the picture,"1 GIF file(s), 300x200",OK,PASSED,,0.017,21688,1,"Pillow, Qt",,PASSED
 JPEG,GIF_SEPARATE,SUPPORTED,jpeg-exif-rotated,one GIF file per page for the picture,"1 GIF file(s), 640x400",OK,PASSED,,0.031,54781,1,"Pillow, Qt",,PASSED
-JPEG,GIF_SEPARATE,SUPPORTED,jpeg-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.196,362043,1,"Pillow, Qt",,PASSED
-JPEG,GIF_SEPARATE,SUPPORTED,jpeg-landscape,one GIF file per page for the picture,"1 GIF file(s), 640x400",OK,PASSED,,0.03,54691,1,"Pillow, Qt",,PASSED
+JPEG,GIF_SEPARATE,SUPPORTED,jpeg-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.206,362043,1,"Pillow, Qt",,PASSED
+JPEG,GIF_SEPARATE,SUPPORTED,jpeg-landscape,one GIF file per page for the picture,"1 GIF file(s), 640x400",OK,PASSED,,0.031,54691,1,"Pillow, Qt",,PASSED
 JPEG,GIF_SEPARATE,SUPPORTED,jpeg-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.027,49007,1,"Pillow, Qt",,PASSED
 JPEG,GIF_SEPARATE,SUPPORTED,jpeg-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.003,1238,1,"Pillow, Qt",,PASSED
 JPEG,BMP,SUPPORTED,jpeg-alias-extension,one BMP file per page for the picture,"1 BMP file(s), 300x200",OK,PASSED,,0.001,180054,1,"Pillow, Qt",,PASSED
-JPEG,BMP,SUPPORTED,jpeg-exif-rotated,one BMP file per page for the picture,"1 BMP file(s), 640x400",OK,PASSED,,0.001,768054,1,"Pillow, Qt",,PASSED
-JPEG,BMP,SUPPORTED,jpeg-hires,one BMP file per page for the picture,"1 BMP file(s), 3200x2000",OK,PASSED,,0.013,19200054,1,"Pillow, Qt",,PASSED
-JPEG,BMP,SUPPORTED,jpeg-landscape,one BMP file per page for the picture,"1 BMP file(s), 640x400",OK,PASSED,,0.002,768054,1,"Pillow, Qt",,PASSED
+JPEG,BMP,SUPPORTED,jpeg-exif-rotated,one BMP file per page for the picture,"1 BMP file(s), 640x400",OK,PASSED,,0.002,768054,1,"Pillow, Qt",,PASSED
+JPEG,BMP,SUPPORTED,jpeg-hires,one BMP file per page for the picture,"1 BMP file(s), 3200x2000",OK,PASSED,,0.012,19200054,1,"Pillow, Qt",,PASSED
+JPEG,BMP,SUPPORTED,jpeg-landscape,one BMP file per page for the picture,"1 BMP file(s), 640x400",OK,PASSED,,0.001,768054,1,"Pillow, Qt",,PASSED
 JPEG,BMP,SUPPORTED,jpeg-portrait,one BMP file per page for the picture,"1 BMP file(s), 360x540",OK,PASSED,,0.001,583254,1,"Pillow, Qt",,PASSED
 JPEG,BMP,SUPPORTED,jpeg-tiny,one BMP file per page for the picture,"1 BMP file(s), 24x16",OK,PASSED,,0.001,1206,1,"Pillow, Qt",,PASSED
 JPEG,IPYNB,UNSUPPORTED_BY_DESIGN,jpeg-alias-extension,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
@@ -166,7 +166,7 @@ JPEG,IPYNB,UNSUPPORTED_BY_DESIGN,jpeg-portrait,not offered,Papyr never writes no
 JPEG,IPYNB,UNSUPPORTED_BY_DESIGN,jpeg-tiny,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 PNG,PDF,SUPPORTED,png-16bit-grayscale,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.002,5912,1,"PDFium, pypdf",,PASSED
 PNG,PDF,SUPPORTED,png-grayscale,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.004,6692,1,"PDFium, pypdf",,PASSED
-PNG,PDF,SUPPORTED,png-hires,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.076,203287,1,"PDFium, pypdf",,PASSED
+PNG,PDF,SUPPORTED,png-hires,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.075,203287,1,"PDFium, pypdf",,PASSED
 PNG,PDF,SUPPORTED,png-landscape,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.005,51832,1,"PDFium, pypdf",,PASSED
 PNG,PDF,SUPPORTED,png-portrait,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 595x842 pt",OK,PASSED,,0.004,47104,1,"PDFium, pypdf",,PASSED
 PNG,PDF,SUPPORTED,png-tiny,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.001,1460,1,"PDFium, pypdf",,PASSED
@@ -174,48 +174,48 @@ PNG,JPEG,SUPPORTED,png-16bit-grayscale,one JPEG file per page for the picture,"1
 PNG,JPEG,SUPPORTED,png-grayscale,one JPEG file per page for the picture,"1 JPEG file(s), 300x200",OK,PASSED,,0.001,5865,1,"Pillow, Qt",,PASSED
 PNG,JPEG,SUPPORTED,png-hires,one JPEG file per page for the picture,"1 JPEG file(s), 3200x2000",OK,PASSED,,0.05,276483,1,"Pillow, Qt",,PASSED
 PNG,JPEG,SUPPORTED,png-landscape,"one JPEG file per page for the picture, transparency on white","1 JPEG file(s), 640x400",OK,PASSED,,0.003,33222,1,"Pillow, Qt",,PASSED
-PNG,JPEG,SUPPORTED,png-portrait,one JPEG file per page for the picture,"1 JPEG file(s), 360x540",OK,PASSED,,0.002,25969,1,"Pillow, Qt",,PASSED
+PNG,JPEG,SUPPORTED,png-portrait,one JPEG file per page for the picture,"1 JPEG file(s), 360x540",OK,PASSED,,0.003,25969,1,"Pillow, Qt",,PASSED
 PNG,JPEG,SUPPORTED,png-tiny,one JPEG file per page for the picture,"1 JPEG file(s), 24x16",OK,PASSED,,0.001,530,1,"Pillow, Qt",,PASSED
 PNG,PNG,SUPPORTED,png-16bit-grayscale,one PNG file per page for the picture,"1 PNG file(s), 300x200",OK,PASSED,,0.001,3471,1,"Pillow, Qt",,PASSED
 PNG,PNG,SUPPORTED,png-grayscale,one PNG file per page for the picture,"1 PNG file(s), 300x200",OK,PASSED,,0.002,4247,1,"Pillow, Qt",,PASSED
-PNG,PNG,SUPPORTED,png-hires,one PNG file per page for the picture,"1 PNG file(s), 3200x2000",OK,PASSED,,0.066,79215,1,"Pillow, Qt",,PASSED
+PNG,PNG,SUPPORTED,png-hires,one PNG file per page for the picture,"1 PNG file(s), 3200x2000",OK,PASSED,,0.064,79215,1,"Pillow, Qt",,PASSED
 PNG,PNG,SUPPORTED,png-landscape,"one PNG file per page for the picture, transparency kept","1 PNG file(s), 640x400",OK,PASSED,,0.004,14414,1,"Pillow, Qt",,PASSED
 PNG,PNG,SUPPORTED,png-portrait,one PNG file per page for the picture,"1 PNG file(s), 360x540",OK,PASSED,,0.003,11230,1,"Pillow, Qt",,PASSED
 PNG,PNG,SUPPORTED,png-tiny,one PNG file per page for the picture,"1 PNG file(s), 24x16",OK,PASSED,,0.001,166,1,"Pillow, Qt",,PASSED
 PNG,HEIC,SUPPORTED,png-16bit-grayscale,one HEIC file per page for the picture,"1 HEIC file(s), 300x200",OK,PASSED,,0.027,10870,1,"Pillow, Qt",,PASSED
 PNG,HEIC,SUPPORTED,png-grayscale,one HEIC file per page for the picture,"1 HEIC file(s), 300x200",OK,PASSED,,0.028,11259,1,"Pillow, Qt",,PASSED
-PNG,HEIC,SUPPORTED,png-hires,one HEIC file per page for the picture,"1 HEIC file(s), 3200x2000",OK,PASSED,,0.446,295478,1,"Pillow, Qt",,PASSED
+PNG,HEIC,SUPPORTED,png-hires,one HEIC file per page for the picture,"1 HEIC file(s), 3200x2000",OK,PASSED,,0.457,295478,1,"Pillow, Qt",,PASSED
 PNG,HEIC,SUPPORTED,png-landscape,"one HEIC file per page for the picture, transparency kept","1 HEIC file(s), 640x400",OK,PASSED,,0.081,46897,1,"Pillow, Qt",,PASSED
-PNG,HEIC,SUPPORTED,png-portrait,one HEIC file per page for the picture,"1 HEIC file(s), 360x540",OK,PASSED,,0.078,39364,1,"Pillow, Qt",,PASSED
+PNG,HEIC,SUPPORTED,png-portrait,one HEIC file per page for the picture,"1 HEIC file(s), 360x540",OK,PASSED,,0.077,39364,1,"Pillow, Qt",,PASSED
 PNG,HEIC,SUPPORTED,png-tiny,one HEIC file per page for the picture,"1 HEIC file(s), 24x16",OK,PASSED,,0.007,1047,1,"Pillow, Qt",,PASSED
 PNG,WEBP,SUPPORTED,png-16bit-grayscale,one WebP file per page for the picture,"1 WebP file(s), 300x200",OK,PASSED,,0.003,2410,1,"Pillow, Qt",,PASSED
 PNG,WEBP,SUPPORTED,png-grayscale,one WebP file per page for the picture,"1 WebP file(s), 300x200",OK,PASSED,,0.003,3058,1,"Pillow, Qt",,PASSED
-PNG,WEBP,SUPPORTED,png-hires,one WebP file per page for the picture,"1 WebP file(s), 3200x2000",OK,PASSED,,0.19,70566,1,"Pillow, Qt",,PASSED
+PNG,WEBP,SUPPORTED,png-hires,one WebP file per page for the picture,"1 WebP file(s), 3200x2000",OK,PASSED,,0.192,70566,1,"Pillow, Qt",,PASSED
 PNG,WEBP,SUPPORTED,png-landscape,"one WebP file per page for the picture, transparency kept","1 WebP file(s), 640x400",OK,PASSED,,0.012,10770,1,"Pillow, Qt",,PASSED
 PNG,WEBP,SUPPORTED,png-portrait,one WebP file per page for the picture,"1 WebP file(s), 360x540",OK,PASSED,,0.008,9238,1,"Pillow, Qt",,PASSED
 PNG,WEBP,SUPPORTED,png-tiny,one WebP file per page for the picture,"1 WebP file(s), 24x16",OK,PASSED,,0.001,202,1,"Pillow, Qt",,PASSED
 PNG,AVIF,SUPPORTED,png-16bit-grayscale,one AVIF file per page for the picture,"1 AVIF file(s), 300x200",OK,PASSED,,0.008,3317,1,"Pillow, sips",,PASSED
-PNG,AVIF,SUPPORTED,png-grayscale,one AVIF file per page for the picture,"1 AVIF file(s), 300x200",OK,PASSED,,0.009,3939,1,"Pillow, sips",,PASSED
-PNG,AVIF,SUPPORTED,png-hires,one AVIF file per page for the picture,"1 AVIF file(s), 3200x2000",OK,PASSED,,0.145,80784,1,"Pillow, sips",,PASSED
-PNG,AVIF,SUPPORTED,png-landscape,"one AVIF file per page for the picture, transparency kept","1 AVIF file(s), 640x400",OK,PASSED,,0.022,13174,1,"Pillow, sips",,PASSED
+PNG,AVIF,SUPPORTED,png-grayscale,one AVIF file per page for the picture,"1 AVIF file(s), 300x200",OK,PASSED,,0.008,3939,1,"Pillow, sips",,PASSED
+PNG,AVIF,SUPPORTED,png-hires,one AVIF file per page for the picture,"1 AVIF file(s), 3200x2000",OK,PASSED,,0.14,80784,1,"Pillow, sips",,PASSED
+PNG,AVIF,SUPPORTED,png-landscape,"one AVIF file per page for the picture, transparency kept","1 AVIF file(s), 640x400",OK,PASSED,,0.024,13174,1,"Pillow, sips",,PASSED
 PNG,AVIF,SUPPORTED,png-portrait,one AVIF file per page for the picture,"1 AVIF file(s), 360x540",OK,PASSED,,0.017,9767,1,"Pillow, sips",,PASSED
 PNG,AVIF,SUPPORTED,png-tiny,one AVIF file per page for the picture,"1 AVIF file(s), 24x16",OK,PASSED,,0.002,433,1,"Pillow, sips",,PASSED
 PNG,TIFF,SUPPORTED,png-16bit-grayscale,one TIFF file per page for the picture,"1 TIFF file(s), 300x200",OK,PASSED,,0.001,5460,1,"Pillow, Qt",,PASSED
-PNG,TIFF,SUPPORTED,png-grayscale,one TIFF file per page for the picture,"1 TIFF file(s), 300x200",OK,PASSED,,0.001,6232,1,"Pillow, Qt",,PASSED
+PNG,TIFF,SUPPORTED,png-grayscale,one TIFF file per page for the picture,"1 TIFF file(s), 300x200",OK,PASSED,,0.002,6232,1,"Pillow, Qt",,PASSED
 PNG,TIFF,SUPPORTED,png-hires,one TIFF file per page for the picture,"1 TIFF file(s), 3200x2000",OK,PASSED,,0.044,409836,1,"Pillow, Qt",,PASSED
 PNG,TIFF,SUPPORTED,png-landscape,"one TIFF file per page for the picture, transparency kept","1 TIFF file(s), 640x400",OK,PASSED,,0.004,61954,1,"Pillow, Qt",,PASSED
 PNG,TIFF,SUPPORTED,png-portrait,one TIFF file per page for the picture,"1 TIFF file(s), 360x540",OK,PASSED,,0.003,51106,1,"Pillow, Qt",,PASSED
 PNG,TIFF,SUPPORTED,png-tiny,one TIFF file per page for the picture,"1 TIFF file(s), 24x16",OK,PASSED,,0.001,980,1,"Pillow, Qt",,PASSED
 PNG,GIF,SUPPORTED,png-16bit-grayscale,one GIF file per page for the picture,"1 GIF file(s), 300x200",OK,PASSED,,0.002,19542,1,"Pillow, Qt",,PASSED
-PNG,GIF,SUPPORTED,png-grayscale,one GIF file per page for the picture,"1 GIF file(s), 300x200",OK,PASSED,,0.002,20313,1,"Pillow, Qt",,PASSED
-PNG,GIF,SUPPORTED,png-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.209,234014,1,"Pillow, Qt",,PASSED
+PNG,GIF,SUPPORTED,png-grayscale,one GIF file per page for the picture,"1 GIF file(s), 300x200",OK,PASSED,,0.004,20313,1,"Pillow, Qt",,PASSED
+PNG,GIF,SUPPORTED,png-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.211,234014,1,"Pillow, Qt",,PASSED
 PNG,GIF,SUPPORTED,png-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.027,38639,1,"Pillow, Qt",,PASSED
-PNG,GIF,SUPPORTED,png-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.025,37630,1,"Pillow, Qt",,PASSED
+PNG,GIF,SUPPORTED,png-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.024,37630,1,"Pillow, Qt",,PASSED
 PNG,GIF,SUPPORTED,png-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.003,1239,1,"Pillow, Qt",,PASSED
 PNG,GIF_SEPARATE,SUPPORTED,png-16bit-grayscale,one GIF file per page for the picture,"1 GIF file(s), 300x200",OK,PASSED,,0.002,19542,1,"Pillow, Qt",,PASSED
 PNG,GIF_SEPARATE,SUPPORTED,png-grayscale,one GIF file per page for the picture,"1 GIF file(s), 300x200",OK,PASSED,,0.002,20313,1,"Pillow, Qt",,PASSED
-PNG,GIF_SEPARATE,SUPPORTED,png-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.19,234014,1,"Pillow, Qt",,PASSED
-PNG,GIF_SEPARATE,SUPPORTED,png-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.026,38639,1,"Pillow, Qt",,PASSED
+PNG,GIF_SEPARATE,SUPPORTED,png-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.189,234014,1,"Pillow, Qt",,PASSED
+PNG,GIF_SEPARATE,SUPPORTED,png-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.025,38639,1,"Pillow, Qt",,PASSED
 PNG,GIF_SEPARATE,SUPPORTED,png-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.024,37630,1,"Pillow, Qt",,PASSED
 PNG,GIF_SEPARATE,SUPPORTED,png-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.003,1239,1,"Pillow, Qt",,PASSED
 PNG,BMP,SUPPORTED,png-16bit-grayscale,one BMP file per page for the picture,"1 BMP file(s), 300x200",OK,PASSED,,0.001,61078,1,"Pillow, Qt",,PASSED
@@ -231,53 +231,53 @@ PNG,IPYNB,UNSUPPORTED_BY_DESIGN,png-landscape,not offered,Papyr never writes not
 PNG,IPYNB,UNSUPPORTED_BY_DESIGN,png-portrait,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 PNG,IPYNB,UNSUPPORTED_BY_DESIGN,png-tiny,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 WEBP,PDF,SUPPORTED,webp-animated,"one PDF with the first frame only (Every frame is off by default) as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.002,15169,1,"PDFium, pypdf",,PASSED
-WEBP,PDF,SUPPORTED,webp-hires,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.042,263240,1,"PDFium, pypdf",,PASSED
+WEBP,PDF,SUPPORTED,webp-hires,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.044,263240,1,"PDFium, pypdf",,PASSED
 WEBP,PDF,SUPPORTED,webp-landscape,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.004,33289,1,"PDFium, pypdf",,PASSED
 WEBP,PDF,SUPPORTED,webp-portrait,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 595x842 pt",OK,PASSED,,0.003,28976,1,"PDFium, pypdf",,PASSED
 WEBP,PDF,SUPPORTED,webp-tiny,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.001,1251,1,"PDFium, pypdf",,PASSED
 WEBP,JPEG,SUPPORTED,webp-animated,one JPEG file per page for the first frame only (Every frame is off by default),"1 JPEG file(s), 320x240",OK,PASSED,,0.002,12897,1,"Pillow, Qt",,PASSED
-WEBP,JPEG,SUPPORTED,webp-hires,one JPEG file per page for the picture,"1 JPEG file(s), 3200x2000",OK,PASSED,,0.039,241866,1,"Pillow, Qt",,PASSED
-WEBP,JPEG,SUPPORTED,webp-landscape,"one JPEG file per page for the picture, transparency on white","1 JPEG file(s), 640x400",OK,PASSED,,0.003,29232,1,"Pillow, Qt",,PASSED
+WEBP,JPEG,SUPPORTED,webp-hires,one JPEG file per page for the picture,"1 JPEG file(s), 3200x2000",OK,PASSED,,0.04,241866,1,"Pillow, Qt",,PASSED
+WEBP,JPEG,SUPPORTED,webp-landscape,"one JPEG file per page for the picture, transparency on white","1 JPEG file(s), 640x400",OK,PASSED,,0.004,29232,1,"Pillow, Qt",,PASSED
 WEBP,JPEG,SUPPORTED,webp-portrait,one JPEG file per page for the picture,"1 JPEG file(s), 360x540",OK,PASSED,,0.003,25445,1,"Pillow, Qt",,PASSED
 WEBP,JPEG,SUPPORTED,webp-tiny,one JPEG file per page for the picture,"1 JPEG file(s), 24x16",OK,PASSED,,0.001,453,1,"Pillow, Qt",,PASSED
-WEBP,PNG,SUPPORTED,webp-animated,one PNG file per page for the first frame only (Every frame is off by default),"1 PNG file(s), 320x240",OK,PASSED,,0.005,42893,1,"Pillow, Qt",,PASSED
-WEBP,PNG,SUPPORTED,webp-hires,one PNG file per page for the picture,"1 PNG file(s), 3200x2000",OK,PASSED,,0.072,375457,1,"Pillow, Qt",,PASSED
-WEBP,PNG,SUPPORTED,webp-landscape,"one PNG file per page for the picture, transparency kept","1 PNG file(s), 640x400",OK,PASSED,,0.01,88700,1,"Pillow, Qt",,PASSED
+WEBP,PNG,SUPPORTED,webp-animated,one PNG file per page for the first frame only (Every frame is off by default),"1 PNG file(s), 320x240",OK,PASSED,,0.004,42893,1,"Pillow, Qt",,PASSED
+WEBP,PNG,SUPPORTED,webp-hires,one PNG file per page for the picture,"1 PNG file(s), 3200x2000",OK,PASSED,,0.071,375457,1,"Pillow, Qt",,PASSED
+WEBP,PNG,SUPPORTED,webp-landscape,"one PNG file per page for the picture, transparency kept","1 PNG file(s), 640x400",OK,PASSED,,0.009,88700,1,"Pillow, Qt",,PASSED
 WEBP,PNG,SUPPORTED,webp-portrait,one PNG file per page for the picture,"1 PNG file(s), 360x540",OK,PASSED,,0.006,70794,1,"Pillow, Qt",,PASSED
 WEBP,PNG,SUPPORTED,webp-tiny,one PNG file per page for the picture,"1 PNG file(s), 24x16",OK,PASSED,,0.001,687,1,"Pillow, Qt",,PASSED
-WEBP,HEIC,SUPPORTED,webp-animated,one HEIC file per page for the first frame only (Every frame is off by default),"1 HEIC file(s), 320x240",OK,PASSED,,0.045,22987,1,"Pillow, Qt",,PASSED
+WEBP,HEIC,SUPPORTED,webp-animated,one HEIC file per page for the first frame only (Every frame is off by default),"1 HEIC file(s), 320x240",OK,PASSED,,0.049,22987,1,"Pillow, Qt",,PASSED
 WEBP,HEIC,SUPPORTED,webp-hires,one HEIC file per page for the picture,"1 HEIC file(s), 3200x2000",OK,PASSED,,0.34,309055,1,"Pillow, Qt",,PASSED
-WEBP,HEIC,SUPPORTED,webp-landscape,"one HEIC file per page for the picture, transparency kept","1 HEIC file(s), 640x400",OK,PASSED,,0.076,51124,1,"Pillow, Qt",,PASSED
+WEBP,HEIC,SUPPORTED,webp-landscape,"one HEIC file per page for the picture, transparency kept","1 HEIC file(s), 640x400",OK,PASSED,,0.079,51124,1,"Pillow, Qt",,PASSED
 WEBP,HEIC,SUPPORTED,webp-portrait,one HEIC file per page for the picture,"1 HEIC file(s), 360x540",OK,PASSED,,0.066,46149,1,"Pillow, Qt",,PASSED
 WEBP,HEIC,SUPPORTED,webp-tiny,one HEIC file per page for the picture,"1 HEIC file(s), 24x16",OK,PASSED,,0.004,790,1,"Pillow, Qt",,PASSED
-WEBP,WEBP,SUPPORTED,webp-animated,"one animated WebP, all 4 frames, 200 ms each, loops forever","1 animated WebP, 4 frames, durations [200] ms, loop 0",OK,PASSED,,0.014,16366,1,"Pillow, Qt",,PASSED
-WEBP,WEBP,SUPPORTED,webp-hires,one WebP file per page for the picture,"1 WebP file(s), 3200x2000",OK,PASSED,,0.177,80366,1,"Pillow, Qt",,PASSED
+WEBP,WEBP,SUPPORTED,webp-animated,"one animated WebP, all 4 frames, 200 ms each, loops forever","1 animated WebP, 4 frames, durations [200] ms, loop 0",OK,PASSED,,0.03,16366,1,"Pillow, Qt",,PASSED
+WEBP,WEBP,SUPPORTED,webp-hires,one WebP file per page for the picture,"1 WebP file(s), 3200x2000",OK,PASSED,,0.186,80366,1,"Pillow, Qt",,PASSED
 WEBP,WEBP,SUPPORTED,webp-landscape,"one WebP file per page for the picture, transparency kept","1 WebP file(s), 640x400",OK,PASSED,,0.012,12608,1,"Pillow, Qt",,PASSED
-WEBP,WEBP,SUPPORTED,webp-portrait,one WebP file per page for the picture,"1 WebP file(s), 360x540",OK,PASSED,,0.007,10686,1,"Pillow, Qt",,PASSED
+WEBP,WEBP,SUPPORTED,webp-portrait,one WebP file per page for the picture,"1 WebP file(s), 360x540",OK,PASSED,,0.008,10686,1,"Pillow, Qt",,PASSED
 WEBP,WEBP,SUPPORTED,webp-tiny,one WebP file per page for the picture,"1 WebP file(s), 24x16",OK,PASSED,,0.001,188,1,"Pillow, Qt",,PASSED
 WEBP,AVIF,SUPPORTED,webp-animated,one AVIF file per page for the first frame only (Every frame is off by default),"1 AVIF file(s), 320x240",OK,PASSED,,0.013,7766,1,"Pillow, sips",,PASSED
-WEBP,AVIF,SUPPORTED,webp-hires,one AVIF file per page for the picture,"1 AVIF file(s), 3200x2000",OK,PASSED,,0.145,119689,1,"Pillow, sips",,PASSED
+WEBP,AVIF,SUPPORTED,webp-hires,one AVIF file per page for the picture,"1 AVIF file(s), 3200x2000",OK,PASSED,,0.158,119689,1,"Pillow, sips",,PASSED
 WEBP,AVIF,SUPPORTED,webp-landscape,"one AVIF file per page for the picture, transparency kept","1 AVIF file(s), 640x400",OK,PASSED,,0.041,15091,1,"Pillow, sips",,PASSED
-WEBP,AVIF,SUPPORTED,webp-portrait,one AVIF file per page for the picture,"1 AVIF file(s), 360x540",OK,PASSED,,0.04,12325,1,"Pillow, sips",,PASSED
-WEBP,AVIF,SUPPORTED,webp-tiny,one AVIF file per page for the picture,"1 AVIF file(s), 24x16",OK,PASSED,,0.001,433,1,"Pillow, sips",,PASSED
-WEBP,TIFF,SUPPORTED,webp-animated,one TIFF file per page for the first frame only (Every frame is off by default),"1 TIFF file(s), 320x240",OK,PASSED,,0.005,60006,1,"Pillow, Qt",,PASSED
-WEBP,TIFF,SUPPORTED,webp-hires,one TIFF file per page for the picture,"1 TIFF file(s), 3200x2000",OK,PASSED,,0.048,674328,1,"Pillow, Qt",,PASSED
+WEBP,AVIF,SUPPORTED,webp-portrait,one AVIF file per page for the picture,"1 AVIF file(s), 360x540",OK,PASSED,,0.047,12325,1,"Pillow, sips",,PASSED
+WEBP,AVIF,SUPPORTED,webp-tiny,one AVIF file per page for the picture,"1 AVIF file(s), 24x16",OK,PASSED,,0.002,433,1,"Pillow, sips",,PASSED
+WEBP,TIFF,SUPPORTED,webp-animated,one TIFF file per page for the first frame only (Every frame is off by default),"1 TIFF file(s), 320x240",OK,PASSED,,0.003,60006,1,"Pillow, Qt",,PASSED
+WEBP,TIFF,SUPPORTED,webp-hires,one TIFF file per page for the picture,"1 TIFF file(s), 3200x2000",OK,PASSED,,0.049,674328,1,"Pillow, Qt",,PASSED
 WEBP,TIFF,SUPPORTED,webp-landscape,"one TIFF file per page for the picture, transparency kept","1 TIFF file(s), 640x400",OK,PASSED,,0.006,115102,1,"Pillow, Qt",,PASSED
-WEBP,TIFF,SUPPORTED,webp-portrait,one TIFF file per page for the picture,"1 TIFF file(s), 360x540",OK,PASSED,,0.003,97476,1,"Pillow, Qt",,PASSED
+WEBP,TIFF,SUPPORTED,webp-portrait,one TIFF file per page for the picture,"1 TIFF file(s), 360x540",OK,PASSED,,0.004,97476,1,"Pillow, Qt",,PASSED
 WEBP,TIFF,SUPPORTED,webp-tiny,one TIFF file per page for the picture,"1 TIFF file(s), 24x16",OK,PASSED,,0.001,1190,1,"Pillow, Qt",,PASSED
 WEBP,GIF,SUPPORTED,webp-animated,"one animated GIF, all 4 frames, 200 ms each, loops forever","1 animated GIF, 4 frames, durations [200] ms, loop 0",OK,PASSED,,0.05,71497,1,"GIF parser, Pillow, Qt",,PASSED
 WEBP,GIF,SUPPORTED,webp-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.2,334137,1,"Pillow, Qt",,PASSED
-WEBP,GIF,SUPPORTED,webp-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.023,48009,1,"Pillow, Qt",,PASSED
-WEBP,GIF,SUPPORTED,webp-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.02,46248,1,"Pillow, Qt",,PASSED
+WEBP,GIF,SUPPORTED,webp-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.025,48009,1,"Pillow, Qt",,PASSED
+WEBP,GIF,SUPPORTED,webp-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.022,46248,1,"Pillow, Qt",,PASSED
 WEBP,GIF,SUPPORTED,webp-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.003,1244,1,"Pillow, Qt",,PASSED
 WEBP,GIF_SEPARATE,SUPPORTED,webp-animated,one GIF file per page for the first frame only (Every frame is off by default),"1 GIF file(s), 320x240",OK,PASSED,,0.013,22870,1,"Pillow, Qt",,PASSED
-WEBP,GIF_SEPARATE,SUPPORTED,webp-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.195,334137,1,"Pillow, Qt",,PASSED
-WEBP,GIF_SEPARATE,SUPPORTED,webp-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.022,48009,1,"Pillow, Qt",,PASSED
-WEBP,GIF_SEPARATE,SUPPORTED,webp-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.02,46248,1,"Pillow, Qt",,PASSED
+WEBP,GIF_SEPARATE,SUPPORTED,webp-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.196,334137,1,"Pillow, Qt",,PASSED
+WEBP,GIF_SEPARATE,SUPPORTED,webp-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.024,48009,1,"Pillow, Qt",,PASSED
+WEBP,GIF_SEPARATE,SUPPORTED,webp-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.021,46248,1,"Pillow, Qt",,PASSED
 WEBP,GIF_SEPARATE,SUPPORTED,webp-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.003,1244,1,"Pillow, Qt",,PASSED
 WEBP,BMP,SUPPORTED,webp-animated,one BMP file per page for the first frame only (Every frame is off by default),"1 BMP file(s), 320x240",OK,PASSED,,0.001,230454,1,"Pillow, Qt",,PASSED
-WEBP,BMP,SUPPORTED,webp-hires,one BMP file per page for the picture,"1 BMP file(s), 3200x2000",OK,PASSED,,0.02,19200054,1,"Pillow, Qt",,PASSED
-WEBP,BMP,SUPPORTED,webp-landscape,"one BMP file per page for the picture, transparency on white","1 BMP file(s), 640x400",OK,PASSED,,0.003,768054,1,"Pillow, Qt",,PASSED
+WEBP,BMP,SUPPORTED,webp-hires,one BMP file per page for the picture,"1 BMP file(s), 3200x2000",OK,PASSED,,0.019,19200054,1,"Pillow, Qt",,PASSED
+WEBP,BMP,SUPPORTED,webp-landscape,"one BMP file per page for the picture, transparency on white","1 BMP file(s), 640x400",OK,PASSED,,0.002,768054,1,"Pillow, Qt",,PASSED
 WEBP,BMP,SUPPORTED,webp-portrait,one BMP file per page for the picture,"1 BMP file(s), 360x540",OK,PASSED,,0.002,583254,1,"Pillow, Qt",,PASSED
 WEBP,BMP,SUPPORTED,webp-tiny,one BMP file per page for the picture,"1 BMP file(s), 24x16",OK,PASSED,,0.001,1206,1,"Pillow, Qt",,PASSED
 WEBP,IPYNB,UNSUPPORTED_BY_DESIGN,webp-animated,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
@@ -285,82 +285,82 @@ WEBP,IPYNB,UNSUPPORTED_BY_DESIGN,webp-hires,not offered,Papyr never writes noteb
 WEBP,IPYNB,UNSUPPORTED_BY_DESIGN,webp-landscape,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 WEBP,IPYNB,UNSUPPORTED_BY_DESIGN,webp-portrait,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 WEBP,IPYNB,UNSUPPORTED_BY_DESIGN,webp-tiny,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
-AVIF,PDF,SUPPORTED,avif-hires,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.042,281468,1,"PDFium, pypdf",,PASSED
+AVIF,PDF,SUPPORTED,avif-hires,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.041,281468,1,"PDFium, pypdf",,PASSED
 AVIF,PDF,SUPPORTED,avif-landscape,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.005,32364,1,"PDFium, pypdf",,PASSED
-AVIF,PDF,SUPPORTED,avif-portrait,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 595x842 pt",OK,PASSED,,0.004,25416,1,"PDFium, pypdf",,PASSED
+AVIF,PDF,SUPPORTED,avif-portrait,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 595x842 pt",OK,PASSED,,0.003,25416,1,"PDFium, pypdf",,PASSED
 AVIF,PDF,SUPPORTED,avif-tiny,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.001,1261,1,"PDFium, pypdf",,PASSED
-AVIF,JPEG,SUPPORTED,avif-hires,one JPEG file per page for the picture,"1 JPEG file(s), 3200x2000",OK,PASSED,,0.043,255674,1,"Pillow, Qt",,PASSED
-AVIF,JPEG,SUPPORTED,avif-landscape,"one JPEG file per page for the picture, transparency on white","1 JPEG file(s), 640x400",OK,PASSED,,0.005,28060,1,"Pillow, Qt",,PASSED
-AVIF,JPEG,SUPPORTED,avif-portrait,one JPEG file per page for the picture,"1 JPEG file(s), 360x540",OK,PASSED,,0.003,21680,1,"Pillow, Qt",,PASSED
+AVIF,JPEG,SUPPORTED,avif-hires,one JPEG file per page for the picture,"1 JPEG file(s), 3200x2000",OK,PASSED,,0.041,255674,1,"Pillow, Qt",,PASSED
+AVIF,JPEG,SUPPORTED,avif-landscape,"one JPEG file per page for the picture, transparency on white","1 JPEG file(s), 640x400",OK,PASSED,,0.004,28060,1,"Pillow, Qt",,PASSED
+AVIF,JPEG,SUPPORTED,avif-portrait,one JPEG file per page for the picture,"1 JPEG file(s), 360x540",OK,PASSED,,0.004,21680,1,"Pillow, Qt",,PASSED
 AVIF,JPEG,SUPPORTED,avif-tiny,one JPEG file per page for the picture,"1 JPEG file(s), 24x16",OK,PASSED,,0.001,465,1,"Pillow, Qt",,PASSED
-AVIF,PNG,SUPPORTED,avif-hires,one PNG file per page for the picture,"1 PNG file(s), 3200x2000",OK,PASSED,,0.094,462206,1,"Pillow, Qt",,PASSED
-AVIF,PNG,SUPPORTED,avif-landscape,"one PNG file per page for the picture, transparency kept","1 PNG file(s), 640x400",OK,PASSED,,0.016,128658,1,"Pillow, Qt",,PASSED
-AVIF,PNG,SUPPORTED,avif-portrait,one PNG file per page for the picture,"1 PNG file(s), 360x540",OK,PASSED,,0.01,92849,1,"Pillow, Qt",,PASSED
+AVIF,PNG,SUPPORTED,avif-hires,one PNG file per page for the picture,"1 PNG file(s), 3200x2000",OK,PASSED,,0.093,462206,1,"Pillow, Qt",,PASSED
+AVIF,PNG,SUPPORTED,avif-landscape,"one PNG file per page for the picture, transparency kept","1 PNG file(s), 640x400",OK,PASSED,,0.017,128658,1,"Pillow, Qt",,PASSED
+AVIF,PNG,SUPPORTED,avif-portrait,one PNG file per page for the picture,"1 PNG file(s), 360x540",OK,PASSED,,0.011,92849,1,"Pillow, Qt",,PASSED
 AVIF,PNG,SUPPORTED,avif-tiny,one PNG file per page for the picture,"1 PNG file(s), 24x16",OK,PASSED,,0.001,662,1,"Pillow, Qt",,PASSED
-AVIF,HEIC,SUPPORTED,avif-hires,one HEIC file per page for the picture,"1 HEIC file(s), 3200x2000",OK,PASSED,,0.364,358802,1,"Pillow, Qt",,PASSED
-AVIF,HEIC,SUPPORTED,avif-landscape,"one HEIC file per page for the picture, transparency kept","1 HEIC file(s), 640x400",OK,PASSED,,0.096,61363,1,"Pillow, Qt",,PASSED
-AVIF,HEIC,SUPPORTED,avif-portrait,one HEIC file per page for the picture,"1 HEIC file(s), 360x540",OK,PASSED,,0.075,46464,1,"Pillow, Qt",,PASSED
-AVIF,HEIC,SUPPORTED,avif-tiny,one HEIC file per page for the picture,"1 HEIC file(s), 24x16",OK,PASSED,,0.005,807,1,"Pillow, Qt",,PASSED
-AVIF,WEBP,SUPPORTED,avif-hires,one WebP file per page for the picture,"1 WebP file(s), 3200x2000",OK,PASSED,,0.191,78556,1,"Pillow, Qt",,PASSED
-AVIF,WEBP,SUPPORTED,avif-landscape,"one WebP file per page for the picture, transparency kept","1 WebP file(s), 640x400",OK,PASSED,,0.014,10962,1,"Pillow, Qt",,PASSED
+AVIF,HEIC,SUPPORTED,avif-hires,one HEIC file per page for the picture,"1 HEIC file(s), 3200x2000",OK,PASSED,,0.373,358802,1,"Pillow, Qt",,PASSED
+AVIF,HEIC,SUPPORTED,avif-landscape,"one HEIC file per page for the picture, transparency kept","1 HEIC file(s), 640x400",OK,PASSED,,0.098,61363,1,"Pillow, Qt",,PASSED
+AVIF,HEIC,SUPPORTED,avif-portrait,one HEIC file per page for the picture,"1 HEIC file(s), 360x540",OK,PASSED,,0.076,46464,1,"Pillow, Qt",,PASSED
+AVIF,HEIC,SUPPORTED,avif-tiny,one HEIC file per page for the picture,"1 HEIC file(s), 24x16",OK,PASSED,,0.004,807,1,"Pillow, Qt",,PASSED
+AVIF,WEBP,SUPPORTED,avif-hires,one WebP file per page for the picture,"1 WebP file(s), 3200x2000",OK,PASSED,,0.201,78556,1,"Pillow, Qt",,PASSED
+AVIF,WEBP,SUPPORTED,avif-landscape,"one WebP file per page for the picture, transparency kept","1 WebP file(s), 640x400",OK,PASSED,,0.015,10962,1,"Pillow, Qt",,PASSED
 AVIF,WEBP,SUPPORTED,avif-portrait,one WebP file per page for the picture,"1 WebP file(s), 360x540",OK,PASSED,,0.009,8804,1,"Pillow, Qt",,PASSED
 AVIF,WEBP,SUPPORTED,avif-tiny,one WebP file per page for the picture,"1 WebP file(s), 24x16",OK,PASSED,,0.001,194,1,"Pillow, Qt",,PASSED
-AVIF,AVIF,SUPPORTED,avif-hires,one AVIF file per page for the picture,"1 AVIF file(s), 3200x2000",OK,PASSED,,0.136,93087,1,"Pillow, sips",,PASSED
-AVIF,AVIF,SUPPORTED,avif-landscape,"one AVIF file per page for the picture, transparency kept","1 AVIF file(s), 640x400",OK,PASSED,,0.023,13564,1,"Pillow, sips",,PASSED
-AVIF,AVIF,SUPPORTED,avif-portrait,one AVIF file per page for the picture,"1 AVIF file(s), 360x540",OK,PASSED,,0.019,9762,1,"Pillow, sips",,PASSED
+AVIF,AVIF,SUPPORTED,avif-hires,one AVIF file per page for the picture,"1 AVIF file(s), 3200x2000",OK,PASSED,,0.141,93087,1,"Pillow, sips",,PASSED
+AVIF,AVIF,SUPPORTED,avif-landscape,"one AVIF file per page for the picture, transparency kept","1 AVIF file(s), 640x400",OK,PASSED,,0.024,13564,1,"Pillow, sips",,PASSED
+AVIF,AVIF,SUPPORTED,avif-portrait,one AVIF file per page for the picture,"1 AVIF file(s), 360x540",OK,PASSED,,0.02,9762,1,"Pillow, sips",,PASSED
 AVIF,AVIF,SUPPORTED,avif-tiny,one AVIF file per page for the picture,"1 AVIF file(s), 24x16",OK,PASSED,,0.002,433,1,"Pillow, sips",,PASSED
-AVIF,TIFF,SUPPORTED,avif-hires,one TIFF file per page for the picture,"1 TIFF file(s), 3200x2000",OK,PASSED,,0.051,749416,1,"Pillow, Qt",,PASSED
+AVIF,TIFF,SUPPORTED,avif-hires,one TIFF file per page for the picture,"1 TIFF file(s), 3200x2000",OK,PASSED,,0.053,749416,1,"Pillow, Qt",,PASSED
 AVIF,TIFF,SUPPORTED,avif-landscape,"one TIFF file per page for the picture, transparency kept","1 TIFF file(s), 640x400",OK,PASSED,,0.009,172038,1,"Pillow, Qt",,PASSED
-AVIF,TIFF,SUPPORTED,avif-portrait,one TIFF file per page for the picture,"1 TIFF file(s), 360x540",OK,PASSED,,0.005,156102,1,"Pillow, Qt",,PASSED
+AVIF,TIFF,SUPPORTED,avif-portrait,one TIFF file per page for the picture,"1 TIFF file(s), 360x540",OK,PASSED,,0.006,156102,1,"Pillow, Qt",,PASSED
 AVIF,TIFF,SUPPORTED,avif-tiny,one TIFF file per page for the picture,"1 TIFF file(s), 24x16",OK,PASSED,,0.001,1140,1,"Pillow, Qt",,PASSED
-AVIF,GIF,SUPPORTED,avif-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.185,318502,1,"Pillow, Qt",,PASSED
-AVIF,GIF,SUPPORTED,avif-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.028,48616,1,"Pillow, Qt",,PASSED
-AVIF,GIF,SUPPORTED,avif-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.024,46230,1,"Pillow, Qt",,PASSED
+AVIF,GIF,SUPPORTED,avif-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.229,318502,1,"Pillow, Qt",,PASSED
+AVIF,GIF,SUPPORTED,avif-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.027,48616,1,"Pillow, Qt",,PASSED
+AVIF,GIF,SUPPORTED,avif-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.025,46230,1,"Pillow, Qt",,PASSED
 AVIF,GIF,SUPPORTED,avif-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.003,1242,1,"Pillow, Qt",,PASSED
-AVIF,GIF_SEPARATE,SUPPORTED,avif-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.181,318502,1,"Pillow, Qt",,PASSED
-AVIF,GIF_SEPARATE,SUPPORTED,avif-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.027,48616,1,"Pillow, Qt",,PASSED
+AVIF,GIF_SEPARATE,SUPPORTED,avif-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.183,318502,1,"Pillow, Qt",,PASSED
+AVIF,GIF_SEPARATE,SUPPORTED,avif-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.029,48616,1,"Pillow, Qt",,PASSED
 AVIF,GIF_SEPARATE,SUPPORTED,avif-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.024,46230,1,"Pillow, Qt",,PASSED
 AVIF,GIF_SEPARATE,SUPPORTED,avif-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.003,1242,1,"Pillow, Qt",,PASSED
-AVIF,BMP,SUPPORTED,avif-hires,one BMP file per page for the picture,"1 BMP file(s), 3200x2000",OK,PASSED,,0.018,19200054,1,"Pillow, Qt",,PASSED
-AVIF,BMP,SUPPORTED,avif-landscape,"one BMP file per page for the picture, transparency on white","1 BMP file(s), 640x400",OK,PASSED,,0.006,768054,1,"Pillow, Qt",,PASSED
+AVIF,BMP,SUPPORTED,avif-hires,one BMP file per page for the picture,"1 BMP file(s), 3200x2000",OK,PASSED,,0.024,19200054,1,"Pillow, Qt",,PASSED
+AVIF,BMP,SUPPORTED,avif-landscape,"one BMP file per page for the picture, transparency on white","1 BMP file(s), 640x400",OK,PASSED,,0.004,768054,1,"Pillow, Qt",,PASSED
 AVIF,BMP,SUPPORTED,avif-portrait,one BMP file per page for the picture,"1 BMP file(s), 360x540",OK,PASSED,,0.003,583254,1,"Pillow, Qt",,PASSED
 AVIF,BMP,SUPPORTED,avif-tiny,one BMP file per page for the picture,"1 BMP file(s), 24x16",OK,PASSED,,0.001,1206,1,"Pillow, Qt",,PASSED
 AVIF,IPYNB,UNSUPPORTED_BY_DESIGN,avif-hires,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 AVIF,IPYNB,UNSUPPORTED_BY_DESIGN,avif-landscape,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 AVIF,IPYNB,UNSUPPORTED_BY_DESIGN,avif-portrait,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 AVIF,IPYNB,UNSUPPORTED_BY_DESIGN,avif-tiny,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
-TIFF,PDF,SUPPORTED,tiff-alias-extension,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.007,47477,1,"PDFium, pypdf",,PASSED
-TIFF,PDF,SUPPORTED,tiff-hires,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.089,195209,1,"PDFium, pypdf",,PASSED
-TIFF,PDF,SUPPORTED,tiff-landscape,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.01,50640,1,"PDFium, pypdf",,PASSED
+TIFF,PDF,SUPPORTED,tiff-alias-extension,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.004,47477,1,"PDFium, pypdf",,PASSED
+TIFF,PDF,SUPPORTED,tiff-hires,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.086,195209,1,"PDFium, pypdf",,PASSED
+TIFF,PDF,SUPPORTED,tiff-landscape,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.008,50640,1,"PDFium, pypdf",,PASSED
 TIFF,PDF,SUPPORTED,tiff-multipage,"one PDF with each page as a page, on A4","1 PDF, 3 page(s), first page 842x595 pt",OK,PASSED,,0.01,132721,1,"PDFium, pypdf",,PASSED
 TIFF,PDF,SUPPORTED,tiff-portrait,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 595x842 pt",OK,PASSED,,0.005,45671,1,"PDFium, pypdf",,PASSED
 TIFF,PDF,SUPPORTED,tiff-tiny,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.001,1460,1,"PDFium, pypdf",,PASSED
 TIFF,JPEG,SUPPORTED,tiff-alias-extension,one JPEG file per page for the picture,"1 JPEG file(s), 300x200",OK,PASSED,,0.002,12218,1,"Pillow, Qt",,PASSED
-TIFF,JPEG,SUPPORTED,tiff-hires,one JPEG file per page for the picture,"1 JPEG file(s), 3200x2000",OK,PASSED,,0.051,263016,1,"Pillow, Qt",,PASSED
-TIFF,JPEG,SUPPORTED,tiff-landscape,"one JPEG file per page for the picture, transparency on white","1 JPEG file(s), 640x400",OK,PASSED,,0.004,32014,1,"Pillow, Qt",,PASSED
+TIFF,JPEG,SUPPORTED,tiff-hires,one JPEG file per page for the picture,"1 JPEG file(s), 3200x2000",OK,PASSED,,0.05,263016,1,"Pillow, Qt",,PASSED
+TIFF,JPEG,SUPPORTED,tiff-landscape,"one JPEG file per page for the picture, transparency on white","1 JPEG file(s), 640x400",OK,PASSED,,0.003,32014,1,"Pillow, Qt",,PASSED
 TIFF,JPEG,SUPPORTED,tiff-multipage,"one JPEG file per page for each page, transparency on white","3 JPEG file(s), 500x350, 300x450, 420x420",OK,PASSED,,0.006,79660,3,"Pillow, Qt",,PASSED
 TIFF,JPEG,SUPPORTED,tiff-portrait,one JPEG file per page for the picture,"1 JPEG file(s), 360x540",OK,PASSED,,0.003,24883,1,"Pillow, Qt",,PASSED
 TIFF,JPEG,SUPPORTED,tiff-tiny,one JPEG file per page for the picture,"1 JPEG file(s), 24x16",OK,PASSED,,0.001,530,1,"Pillow, Qt",,PASSED
 TIFF,PNG,SUPPORTED,tiff-alias-extension,one PNG file per page for the picture,"1 PNG file(s), 300x200",OK,PASSED,,0.002,4831,1,"Pillow, Qt",,PASSED
-TIFF,PNG,SUPPORTED,tiff-hires,one PNG file per page for the picture,"1 PNG file(s), 3200x2000",OK,PASSED,,0.062,59844,1,"Pillow, Qt",,PASSED
+TIFF,PNG,SUPPORTED,tiff-hires,one PNG file per page for the picture,"1 PNG file(s), 3200x2000",OK,PASSED,,0.061,59844,1,"Pillow, Qt",,PASSED
 TIFF,PNG,SUPPORTED,tiff-landscape,"one PNG file per page for the picture, transparency kept","1 PNG file(s), 640x400",OK,PASSED,,0.005,12811,1,"Pillow, Qt",,PASSED
 TIFF,PNG,SUPPORTED,tiff-multipage,"one PNG file per page for each page, transparency kept","3 PNG file(s), 500x350, 300x450, 420x420",OK,PASSED,,0.008,32233,3,"Pillow, Qt",,PASSED
 TIFF,PNG,SUPPORTED,tiff-portrait,one PNG file per page for the picture,"1 PNG file(s), 360x540",OK,PASSED,,0.003,9367,1,"Pillow, Qt",,PASSED
 TIFF,PNG,SUPPORTED,tiff-tiny,one PNG file per page for the picture,"1 PNG file(s), 24x16",OK,PASSED,,0.001,166,1,"Pillow, Qt",,PASSED
-TIFF,HEIC,SUPPORTED,tiff-alias-extension,one HEIC file per page for the picture,"1 HEIC file(s), 300x200",OK,PASSED,,0.039,16432,1,"Pillow, Qt",,PASSED
-TIFF,HEIC,SUPPORTED,tiff-hires,one HEIC file per page for the picture,"1 HEIC file(s), 3200x2000",OK,PASSED,,0.441,286717,1,"Pillow, Qt",,PASSED
-TIFF,HEIC,SUPPORTED,tiff-landscape,"one HEIC file per page for the picture, transparency kept","1 HEIC file(s), 640x400",OK,PASSED,,0.079,46906,1,"Pillow, Qt",,PASSED
-TIFF,HEIC,SUPPORTED,tiff-multipage,"one HEIC file per page for each page, transparency kept","3 HEIC file(s), 500x350, 300x450, 420x420",OK,PASSED,,0.2,103015,3,"Pillow, Qt",,PASSED
-TIFF,HEIC,SUPPORTED,tiff-portrait,one HEIC file per page for the picture,"1 HEIC file(s), 360x540",OK,PASSED,,0.076,37030,1,"Pillow, Qt",,PASSED
+TIFF,HEIC,SUPPORTED,tiff-alias-extension,one HEIC file per page for the picture,"1 HEIC file(s), 300x200",OK,PASSED,,0.04,16432,1,"Pillow, Qt",,PASSED
+TIFF,HEIC,SUPPORTED,tiff-hires,one HEIC file per page for the picture,"1 HEIC file(s), 3200x2000",OK,PASSED,,0.465,286717,1,"Pillow, Qt",,PASSED
+TIFF,HEIC,SUPPORTED,tiff-landscape,"one HEIC file per page for the picture, transparency kept","1 HEIC file(s), 640x400",OK,PASSED,,0.083,46906,1,"Pillow, Qt",,PASSED
+TIFF,HEIC,SUPPORTED,tiff-multipage,"one HEIC file per page for each page, transparency kept","3 HEIC file(s), 500x350, 300x450, 420x420",OK,PASSED,,0.212,103015,3,"Pillow, Qt",,PASSED
+TIFF,HEIC,SUPPORTED,tiff-portrait,one HEIC file per page for the picture,"1 HEIC file(s), 360x540",OK,PASSED,,0.078,37030,1,"Pillow, Qt",,PASSED
 TIFF,HEIC,SUPPORTED,tiff-tiny,one HEIC file per page for the picture,"1 HEIC file(s), 24x16",OK,PASSED,,0.007,1047,1,"Pillow, Qt",,PASSED
-TIFF,WEBP,SUPPORTED,tiff-alias-extension,one WebP file per page for the picture,"1 WebP file(s), 300x200",OK,PASSED,,0.006,4632,1,"Pillow, Qt",,PASSED
+TIFF,WEBP,SUPPORTED,tiff-alias-extension,one WebP file per page for the picture,"1 WebP file(s), 300x200",OK,PASSED,,0.004,4632,1,"Pillow, Qt",,PASSED
 TIFF,WEBP,SUPPORTED,tiff-hires,one WebP file per page for the picture,"1 WebP file(s), 3200x2000",OK,PASSED,,0.192,65678,1,"Pillow, Qt",,PASSED
 TIFF,WEBP,SUPPORTED,tiff-landscape,"one WebP file per page for the picture, transparency kept","1 WebP file(s), 640x400",OK,PASSED,,0.012,10522,1,"Pillow, Qt",,PASSED
 TIFF,WEBP,SUPPORTED,tiff-multipage,"one WebP file per page for each page, transparency kept","3 WebP file(s), 500x350, 300x450, 420x420",OK,PASSED,,0.022,26224,3,"Pillow, Qt",,PASSED
 TIFF,WEBP,SUPPORTED,tiff-portrait,one WebP file per page for the picture,"1 WebP file(s), 360x540",OK,PASSED,,0.008,8528,1,"Pillow, Qt",,PASSED
 TIFF,WEBP,SUPPORTED,tiff-tiny,one WebP file per page for the picture,"1 WebP file(s), 24x16",OK,PASSED,,0.001,202,1,"Pillow, Qt",,PASSED
-TIFF,AVIF,SUPPORTED,tiff-alias-extension,one AVIF file per page for the picture,"1 AVIF file(s), 300x200",OK,PASSED,,0.009,5011,1,"Pillow, sips",,PASSED
-TIFF,AVIF,SUPPORTED,tiff-hires,one AVIF file per page for the picture,"1 AVIF file(s), 3200x2000",OK,PASSED,,0.134,76438,1,"Pillow, sips",,PASSED
+TIFF,AVIF,SUPPORTED,tiff-alias-extension,one AVIF file per page for the picture,"1 AVIF file(s), 300x200",OK,PASSED,,0.01,5011,1,"Pillow, sips",,PASSED
+TIFF,AVIF,SUPPORTED,tiff-hires,one AVIF file per page for the picture,"1 AVIF file(s), 3200x2000",OK,PASSED,,0.146,76438,1,"Pillow, sips",,PASSED
 TIFF,AVIF,SUPPORTED,tiff-landscape,"one AVIF file per page for the picture, transparency kept","1 AVIF file(s), 640x400",OK,PASSED,,0.022,12631,1,"Pillow, sips",,PASSED
 TIFF,AVIF,SUPPORTED,tiff-multipage,"one AVIF file per page for each page, transparency kept","3 AVIF file(s), 500x350, 300x450, 420x420",OK,PASSED,,0.048,28599,3,"Pillow, sips",,PASSED
 TIFF,AVIF,SUPPORTED,tiff-portrait,one AVIF file per page for the picture,"1 AVIF file(s), 360x540",OK,PASSED,,0.017,9114,1,"Pillow, sips",,PASSED
@@ -372,21 +372,21 @@ TIFF,TIFF,SUPPORTED,tiff-multipage,"one TIFF file per page for each page, transp
 TIFF,TIFF,SUPPORTED,tiff-portrait,one TIFF file per page for the picture,"1 TIFF file(s), 360x540",OK,PASSED,,0.003,49780,1,"Pillow, Qt",,PASSED
 TIFF,TIFF,SUPPORTED,tiff-tiny,one TIFF file per page for the picture,"1 TIFF file(s), 24x16",OK,PASSED,,0.001,980,1,"Pillow, Qt",,PASSED
 TIFF,GIF,SUPPORTED,tiff-alias-extension,one GIF file per page for the picture,"1 GIF file(s), 300x200",OK,PASSED,,0.019,16501,1,"Pillow, Qt",,PASSED
-TIFF,GIF,SUPPORTED,tiff-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.188,233029,1,"Pillow, Qt",,PASSED
+TIFF,GIF,SUPPORTED,tiff-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.191,233029,1,"Pillow, Qt",,PASSED
 TIFF,GIF,SUPPORTED,tiff-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.026,38833,1,"Pillow, Qt",,PASSED
-TIFF,GIF,SUPPORTED,tiff-multipage,"one animated GIF, each page as a frame, 1000 ms, loops forever","1 GIF, 3 frames at 500x450, delays [1000] ms, loop 0",OK,PASSED,,0.062,67044,1,"GIF parser, Pillow, Qt",,PASSED
+TIFF,GIF,SUPPORTED,tiff-multipage,"one animated GIF, each page as a frame, 1000 ms, loops forever","1 GIF, 3 frames at 500x450, delays [1000] ms, loop 0",OK,PASSED,,0.063,67044,1,"GIF parser, Pillow, Qt",,PASSED
 TIFF,GIF,SUPPORTED,tiff-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.025,37317,1,"Pillow, Qt",,PASSED
 TIFF,GIF,SUPPORTED,tiff-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.003,1239,1,"Pillow, Qt",,PASSED
-TIFF,GIF_SEPARATE,SUPPORTED,tiff-alias-extension,one GIF file per page for the picture,"1 GIF file(s), 300x200",OK,PASSED,,0.021,16501,1,"Pillow, Qt",,PASSED
-TIFF,GIF_SEPARATE,SUPPORTED,tiff-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.188,233029,1,"Pillow, Qt",,PASSED
+TIFF,GIF_SEPARATE,SUPPORTED,tiff-alias-extension,one GIF file per page for the picture,"1 GIF file(s), 300x200",OK,PASSED,,0.018,16501,1,"Pillow, Qt",,PASSED
+TIFF,GIF_SEPARATE,SUPPORTED,tiff-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.191,233029,1,"Pillow, Qt",,PASSED
 TIFF,GIF_SEPARATE,SUPPORTED,tiff-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.025,38833,1,"Pillow, Qt",,PASSED
-TIFF,GIF_SEPARATE,SUPPORTED,tiff-multipage,"one GIF file per page for each page, transparency kept","3 GIF file(s), 500x350, 300x450, 420x420",OK,PASSED,,0.06,91997,3,"Pillow, Qt",,PASSED
+TIFF,GIF_SEPARATE,SUPPORTED,tiff-multipage,"one GIF file per page for each page, transparency kept","3 GIF file(s), 500x350, 300x450, 420x420",OK,PASSED,,0.061,91997,3,"Pillow, Qt",,PASSED
 TIFF,GIF_SEPARATE,SUPPORTED,tiff-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.024,37317,1,"Pillow, Qt",,PASSED
 TIFF,GIF_SEPARATE,SUPPORTED,tiff-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.003,1239,1,"Pillow, Qt",,PASSED
 TIFF,BMP,SUPPORTED,tiff-alias-extension,one BMP file per page for the picture,"1 BMP file(s), 300x200",OK,PASSED,,0.001,180054,1,"Pillow, Qt",,PASSED
-TIFF,BMP,SUPPORTED,tiff-hires,one BMP file per page for the picture,"1 BMP file(s), 3200x2000",OK,PASSED,,0.03,19200054,1,"Pillow, Qt",,PASSED
+TIFF,BMP,SUPPORTED,tiff-hires,one BMP file per page for the picture,"1 BMP file(s), 3200x2000",OK,PASSED,,0.029,19200054,1,"Pillow, Qt",,PASSED
 TIFF,BMP,SUPPORTED,tiff-landscape,"one BMP file per page for the picture, transparency on white","1 BMP file(s), 640x400",OK,PASSED,,0.002,768054,1,"Pillow, Qt",,PASSED
-TIFF,BMP,SUPPORTED,tiff-multipage,"one BMP file per page for each page, transparency on white","3 BMP file(s), 500x350, 300x450, 420x420",OK,PASSED,,0.005,1459362,3,"Pillow, Qt",,PASSED
+TIFF,BMP,SUPPORTED,tiff-multipage,"one BMP file per page for each page, transparency on white","3 BMP file(s), 500x350, 300x450, 420x420",OK,PASSED,,0.004,1459362,3,"Pillow, Qt",,PASSED
 TIFF,BMP,SUPPORTED,tiff-portrait,one BMP file per page for the picture,"1 BMP file(s), 360x540",OK,PASSED,,0.002,583254,1,"Pillow, Qt",,PASSED
 TIFF,BMP,SUPPORTED,tiff-tiny,one BMP file per page for the picture,"1 BMP file(s), 24x16",OK,PASSED,,0.001,1206,1,"Pillow, Qt",,PASSED
 TIFF,IPYNB,UNSUPPORTED_BY_DESIGN,tiff-alias-extension,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
@@ -395,11 +395,11 @@ TIFF,IPYNB,UNSUPPORTED_BY_DESIGN,tiff-landscape,not offered,Papyr never writes n
 TIFF,IPYNB,UNSUPPORTED_BY_DESIGN,tiff-multipage,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 TIFF,IPYNB,UNSUPPORTED_BY_DESIGN,tiff-portrait,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 TIFF,IPYNB,UNSUPPORTED_BY_DESIGN,tiff-tiny,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
-BMP,PDF,SUPPORTED,bmp-hires,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.058,202381,1,"PDFium, pypdf",,PASSED
-BMP,PDF,SUPPORTED,bmp-landscape,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.005,53976,1,"PDFium, pypdf",,PASSED
+BMP,PDF,SUPPORTED,bmp-hires,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.059,202381,1,"PDFium, pypdf",,PASSED
+BMP,PDF,SUPPORTED,bmp-landscape,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.006,53976,1,"PDFium, pypdf",,PASSED
 BMP,PDF,SUPPORTED,bmp-portrait,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 595x842 pt",OK,PASSED,,0.004,47145,1,"PDFium, pypdf",,PASSED
 BMP,PDF,SUPPORTED,bmp-tiny,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.001,1460,1,"PDFium, pypdf",,PASSED
-BMP,JPEG,SUPPORTED,bmp-hires,one JPEG file per page for the picture,"1 JPEG file(s), 3200x2000",OK,PASSED,,0.034,274575,1,"Pillow, Qt",,PASSED
+BMP,JPEG,SUPPORTED,bmp-hires,one JPEG file per page for the picture,"1 JPEG file(s), 3200x2000",OK,PASSED,,0.032,274575,1,"Pillow, Qt",,PASSED
 BMP,JPEG,SUPPORTED,bmp-landscape,one JPEG file per page for the picture,"1 JPEG file(s), 640x400",OK,PASSED,,0.002,30492,1,"Pillow, Qt",,PASSED
 BMP,JPEG,SUPPORTED,bmp-portrait,one JPEG file per page for the picture,"1 JPEG file(s), 360x540",OK,PASSED,,0.002,26260,1,"Pillow, Qt",,PASSED
 BMP,JPEG,SUPPORTED,bmp-tiny,one JPEG file per page for the picture,"1 JPEG file(s), 24x16",OK,PASSED,,0.001,530,1,"Pillow, Qt",,PASSED
@@ -407,67 +407,67 @@ BMP,PNG,SUPPORTED,bmp-hires,one PNG file per page for the picture,"1 PNG file(s)
 BMP,PNG,SUPPORTED,bmp-landscape,one PNG file per page for the picture,"1 PNG file(s), 640x400",OK,PASSED,,0.003,12891,1,"Pillow, Qt",,PASSED
 BMP,PNG,SUPPORTED,bmp-portrait,one PNG file per page for the picture,"1 PNG file(s), 360x540",OK,PASSED,,0.002,10425,1,"Pillow, Qt",,PASSED
 BMP,PNG,SUPPORTED,bmp-tiny,one PNG file per page for the picture,"1 PNG file(s), 24x16",OK,PASSED,,0.001,159,1,"Pillow, Qt",,PASSED
-BMP,HEIC,SUPPORTED,bmp-hires,one HEIC file per page for the picture,"1 HEIC file(s), 3200x2000",OK,PASSED,,0.327,293187,1,"Pillow, Qt",,PASSED
-BMP,HEIC,SUPPORTED,bmp-landscape,one HEIC file per page for the picture,"1 HEIC file(s), 640x400",OK,PASSED,,0.068,44318,1,"Pillow, Qt",,PASSED
+BMP,HEIC,SUPPORTED,bmp-hires,one HEIC file per page for the picture,"1 HEIC file(s), 3200x2000",OK,PASSED,,0.338,293187,1,"Pillow, Qt",,PASSED
+BMP,HEIC,SUPPORTED,bmp-landscape,one HEIC file per page for the picture,"1 HEIC file(s), 640x400",OK,PASSED,,0.065,44318,1,"Pillow, Qt",,PASSED
 BMP,HEIC,SUPPORTED,bmp-portrait,one HEIC file per page for the picture,"1 HEIC file(s), 360x540",OK,PASSED,,0.067,38943,1,"Pillow, Qt",,PASSED
 BMP,HEIC,SUPPORTED,bmp-tiny,one HEIC file per page for the picture,"1 HEIC file(s), 24x16",OK,PASSED,,0.004,772,1,"Pillow, Qt",,PASSED
-BMP,WEBP,SUPPORTED,bmp-hires,one WebP file per page for the picture,"1 WebP file(s), 3200x2000",OK,PASSED,,0.18,70732,1,"Pillow, Qt",,PASSED
+BMP,WEBP,SUPPORTED,bmp-hires,one WebP file per page for the picture,"1 WebP file(s), 3200x2000",OK,PASSED,,0.188,70732,1,"Pillow, Qt",,PASSED
 BMP,WEBP,SUPPORTED,bmp-landscape,one WebP file per page for the picture,"1 WebP file(s), 640x400",OK,PASSED,,0.01,10298,1,"Pillow, Qt",,PASSED
-BMP,WEBP,SUPPORTED,bmp-portrait,one WebP file per page for the picture,"1 WebP file(s), 360x540",OK,PASSED,,0.008,9296,1,"Pillow, Qt",,PASSED
+BMP,WEBP,SUPPORTED,bmp-portrait,one WebP file per page for the picture,"1 WebP file(s), 360x540",OK,PASSED,,0.007,9296,1,"Pillow, Qt",,PASSED
 BMP,WEBP,SUPPORTED,bmp-tiny,one WebP file per page for the picture,"1 WebP file(s), 24x16",OK,PASSED,,0.001,202,1,"Pillow, Qt",,PASSED
-BMP,AVIF,SUPPORTED,bmp-hires,one AVIF file per page for the picture,"1 AVIF file(s), 3200x2000",OK,PASSED,,0.114,79568,1,"Pillow, sips",,PASSED
-BMP,AVIF,SUPPORTED,bmp-landscape,one AVIF file per page for the picture,"1 AVIF file(s), 640x400",OK,PASSED,,0.018,12211,1,"Pillow, sips",,PASSED
-BMP,AVIF,SUPPORTED,bmp-portrait,one AVIF file per page for the picture,"1 AVIF file(s), 360x540",OK,PASSED,,0.068,7441,1,"Pillow, sips",,PASSED
-BMP,AVIF,SUPPORTED,bmp-tiny,one AVIF file per page for the picture,"1 AVIF file(s), 24x16",OK,PASSED,,0.001,433,1,"Pillow, sips",,PASSED
-BMP,TIFF,SUPPORTED,bmp-hires,one TIFF file per page for the picture,"1 TIFF file(s), 3200x2000",OK,PASSED,,0.021,334868,1,"Pillow, Qt",,PASSED
-BMP,TIFF,SUPPORTED,bmp-landscape,one TIFF file per page for the picture,"1 TIFF file(s), 640x400",OK,PASSED,,0.005,56654,1,"Pillow, Qt",,PASSED
+BMP,AVIF,SUPPORTED,bmp-hires,one AVIF file per page for the picture,"1 AVIF file(s), 3200x2000",OK,PASSED,,0.121,79568,1,"Pillow, sips",,PASSED
+BMP,AVIF,SUPPORTED,bmp-landscape,one AVIF file per page for the picture,"1 AVIF file(s), 640x400",OK,PASSED,,0.021,12211,1,"Pillow, sips",,PASSED
+BMP,AVIF,SUPPORTED,bmp-portrait,one AVIF file per page for the picture,"1 AVIF file(s), 360x540",OK,PASSED,,0.071,7441,1,"Pillow, sips",,PASSED
+BMP,AVIF,SUPPORTED,bmp-tiny,one AVIF file per page for the picture,"1 AVIF file(s), 24x16",OK,PASSED,,0.002,433,1,"Pillow, sips",,PASSED
+BMP,TIFF,SUPPORTED,bmp-hires,one TIFF file per page for the picture,"1 TIFF file(s), 3200x2000",OK,PASSED,,0.023,334868,1,"Pillow, Qt",,PASSED
+BMP,TIFF,SUPPORTED,bmp-landscape,one TIFF file per page for the picture,"1 TIFF file(s), 640x400",OK,PASSED,,0.003,56654,1,"Pillow, Qt",,PASSED
 BMP,TIFF,SUPPORTED,bmp-portrait,one TIFF file per page for the picture,"1 TIFF file(s), 360x540",OK,PASSED,,0.002,49342,1,"Pillow, Qt",,PASSED
 BMP,TIFF,SUPPORTED,bmp-tiny,one TIFF file per page for the picture,"1 TIFF file(s), 24x16",OK,PASSED,,0.001,816,1,"Pillow, Qt",,PASSED
-BMP,GIF,SUPPORTED,bmp-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.169,232389,1,"Pillow, Qt",,PASSED
-BMP,GIF,SUPPORTED,bmp-landscape,one GIF file per page for the picture,"1 GIF file(s), 640x400",OK,PASSED,,0.025,40577,1,"Pillow, Qt",,PASSED
-BMP,GIF,SUPPORTED,bmp-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.024,37918,1,"Pillow, Qt",,PASSED
+BMP,GIF,SUPPORTED,bmp-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.168,232389,1,"Pillow, Qt",,PASSED
+BMP,GIF,SUPPORTED,bmp-landscape,one GIF file per page for the picture,"1 GIF file(s), 640x400",OK,PASSED,,0.027,40577,1,"Pillow, Qt",,PASSED
+BMP,GIF,SUPPORTED,bmp-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.028,37918,1,"Pillow, Qt",,PASSED
 BMP,GIF,SUPPORTED,bmp-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.003,1239,1,"Pillow, Qt",,PASSED
-BMP,GIF_SEPARATE,SUPPORTED,bmp-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.166,232389,1,"Pillow, Qt",,PASSED
-BMP,GIF_SEPARATE,SUPPORTED,bmp-landscape,one GIF file per page for the picture,"1 GIF file(s), 640x400",OK,PASSED,,0.024,40577,1,"Pillow, Qt",,PASSED
-BMP,GIF_SEPARATE,SUPPORTED,bmp-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.022,37918,1,"Pillow, Qt",,PASSED
+BMP,GIF_SEPARATE,SUPPORTED,bmp-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.165,232389,1,"Pillow, Qt",,PASSED
+BMP,GIF_SEPARATE,SUPPORTED,bmp-landscape,one GIF file per page for the picture,"1 GIF file(s), 640x400",OK,PASSED,,0.025,40577,1,"Pillow, Qt",,PASSED
+BMP,GIF_SEPARATE,SUPPORTED,bmp-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.023,37918,1,"Pillow, Qt",,PASSED
 BMP,GIF_SEPARATE,SUPPORTED,bmp-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.003,1239,1,"Pillow, Qt",,PASSED
 BMP,BMP,SUPPORTED,bmp-hires,one BMP file per page for the picture,"1 BMP file(s), 3200x2000",OK,PASSED,,0.01,19200054,1,"Pillow, Qt",,PASSED
-BMP,BMP,SUPPORTED,bmp-landscape,one BMP file per page for the picture,"1 BMP file(s), 640x400",OK,PASSED,,0.004,768054,1,"Pillow, Qt",,PASSED
+BMP,BMP,SUPPORTED,bmp-landscape,one BMP file per page for the picture,"1 BMP file(s), 640x400",OK,PASSED,,0.003,768054,1,"Pillow, Qt",,PASSED
 BMP,BMP,SUPPORTED,bmp-portrait,one BMP file per page for the picture,"1 BMP file(s), 360x540",OK,PASSED,,0.001,583254,1,"Pillow, Qt",,PASSED
 BMP,BMP,SUPPORTED,bmp-tiny,one BMP file per page for the picture,"1 BMP file(s), 24x16",OK,PASSED,,0.001,1206,1,"Pillow, Qt",,PASSED
 BMP,IPYNB,UNSUPPORTED_BY_DESIGN,bmp-hires,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 BMP,IPYNB,UNSUPPORTED_BY_DESIGN,bmp-landscape,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 BMP,IPYNB,UNSUPPORTED_BY_DESIGN,bmp-portrait,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 BMP,IPYNB,UNSUPPORTED_BY_DESIGN,bmp-tiny,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
-GIF,PDF,SUPPORTED,gif-animated,"one PDF with the first frame only (Every frame is off by default) as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.004,5857,1,"PDFium, pypdf",,PASSED
-GIF,PDF,SUPPORTED,gif-hires,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.072,138689,1,"PDFium, pypdf",,PASSED
-GIF,PDF,SUPPORTED,gif-landscape,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.008,11707,1,"PDFium, pypdf",,PASSED
+GIF,PDF,SUPPORTED,gif-animated,"one PDF with the first frame only (Every frame is off by default) as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.002,5857,1,"PDFium, pypdf",,PASSED
+GIF,PDF,SUPPORTED,gif-hires,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.073,138689,1,"PDFium, pypdf",,PASSED
+GIF,PDF,SUPPORTED,gif-landscape,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.007,11707,1,"PDFium, pypdf",,PASSED
 GIF,PDF,SUPPORTED,gif-portrait,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 595x842 pt",OK,PASSED,,0.003,8737,1,"PDFium, pypdf",,PASSED
 GIF,PDF,SUPPORTED,gif-tiny,"one PDF with the picture as a page, on A4","1 PDF, 1 page(s), first page 842x595 pt",OK,PASSED,,0.001,1291,1,"PDFium, pypdf",,PASSED
 GIF,JPEG,SUPPORTED,gif-animated,one JPEG file per page for the first frame only (Every frame is off by default),"1 JPEG file(s), 320x240",OK,PASSED,,0.002,17398,1,"Pillow, Qt",,PASSED
-GIF,JPEG,SUPPORTED,gif-hires,one JPEG file per page for the picture,"1 JPEG file(s), 3200x2000",OK,PASSED,,0.042,250284,1,"Pillow, Qt",,PASSED
+GIF,JPEG,SUPPORTED,gif-hires,one JPEG file per page for the picture,"1 JPEG file(s), 3200x2000",OK,PASSED,,0.041,250284,1,"Pillow, Qt",,PASSED
 GIF,JPEG,SUPPORTED,gif-landscape,"one JPEG file per page for the picture, transparency on white","1 JPEG file(s), 640x400",OK,PASSED,,0.003,34048,1,"Pillow, Qt",,PASSED
-GIF,JPEG,SUPPORTED,gif-portrait,one JPEG file per page for the picture,"1 JPEG file(s), 360x540",OK,PASSED,,0.002,28785,1,"Pillow, Qt",,PASSED
+GIF,JPEG,SUPPORTED,gif-portrait,one JPEG file per page for the picture,"1 JPEG file(s), 360x540",OK,PASSED,,0.003,28785,1,"Pillow, Qt",,PASSED
 GIF,JPEG,SUPPORTED,gif-tiny,one JPEG file per page for the picture,"1 JPEG file(s), 24x16",OK,PASSED,,0.001,529,1,"Pillow, Qt",,PASSED
 GIF,PNG,SUPPORTED,gif-animated,one PNG file per page for the first frame only (Every frame is off by default),"1 PNG file(s), 320x240",OK,PASSED,,0.002,7294,1,"Pillow, Qt",,PASSED
-GIF,PNG,SUPPORTED,gif-hires,one PNG file per page for the picture,"1 PNG file(s), 3200x2000",OK,PASSED,,0.056,54331,1,"Pillow, Qt",,PASSED
+GIF,PNG,SUPPORTED,gif-hires,one PNG file per page for the picture,"1 PNG file(s), 3200x2000",OK,PASSED,,0.055,54331,1,"Pillow, Qt",,PASSED
 GIF,PNG,SUPPORTED,gif-landscape,"one PNG file per page for the picture, transparency kept","1 PNG file(s), 640x400",OK,PASSED,,0.004,12496,1,"Pillow, Qt",,PASSED
-GIF,PNG,SUPPORTED,gif-portrait,one PNG file per page for the picture,"1 PNG file(s), 360x540",OK,PASSED,,0.004,9724,1,"Pillow, Qt",,PASSED
+GIF,PNG,SUPPORTED,gif-portrait,one PNG file per page for the picture,"1 PNG file(s), 360x540",OK,PASSED,,0.003,9724,1,"Pillow, Qt",,PASSED
 GIF,PNG,SUPPORTED,gif-tiny,one PNG file per page for the picture,"1 PNG file(s), 24x16",OK,PASSED,,0.001,338,1,"Pillow, Qt",,PASSED
-GIF,HEIC,SUPPORTED,gif-animated,one HEIC file per page for the first frame only (Every frame is off by default),"1 HEIC file(s), 320x240",OK,PASSED,,0.044,20239,1,"Pillow, Qt",,PASSED
-GIF,HEIC,SUPPORTED,gif-hires,one HEIC file per page for the picture,"1 HEIC file(s), 3200x2000",OK,PASSED,,0.349,134613,1,"Pillow, Qt",,PASSED
-GIF,HEIC,SUPPORTED,gif-landscape,"one HEIC file per page for the picture, transparency kept","1 HEIC file(s), 640x400",OK,PASSED,,0.062,35025,1,"Pillow, Qt",,PASSED
-GIF,HEIC,SUPPORTED,gif-portrait,one HEIC file per page for the picture,"1 HEIC file(s), 360x540",OK,PASSED,,0.058,28699,1,"Pillow, Qt",,PASSED
+GIF,HEIC,SUPPORTED,gif-animated,one HEIC file per page for the first frame only (Every frame is off by default),"1 HEIC file(s), 320x240",OK,PASSED,,0.04,20239,1,"Pillow, Qt",,PASSED
+GIF,HEIC,SUPPORTED,gif-hires,one HEIC file per page for the picture,"1 HEIC file(s), 3200x2000",OK,PASSED,,0.354,134613,1,"Pillow, Qt",,PASSED
+GIF,HEIC,SUPPORTED,gif-landscape,"one HEIC file per page for the picture, transparency kept","1 HEIC file(s), 640x400",OK,PASSED,,0.068,35025,1,"Pillow, Qt",,PASSED
+GIF,HEIC,SUPPORTED,gif-portrait,one HEIC file per page for the picture,"1 HEIC file(s), 360x540",OK,PASSED,,0.06,28699,1,"Pillow, Qt",,PASSED
 GIF,HEIC,SUPPORTED,gif-tiny,one HEIC file per page for the picture,"1 HEIC file(s), 24x16",OK,PASSED,,0.007,1086,1,"Pillow, Qt",,PASSED
 GIF,WEBP,SUPPORTED,gif-animated,"one animated WebP, all 4 frames, 200 ms each, loops forever","1 animated WebP, 4 frames, durations [200] ms, loop 0",OK,PASSED,,0.018,27432,1,"Pillow, Qt",,PASSED
-GIF,WEBP,SUPPORTED,gif-hires,one WebP file per page for the picture,"1 WebP file(s), 3200x2000",OK,PASSED,,0.164,55456,1,"Pillow, Qt",,PASSED
-GIF,WEBP,SUPPORTED,gif-landscape,"one WebP file per page for the picture, transparency kept","1 WebP file(s), 640x400",OK,PASSED,,0.012,12564,1,"Pillow, Qt",,PASSED
+GIF,WEBP,SUPPORTED,gif-hires,one WebP file per page for the picture,"1 WebP file(s), 3200x2000",OK,PASSED,,0.163,55456,1,"Pillow, Qt",,PASSED
+GIF,WEBP,SUPPORTED,gif-landscape,"one WebP file per page for the picture, transparency kept","1 WebP file(s), 640x400",OK,PASSED,,0.011,12564,1,"Pillow, Qt",,PASSED
 GIF,WEBP,SUPPORTED,gif-portrait,one WebP file per page for the picture,"1 WebP file(s), 360x540",OK,PASSED,,0.008,10050,1,"Pillow, Qt",,PASSED
 GIF,WEBP,SUPPORTED,gif-tiny,one WebP file per page for the picture,"1 WebP file(s), 24x16",OK,PASSED,,0.001,208,1,"Pillow, Qt",,PASSED
-GIF,AVIF,SUPPORTED,gif-animated,one AVIF file per page for the first frame only (Every frame is off by default),"1 AVIF file(s), 320x240",OK,PASSED,,0.047,6168,1,"Pillow, sips",,PASSED
-GIF,AVIF,SUPPORTED,gif-hires,one AVIF file per page for the picture,"1 AVIF file(s), 3200x2000",OK,PASSED,,0.194,28562,1,"Pillow, sips",,PASSED
-GIF,AVIF,SUPPORTED,gif-landscape,"one AVIF file per page for the picture, transparency kept","1 AVIF file(s), 640x400",OK,PASSED,,0.069,10966,1,"Pillow, sips",,PASSED
-GIF,AVIF,SUPPORTED,gif-portrait,one AVIF file per page for the picture,"1 AVIF file(s), 360x540",OK,PASSED,,0.075,9124,1,"Pillow, sips",,PASSED
+GIF,AVIF,SUPPORTED,gif-animated,one AVIF file per page for the first frame only (Every frame is off by default),"1 AVIF file(s), 320x240",OK,PASSED,,0.05,6168,1,"Pillow, sips",,PASSED
+GIF,AVIF,SUPPORTED,gif-hires,one AVIF file per page for the picture,"1 AVIF file(s), 3200x2000",OK,PASSED,,0.193,28562,1,"Pillow, sips",,PASSED
+GIF,AVIF,SUPPORTED,gif-landscape,"one AVIF file per page for the picture, transparency kept","1 AVIF file(s), 640x400",OK,PASSED,,0.07,10966,1,"Pillow, sips",,PASSED
+GIF,AVIF,SUPPORTED,gif-portrait,one AVIF file per page for the picture,"1 AVIF file(s), 360x540",OK,PASSED,,0.077,9124,1,"Pillow, sips",,PASSED
 GIF,AVIF,SUPPORTED,gif-tiny,one AVIF file per page for the picture,"1 AVIF file(s), 24x16",OK,PASSED,,0.001,447,1,"Pillow, sips",,PASSED
 GIF,TIFF,SUPPORTED,gif-animated,one TIFF file per page for the first frame only (Every frame is off by default),"1 TIFF file(s), 320x240",OK,PASSED,,0.002,6942,1,"Pillow, Qt",,PASSED
 GIF,TIFF,SUPPORTED,gif-hires,one TIFF file per page for the picture,"1 TIFF file(s), 3200x2000",OK,PASSED,,0.033,248568,1,"Pillow, Qt",,PASSED
@@ -475,16 +475,16 @@ GIF,TIFF,SUPPORTED,gif-landscape,"one TIFF file per page for the picture, transp
 GIF,TIFF,SUPPORTED,gif-portrait,one TIFF file per page for the picture,"1 TIFF file(s), 360x540",OK,PASSED,,0.002,12586,1,"Pillow, Qt",,PASSED
 GIF,TIFF,SUPPORTED,gif-tiny,one TIFF file per page for the picture,"1 TIFF file(s), 24x16",OK,PASSED,,0.001,740,1,"Pillow, Qt",,PASSED
 GIF,GIF,SUPPORTED,gif-animated,"one animated GIF, all 4 frames, 200 ms each, loops forever","1 animated GIF, 4 frames, durations [200] ms, loop 0",OK,PASSED,,0.02,55014,1,"GIF parser, Pillow, Qt",,PASSED
-GIF,GIF,SUPPORTED,gif-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.158,233742,1,"Pillow, Qt",,PASSED
-GIF,GIF,SUPPORTED,gif-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.01,38721,1,"Pillow, Qt",,PASSED
+GIF,GIF,SUPPORTED,gif-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.159,233742,1,"Pillow, Qt",,PASSED
+GIF,GIF,SUPPORTED,gif-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.011,38721,1,"Pillow, Qt",,PASSED
 GIF,GIF,SUPPORTED,gif-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.009,37493,1,"Pillow, Qt",,PASSED
 GIF,GIF,SUPPORTED,gif-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.003,1239,1,"Pillow, Qt",,PASSED
 GIF,GIF_SEPARATE,SUPPORTED,gif-animated,one GIF file per page for the first frame only (Every frame is off by default),"1 GIF file(s), 320x240",OK,PASSED,,0.005,18606,1,"Pillow, Qt",,PASSED
-GIF,GIF_SEPARATE,SUPPORTED,gif-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.159,233742,1,"Pillow, Qt",,PASSED
+GIF,GIF_SEPARATE,SUPPORTED,gif-hires,one GIF file per page for the picture,"1 GIF file(s), 3200x2000",OK,PASSED,,0.158,233742,1,"Pillow, Qt",,PASSED
 GIF,GIF_SEPARATE,SUPPORTED,gif-landscape,"one GIF file per page for the picture, transparency kept","1 GIF file(s), 640x400",OK,PASSED,,0.011,38721,1,"Pillow, Qt",,PASSED
 GIF,GIF_SEPARATE,SUPPORTED,gif-portrait,one GIF file per page for the picture,"1 GIF file(s), 360x540",OK,PASSED,,0.009,37493,1,"Pillow, Qt",,PASSED
 GIF,GIF_SEPARATE,SUPPORTED,gif-tiny,one GIF file per page for the picture,"1 GIF file(s), 24x16",OK,PASSED,,0.003,1239,1,"Pillow, Qt",,PASSED
-GIF,BMP,SUPPORTED,gif-animated,one BMP file per page for the first frame only (Every frame is off by default),"1 BMP file(s), 320x240",OK,PASSED,,0.003,230454,1,"Pillow, Qt",,PASSED
+GIF,BMP,SUPPORTED,gif-animated,one BMP file per page for the first frame only (Every frame is off by default),"1 BMP file(s), 320x240",OK,PASSED,,0.002,230454,1,"Pillow, Qt",,PASSED
 GIF,BMP,SUPPORTED,gif-hires,one BMP file per page for the picture,"1 BMP file(s), 3200x2000",OK,PASSED,,0.022,19200054,1,"Pillow, Qt",,PASSED
 GIF,BMP,SUPPORTED,gif-landscape,"one BMP file per page for the picture, transparency on white","1 BMP file(s), 640x400",OK,PASSED,,0.002,768054,1,"Pillow, Qt",,PASSED
 GIF,BMP,SUPPORTED,gif-portrait,one BMP file per page for the picture,"1 BMP file(s), 360x540",OK,PASSED,,0.002,583254,1,"Pillow, Qt",,PASSED
@@ -495,57 +495,57 @@ GIF,IPYNB,UNSUPPORTED_BY_DESIGN,gif-landscape,not offered,Papyr never writes not
 GIF,IPYNB,UNSUPPORTED_BY_DESIGN,gif-portrait,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 GIF,IPYNB,UNSUPPORTED_BY_DESIGN,gif-tiny,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 PDF,PDF,SUPPORTED,pdf-mixed-content,"one PDF with each page as a page, text kept","1 PDF, 7 page(s), first page 612x792 pt",OK,PASSED,,0.003,243155,1,"PDFium, pypdf",,PASSED
-PDF,PDF,SUPPORTED,pdf-single-text,"one PDF with each page as a page, text kept","1 PDF, 1 page(s), first page 595x842 pt",OK,PASSED,,0.001,8539,1,"PDFium, pypdf",,PASSED
+PDF,PDF,SUPPORTED,pdf-single-text,"one PDF with each page as a page, text kept","1 PDF, 1 page(s), first page 595x842 pt",OK,PASSED,,0.002,8539,1,"PDFium, pypdf",,PASSED
 PDF,PDF,SUPPORTED,pdf-twelve-pages,"one PDF with each page as a page, text kept","1 PDF, 12 page(s), first page 792x612 pt",OK,PASSED,,0.003,15337,1,"PDFium, pypdf",,PASSED
-PDF,JPEG,SUPPORTED,pdf-mixed-content,one JPEG file per page for each page,"7 JPEG file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653...",OK,PASSED,,0.123,961206,7,"Pillow, Qt",,PASSED
+PDF,JPEG,SUPPORTED,pdf-mixed-content,one JPEG file per page for each page,"7 JPEG file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653...",OK,PASSED,,0.124,961206,7,"Pillow, Qt",,PASSED
 PDF,JPEG,SUPPORTED,pdf-single-text,one JPEG file per page for each page,"1 JPEG file(s), 1653x2339",OK,PASSED,,0.018,90458,1,"Pillow, Qt",,PASSED
-PDF,JPEG,SUPPORTED,pdf-twelve-pages,one JPEG file per page for each page,"12 JPEG file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700...",OK,PASSED,,0.199,630189,12,"Pillow, Qt",,PASSED
-PDF,PNG,SUPPORTED,pdf-mixed-content,one PNG file per page for each page,"7 PNG file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653...",OK,PASSED,,0.2,1402216,7,"Pillow, Qt",,PASSED
-PDF,PNG,SUPPORTED,pdf-single-text,one PNG file per page for each page,"1 PNG file(s), 1653x2339",OK,PASSED,,0.018,68090,1,"Pillow, Qt",,PASSED
-PDF,PNG,SUPPORTED,pdf-twelve-pages,one PNG file per page for each page,"12 PNG file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700...",OK,PASSED,,0.167,334852,12,"Pillow, Qt",,PASSED
-PDF,HEIC,SUPPORTED,pdf-mixed-content,one HEIC file per page for each page,"7 HEIC file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653...",OK,PASSED,,1.242,959013,7,"Pillow, Qt",,PASSED
-PDF,HEIC,SUPPORTED,pdf-single-text,one HEIC file per page for each page,"1 HEIC file(s), 1653x2339",OK,PASSED,,0.128,47696,1,"Pillow, Qt",,PASSED
+PDF,JPEG,SUPPORTED,pdf-twelve-pages,one JPEG file per page for each page,"12 JPEG file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700...",OK,PASSED,,0.2,630189,12,"Pillow, Qt",,PASSED
+PDF,PNG,SUPPORTED,pdf-mixed-content,one PNG file per page for each page,"7 PNG file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653...",OK,PASSED,,0.205,1402216,7,"Pillow, Qt",,PASSED
+PDF,PNG,SUPPORTED,pdf-single-text,one PNG file per page for each page,"1 PNG file(s), 1653x2339",OK,PASSED,,0.016,68090,1,"Pillow, Qt",,PASSED
+PDF,PNG,SUPPORTED,pdf-twelve-pages,one PNG file per page for each page,"12 PNG file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700...",OK,PASSED,,0.176,334852,12,"Pillow, Qt",,PASSED
+PDF,HEIC,SUPPORTED,pdf-mixed-content,one HEIC file per page for each page,"7 HEIC file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653...",OK,PASSED,,1.165,959013,7,"Pillow, Qt",,PASSED
+PDF,HEIC,SUPPORTED,pdf-single-text,one HEIC file per page for each page,"1 HEIC file(s), 1653x2339",OK,PASSED,,0.133,47696,1,"Pillow, Qt",,PASSED
 PDF,HEIC,SUPPORTED,pdf-twelve-pages,one HEIC file per page for each page,"12 HEIC file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700...",OK,PASSED,,1.339,187616,12,"Pillow, Qt",,PASSED
-PDF,WEBP,SUPPORTED,pdf-mixed-content,one WebP file per page for each page,"7 WebP file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653...",OK,PASSED,,0.548,353514,7,"Pillow, Qt",,PASSED
-PDF,WEBP,SUPPORTED,pdf-single-text,one WebP file per page for each page,"1 WebP file(s), 1653x2339",OK,PASSED,,0.084,28688,1,"Pillow, Qt",,PASSED
-PDF,WEBP,SUPPORTED,pdf-twelve-pages,one WebP file per page for each page,"12 WebP file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700...",OK,PASSED,,0.91,129552,12,"Pillow, Qt",,PASSED
-PDF,AVIF,SUPPORTED,pdf-mixed-content,one AVIF file per page for each page,"7 AVIF file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653...",OK,PASSED,,0.521,387060,7,"Pillow, sips",,PASSED
+PDF,WEBP,SUPPORTED,pdf-mixed-content,one WebP file per page for each page,"7 WebP file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653...",OK,PASSED,,0.555,353514,7,"Pillow, Qt",,PASSED
+PDF,WEBP,SUPPORTED,pdf-single-text,one WebP file per page for each page,"1 WebP file(s), 1653x2339",OK,PASSED,,0.085,28688,1,"Pillow, Qt",,PASSED
+PDF,WEBP,SUPPORTED,pdf-twelve-pages,one WebP file per page for each page,"12 WebP file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700...",OK,PASSED,,0.919,129552,12,"Pillow, Qt",,PASSED
+PDF,AVIF,SUPPORTED,pdf-mixed-content,one AVIF file per page for each page,"7 AVIF file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653...",OK,PASSED,,0.519,387060,7,"Pillow, sips",,PASSED
 PDF,AVIF,SUPPORTED,pdf-single-text,one AVIF file per page for each page,"1 AVIF file(s), 1653x2339",OK,PASSED,,0.039,26321,1,"Pillow, sips",,PASSED
-PDF,AVIF,SUPPORTED,pdf-twelve-pages,one AVIF file per page for each page,"12 AVIF file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700...",OK,PASSED,,0.369,63871,12,"Pillow, sips",,PASSED
-PDF,TIFF,SUPPORTED,pdf-mixed-content,one TIFF file per page for each page,"7 TIFF file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653...",OK,PASSED,,0.118,1584040,7,"Pillow, Qt",,PASSED
-PDF,TIFF,SUPPORTED,pdf-single-text,one TIFF file per page for each page,"1 TIFF file(s), 1653x2339",OK,PASSED,,0.008,64380,1,"Pillow, Qt",,PASSED
-PDF,TIFF,SUPPORTED,pdf-twelve-pages,one TIFF file per page for each page,"12 TIFF file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700...",OK,PASSED,,0.087,376974,12,"Pillow, Qt",,PASSED
-PDF,GIF,SUPPORTED,pdf-mixed-content,"one animated GIF, each page as a frame, 1000 ms, loops forever","1 GIF, 7 frames at 1000x1000, delays [1000] ms, loop 0",OK,PASSED,,0.227,258414,1,"GIF parser, Pillow, Qt",,PASSED
-PDF,GIF,SUPPORTED,pdf-single-text,"one animated GIF, each page as a frame, 1000 ms, loops forever","1 GIF, 1 frames at 707x1000, delays [1000] ms, loop 0",OK,PASSED,,0.02,12661,1,"GIF parser, Pillow, Qt",,PASSED
-PDF,GIF,SUPPORTED,pdf-twelve-pages,"one animated GIF, each page as a frame, 1000 ms, loops forever","1 GIF, 12 frames at 1000x1000, delays [1000] ms, loop 0",OK,PASSED,,0.248,65067,1,"GIF parser, Pillow, Qt",,PASSED
-PDF,GIF_SEPARATE,SUPPORTED,pdf-mixed-content,one GIF file per page for each page,"7 GIF file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653...",OK,PASSED,,0.626,804846,7,"Pillow, Qt",,PASSED
-PDF,GIF_SEPARATE,SUPPORTED,pdf-single-text,one GIF file per page for each page,"1 GIF file(s), 1653x2339",OK,PASSED,,0.078,40754,1,"Pillow, Qt",,PASSED
-PDF,GIF_SEPARATE,SUPPORTED,pdf-twelve-pages,one GIF file per page for each page,"12 GIF file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700...",OK,PASSED,,0.882,165493,12,"Pillow, Qt",,PASSED
-PDF,BMP,SUPPORTED,pdf-mixed-content,one BMP file per page for each page,"7 BMP file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653...",OK,PASSED,,0.057,65821654,7,"Pillow, Qt",,PASSED
-PDF,BMP,SUPPORTED,pdf-single-text,one BMP file per page for each page,"1 BMP file(s), 1653x2339",OK,PASSED,,0.008,11601494,1,"Pillow, Qt",,PASSED
-PDF,BMP,SUPPORTED,pdf-twelve-pages,one BMP file per page for each page,"12 BMP file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700...",OK,PASSED,,0.085,134640648,12,"Pillow, Qt",,PASSED
+PDF,AVIF,SUPPORTED,pdf-twelve-pages,one AVIF file per page for each page,"12 AVIF file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700...",OK,PASSED,,0.347,63871,12,"Pillow, sips",,PASSED
+PDF,TIFF,SUPPORTED,pdf-mixed-content,one TIFF file per page for each page,"7 TIFF file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653...",OK,PASSED,,0.108,1584040,7,"Pillow, Qt",,PASSED
+PDF,TIFF,SUPPORTED,pdf-single-text,one TIFF file per page for each page,"1 TIFF file(s), 1653x2339",OK,PASSED,,0.009,64380,1,"Pillow, Qt",,PASSED
+PDF,TIFF,SUPPORTED,pdf-twelve-pages,one TIFF file per page for each page,"12 TIFF file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700...",OK,PASSED,,0.073,376974,12,"Pillow, Qt",,PASSED
+PDF,GIF,SUPPORTED,pdf-mixed-content,"one animated GIF, each page as a frame, 1000 ms, loops forever","1 GIF, 7 frames at 1000x1000, delays [1000] ms, loop 0",OK,PASSED,,0.232,258414,1,"GIF parser, Pillow, Qt",,PASSED
+PDF,GIF,SUPPORTED,pdf-single-text,"one animated GIF, each page as a frame, 1000 ms, loops forever","1 GIF, 1 frames at 707x1000, delays [1000] ms, loop 0",OK,PASSED,,0.019,12661,1,"GIF parser, Pillow, Qt",,PASSED
+PDF,GIF,SUPPORTED,pdf-twelve-pages,"one animated GIF, each page as a frame, 1000 ms, loops forever","1 GIF, 12 frames at 1000x1000, delays [1000] ms, loop 0",OK,PASSED,,0.26,65067,1,"GIF parser, Pillow, Qt",,PASSED
+PDF,GIF_SEPARATE,SUPPORTED,pdf-mixed-content,one GIF file per page for each page,"7 GIF file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653...",OK,PASSED,,0.637,804846,7,"Pillow, Qt",,PASSED
+PDF,GIF_SEPARATE,SUPPORTED,pdf-single-text,one GIF file per page for each page,"1 GIF file(s), 1653x2339",OK,PASSED,,0.079,40754,1,"Pillow, Qt",,PASSED
+PDF,GIF_SEPARATE,SUPPORTED,pdf-twelve-pages,one GIF file per page for each page,"12 GIF file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700...",OK,PASSED,,0.879,165493,12,"Pillow, Qt",,PASSED
+PDF,BMP,SUPPORTED,pdf-mixed-content,one BMP file per page for each page,"7 BMP file(s), 1700x2200, 1653x2339, 1653x2339, 2339x1653...",OK,PASSED,,0.061,65821654,7,"Pillow, Qt",,PASSED
+PDF,BMP,SUPPORTED,pdf-single-text,one BMP file per page for each page,"1 BMP file(s), 1653x2339",OK,PASSED,,0.009,11601494,1,"Pillow, Qt",,PASSED
+PDF,BMP,SUPPORTED,pdf-twelve-pages,one BMP file per page for each page,"12 BMP file(s), 2200x1700, 1700x2200, 1700x2200, 2200x1700...",OK,PASSED,,0.091,134640648,12,"Pillow, Qt",,PASSED
 PDF,IPYNB,UNSUPPORTED_BY_DESIGN,pdf-mixed-content,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 PDF,IPYNB,UNSUPPORTED_BY_DESIGN,pdf-single-text,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 PDF,IPYNB,UNSUPPORTED_BY_DESIGN,pdf-twelve-pages,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
-IPYNB,PDF,SUPPORTED,notebook-matrix,"one PDF with each page as a page, text kept","1 PDF, 5 page(s), first page 595x842 pt",OK,PASSED,,0.17,176701,1,"PDFium, pypdf",,PASSED
+IPYNB,PDF,SUPPORTED,notebook-matrix,"one PDF with each page as a page, text kept","1 PDF, 5 page(s), first page 595x842 pt",OK,PASSED,,0.222,176701,1,"PDFium, pypdf",,PASSED
 IPYNB,PDF,SUPPORTED,notebook-short,"one PDF with each page as a page, text kept","1 PDF, 1 page(s), first page 595x842 pt",OK,PASSED,,0.031,58427,1,"PDFium, pypdf",,PASSED
-IPYNB,JPEG,SUPPORTED,notebook-matrix,one JPEG file per page for each page,"6 JPEG file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200...",OK,PASSED,,0.298,1478584,6,"Pillow, Qt",,PASSED
-IPYNB,JPEG,SUPPORTED,notebook-short,one JPEG file per page for each page,"1 JPEG file(s), 1700x2200",OK,PASSED,,0.05,245699,1,"Pillow, Qt",,PASSED
-IPYNB,PNG,SUPPORTED,notebook-matrix,one PNG file per page for each page,"6 PNG file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200...",OK,PASSED,,0.34,1682826,6,"Pillow, Qt",,PASSED
-IPYNB,PNG,SUPPORTED,notebook-short,one PNG file per page for each page,"1 PNG file(s), 1700x2200",OK,PASSED,,0.059,273793,1,"Pillow, Qt",,PASSED
-IPYNB,HEIC,SUPPORTED,notebook-matrix,one HEIC file per page for each page,"6 HEIC file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200...",OK,PASSED,,1.502,1161857,6,"Pillow, Qt",,PASSED
-IPYNB,HEIC,SUPPORTED,notebook-short,one HEIC file per page for each page,"1 HEIC file(s), 1700x2200",OK,PASSED,,0.246,196018,1,"Pillow, Qt",,PASSED
-IPYNB,WEBP,SUPPORTED,notebook-matrix,one WebP file per page for each page,"6 WebP file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200...",OK,PASSED,,0.746,576260,6,"Pillow, Qt",,PASSED
-IPYNB,WEBP,SUPPORTED,notebook-short,one WebP file per page for each page,"1 WebP file(s), 1700x2200",OK,PASSED,,0.126,97162,1,"Pillow, Qt",,PASSED
-IPYNB,AVIF,SUPPORTED,notebook-matrix,one AVIF file per page for each page,"6 AVIF file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200...",OK,PASSED,,1.024,287108,6,"Pillow, sips",,PASSED
-IPYNB,AVIF,SUPPORTED,notebook-short,one AVIF file per page for each page,"1 AVIF file(s), 1700x2200",OK,PASSED,,0.093,100807,1,"Pillow, sips",,PASSED
-IPYNB,TIFF,SUPPORTED,notebook-matrix,one TIFF file per page for each page,"6 TIFF file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200...",OK,PASSED,,0.261,1753708,6,"Pillow, Qt",,PASSED
-IPYNB,TIFF,SUPPORTED,notebook-short,one TIFF file per page for each page,"1 TIFF file(s), 1700x2200",OK,PASSED,,0.046,282938,1,"Pillow, Qt",,PASSED
-IPYNB,GIF,SUPPORTED,notebook-matrix,"one animated GIF, each page as a frame, 1000 ms, loops forever","1 GIF, 6 frames at 773x1000, delays [1000] ms, loop 0",OK,PASSED,,0.303,242045,1,"GIF parser, Pillow, Qt",,PASSED
+IPYNB,JPEG,SUPPORTED,notebook-matrix,one JPEG file per page for each page,"6 JPEG file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200...",OK,PASSED,,0.295,1478584,6,"Pillow, Qt",,PASSED
+IPYNB,JPEG,SUPPORTED,notebook-short,one JPEG file per page for each page,"1 JPEG file(s), 1700x2200",OK,PASSED,,0.049,245699,1,"Pillow, Qt",,PASSED
+IPYNB,PNG,SUPPORTED,notebook-matrix,one PNG file per page for each page,"6 PNG file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200...",OK,PASSED,,0.341,1682826,6,"Pillow, Qt",,PASSED
+IPYNB,PNG,SUPPORTED,notebook-short,one PNG file per page for each page,"1 PNG file(s), 1700x2200",OK,PASSED,,0.057,273793,1,"Pillow, Qt",,PASSED
+IPYNB,HEIC,SUPPORTED,notebook-matrix,one HEIC file per page for each page,"6 HEIC file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200...",OK,PASSED,,1.499,1161857,6,"Pillow, Qt",,PASSED
+IPYNB,HEIC,SUPPORTED,notebook-short,one HEIC file per page for each page,"1 HEIC file(s), 1700x2200",OK,PASSED,,0.252,196018,1,"Pillow, Qt",,PASSED
+IPYNB,WEBP,SUPPORTED,notebook-matrix,one WebP file per page for each page,"6 WebP file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200...",OK,PASSED,,0.75,576260,6,"Pillow, Qt",,PASSED
+IPYNB,WEBP,SUPPORTED,notebook-short,one WebP file per page for each page,"1 WebP file(s), 1700x2200",OK,PASSED,,0.125,97162,1,"Pillow, Qt",,PASSED
+IPYNB,AVIF,SUPPORTED,notebook-matrix,one AVIF file per page for each page,"6 AVIF file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200...",OK,PASSED,,1.042,287108,6,"Pillow, sips",,PASSED
+IPYNB,AVIF,SUPPORTED,notebook-short,one AVIF file per page for each page,"1 AVIF file(s), 1700x2200",OK,PASSED,,0.096,100807,1,"Pillow, sips",,PASSED
+IPYNB,TIFF,SUPPORTED,notebook-matrix,one TIFF file per page for each page,"6 TIFF file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200...",OK,PASSED,,0.263,1753708,6,"Pillow, Qt",,PASSED
+IPYNB,TIFF,SUPPORTED,notebook-short,one TIFF file per page for each page,"1 TIFF file(s), 1700x2200",OK,PASSED,,0.043,282938,1,"Pillow, Qt",,PASSED
+IPYNB,GIF,SUPPORTED,notebook-matrix,"one animated GIF, each page as a frame, 1000 ms, loops forever","1 GIF, 6 frames at 773x1000, delays [1000] ms, loop 0",OK,PASSED,,0.301,242045,1,"GIF parser, Pillow, Qt",,PASSED
 IPYNB,GIF,SUPPORTED,notebook-short,"one animated GIF, each page as a frame, 1000 ms, loops forever","1 GIF, 1 frames at 773x1000, delays [1000] ms, loop 0",OK,PASSED,,0.05,41125,1,"GIF parser, Pillow, Qt",,PASSED
-IPYNB,GIF_SEPARATE,SUPPORTED,notebook-matrix,one GIF file per page for each page,"6 GIF file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200...",OK,PASSED,,0.673,835248,6,"Pillow, Qt",,PASSED
-IPYNB,GIF_SEPARATE,SUPPORTED,notebook-short,one GIF file per page for each page,"1 GIF file(s), 1700x2200",OK,PASSED,,0.116,138365,1,"Pillow, Qt",,PASSED
-IPYNB,BMP,SUPPORTED,notebook-matrix,one BMP file per page for each page,"6 BMP file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200...",OK,PASSED,,0.219,67320324,6,"Pillow, Qt",,PASSED
-IPYNB,BMP,SUPPORTED,notebook-short,one BMP file per page for each page,"1 BMP file(s), 1700x2200",OK,PASSED,,0.038,11220054,1,"Pillow, Qt",,PASSED
+IPYNB,GIF_SEPARATE,SUPPORTED,notebook-matrix,one GIF file per page for each page,"6 GIF file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200...",OK,PASSED,,0.677,835248,6,"Pillow, Qt",,PASSED
+IPYNB,GIF_SEPARATE,SUPPORTED,notebook-short,one GIF file per page for each page,"1 GIF file(s), 1700x2200",OK,PASSED,,0.114,138365,1,"Pillow, Qt",,PASSED
+IPYNB,BMP,SUPPORTED,notebook-matrix,one BMP file per page for each page,"6 BMP file(s), 1700x2200, 1700x2200, 1700x2200, 1700x2200...",OK,PASSED,,0.223,67320324,6,"Pillow, Qt",,PASSED
+IPYNB,BMP,SUPPORTED,notebook-short,one BMP file per page for each page,"1 BMP file(s), 1700x2200",OK,PASSED,,0.037,11220054,1,"Pillow, Qt",,PASSED
 IPYNB,IPYNB,UNSUPPORTED_BY_DESIGN,notebook-matrix,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
 IPYNB,IPYNB,UNSUPPORTED_BY_DESIGN,notebook-short,not offered,Papyr never writes notebooks; there is no notebook output format,SKIPPED,n/a,,0.0,0,0,,,UNSUPPORTED_BY_DESIGN
