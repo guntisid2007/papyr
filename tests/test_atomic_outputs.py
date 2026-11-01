@@ -346,6 +346,8 @@ def test_without_atomic_moves_a_name_taken_mid_run_is_still_not_overwritten(tmp_
     assert Image.open(report.outputs[0]).size == (40, 30)
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Windows can't replace a file another program holds open, so "
+                                                  "this race can't happen there")
 def test_without_atomic_moves_a_name_replaced_during_the_copy_keeps_the_other_file(tmp_path, monkeypatch):
     """The narrow race the audit found: another program renames its file over Papyr's freshly created name while
     Papyr copies into it. Its file survives, and Papyr writes its own under the next name instead of claiming

@@ -156,9 +156,10 @@ def _copy_exclusive(temp: str, destination: Path) -> _Identity:
             raise FileExistsError(f"{destination} was replaced while Papyr wrote it")
     except BaseException:
         try:
-            _remove_if_ours(destination, _identity(os.fstat(fd)))
+            identity = _identity(os.fstat(fd))
         finally:
-            os.close(fd)
+            os.close(fd)  # first: Windows can't remove a file that is still open
+        _remove_if_ours(destination, identity)
         raise
     os.close(fd)
     _remove(Path(temp))

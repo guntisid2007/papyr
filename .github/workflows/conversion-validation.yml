@@ -23,7 +23,7 @@ jobs:
   validate:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 40
+    timeout-minutes: 90  # the Intel macOS runners take about 20 minutes for the matrix alone
     strategy:
       fail-fast: false
       matrix:

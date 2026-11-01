@@ -668,7 +668,8 @@ def _check_notebook_pdf(spec, file, out, problems) -> None:
         rendered = pdf_render(file, index, dpi=50)
         pages.append(rendered)
         if ink(rendered) < 0.003:
-            problems.append(f"page {index + 1} is blank")
+            problems.append(f"page {index + 1} of {out.pages} is blank (ink {ink(rendered):.4f}, "
+                            f"text {out.texts[index][:200]!r})")
     _check_section_order(spec, pages, problems)
     for folder in (spec.path().parent, Path.cwd()):
         if (folder / EXECUTION_SENTINEL).exists():
