@@ -324,4 +324,5 @@ def ink_match(output: Image.Image, reference: Image.Image) -> tuple[float, float
         return None
     kept = ImageChops.multiply(wanted, _dark(output, 160).filter(ImageFilter.MaxFilter(3))).histogram()[255]
     true = ImageChops.multiply(drawn, _dark(reference, 160).filter(ImageFilter.MaxFilter(3))).histogram()[255]
-    return kept / wanted_total, (true / drawn_total if drawn_total else 0.0)
+    # With no dark ink in the output, nothing was drawn over, so precision is perfect; lost text shows in recall.
+    return kept / wanted_total, (true / drawn_total if drawn_total else 1.0)

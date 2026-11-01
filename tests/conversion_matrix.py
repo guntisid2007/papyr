@@ -668,8 +668,13 @@ def _check_notebook_pdf(spec, file, out, problems) -> None:
         rendered = pdf_render(file, index, dpi=50)
         pages.append(rendered)
         if ink(rendered) < 0.003:
-            problems.append(f"page {index + 1} of {out.pages} is blank (ink {ink(rendered):.4f}, "
-                            f"text {out.texts[index][:200]!r})")
+            # A last page can hold a single line, which is little ink but not blank. It must then have text, and
+            # that text must be drawn visibly dark where PDFium places it.
+            words = sorted(out.texts[index].split(), key=len)
+            darkest = text_darkness(file, words[-1]) if words else None
+            if darkest is None or darkest > 100:
+                problems.append(f"page {index + 1} of {out.pages} is blank (ink {ink(rendered):.4f}, "
+                                f"text {out.texts[index][:200]!r}, darkest {darkest})")
     _check_section_order(spec, pages, problems)
     for folder in (spec.path().parent, Path.cwd()):
         if (folder / EXECUTION_SENTINEL).exists():

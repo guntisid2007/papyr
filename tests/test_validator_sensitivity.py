@@ -188,3 +188,51 @@ def test_the_matrix_check_catches_lost_notebook_output_text(target, fixture_spec
     result = run_pair(fixture_specs["notebook-short"], TARGET[target], tmp_path / "out")
     RESULTS.remove(result)
     assert result.validation == "FAILED", result.actual
+
+
+def _one_line_page_pdf(path, gray: float):
+    """Two pages: a full page of text, then a page with one short line drawn in the given gray (0 black, 1 white)."""
+    from pdf_samples import _pdf
+    full = " ".join(f"BT /F1 12 Tf 20 {760 - 14 * i} Td (LINE_{i:03d} with several words of text) Tj ET"
+                    for i in range(50))
+    last = f"{gray} g BT /F1 12 Tf 20 760 Td (LONELY_LAST_LINE) Tj ET"
+    return _pdf(path, [(full, (612, 792)), (last, (612, 792))])
+
+
+@pytest.mark.parametrize("gray, flagged", [(0, False), (1, True)])
+def test_a_one_line_last_page_passes_only_when_its_text_is_visible(tmp_path, gray, flagged):
+    """Windows lays the matrix notebook out with its last line alone on a page, which has little ink. That page is
+    fine when the line is visibly dark, and still caught when the text is invisible."""
+    from conversion_matrix import _check_notebook_pdf
+    from validators import pdf_facts
+    file = _one_line_page_pdf(tmp_path / "doc.pdf", gray)
+    problems = []
+
+    class Spec:
+        extra = {"sections": 0}
+        pages = ()
+
+        @staticmethod
+        def path():
+            return file
+    import conversion_matrix
+    original = conversion_matrix._check_notebook_text, conversion_matrix._check_section_order
+    conversion_matrix._check_notebook_text = lambda *a, **k: None
+    conversion_matrix._check_section_order = lambda *a, **k: None
+    try:
+        _check_notebook_pdf(Spec, file, pdf_facts(file), problems)
+    finally:
+        conversion_matrix._check_notebook_text, conversion_matrix._check_section_order = original
+    blank = [p for p in problems if "is blank" in p]
+    assert bool(blank) is flagged, problems
+
+
+def test_a_frame_with_its_text_gone_is_still_caught_when_it_has_no_ink_at_all():
+    """With no dark ink in the output, precision has nothing to judge, so recall must catch the lost text."""
+    from PIL import ImageDraw
+
+    from validators import ink_match
+    reference = Image.new("RGB", (400, 200), "white")
+    ImageDraw.Draw(reference).text((20, 80), "SOME TEXT THAT MUST SURVIVE", fill="black")
+    recall, precision = ink_match(Image.new("RGB", (400, 200), "white"), reference)
+    assert recall == 0.0 and precision == 1.0
