@@ -128,10 +128,13 @@ On Windows and Linux, use **Ctrl** for **⌘** and **Alt** for **⌥**.
 
 | System | Status | Evidence |
 | --- | --- | --- |
-| macOS 14.4 (Sonoma) or later, Apple silicon | **Verified** | Full test suite and every conversion pair on a Mac and in CI; packaged app self-test; launched through Finder's open path |
-| macOS 14.4 (Sonoma) or later, Intel | Experimental | Full test suite, every conversion pair, and packaged app self-test in CI only |
+| macOS, Apple silicon | **Verified on macOS 15.8 and 26.6** | Full test suite and every conversion pair on macOS 26.6.2 (a Mac) and 15.8.2 (CI); packaged app self-test on both; launched through Finder's open path on 26.6.2 |
+| macOS, Intel | Experimental | Full test suite, every conversion pair, and packaged app self-test in CI only (macOS 15.7.9) |
 | Windows 10 and 11, 64-bit | Experimental | Full test suite, every conversion pair, and packaged app self-test in CI only (Windows Server 2025 runner) |
 | Linux x86-64 (glibc 2.35+) | Experimental | Full test suite, every conversion pair, and packaged app self-test in CI only (Ubuntu 22.04 runner) |
+
+The macOS app *declares* macOS 14.4 (Sonoma) as its minimum. **No version of macOS 14 has been tested**, so treat
+macOS 14 as untested and use macOS 15 or later where you can.
 
 "Experimental" means automated tests pass on that system, but no person has used the app there yet. The self-test converts HEIC to PDF, PDF to PNG, PNG to every image format, an animated GIF to WebP, and a notebook to PDF. It also checks that an encrypted PDF is refused for PDF output and that files can't be replaced, all through the packaged app's own libraries.
 

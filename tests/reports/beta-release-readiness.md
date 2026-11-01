@@ -2,10 +2,14 @@
 
 Prepared 2026-11-01 on Siddharth's Mac mini (macOS 26.6.2, Apple silicon, Python 3.12.16) and GitHub Actions. It
 follows `beta-readiness-report.md` from the MacBook, and its numbers come from runs here, not from that report.
+The beta package and compatibility sections were corrected the same day. The first ZIP named here was built on the
+Mac mini and is withdrawn (see [Beta package](#beta-package)).
 
 ## Verdict
 
-**READY FOR LIMITED BETA**, for macOS on Apple silicon only.
+**READY FOR LIMITED BETA**, for macOS on Apple silicon only, using only the CI-built ZIP in
+[Beta package](#beta-package). Distribution waits on the human acceptance test in
+[`docs/beta/MANUAL-ACCEPTANCE-TEST.md`](../../docs/beta/MANUAL-ACCEPTANCE-TEST.md).
 
 - **Why a beta at all.** The full suite passes everywhere: 1,261 tests, none failing. That includes all 110
   supported conversion pairs (500 of 500 conversions, each checked independently of the converter), on four CI
@@ -18,8 +22,8 @@ follows `beta-readiness-report.md` from the MacBook, and its numbers come from r
 - **Why only Apple silicon.** Intel macOS, Windows, and Linux pass every automated test and package self-test in CI,
   but no person has run the app on them.
 
-Public beta needs at least two things: a person to complete `native-macos-checklist.md` on this build, and Developer
-ID signing and notarization, or a decision to ship unsigned with the documented Gatekeeper steps.
+Public beta needs at least two things: a person to complete the acceptance test on this build, and Developer ID
+signing and notarization, or a decision to ship unsigned with the documented Gatekeeper steps.
 
 ## Git state
 
@@ -234,16 +238,55 @@ suite (`test_gui.py` and `test_gui_smoke.py`) covers their logic, but that is no
 
 ## Beta package
 
+### Approved artifact (the only one)
+
 | | |
 | --- | --- |
-| Path | `/Users/siddharthgunti/papyr-release-assets/v2.3.1-beta.1/` (outside the repository; `build/` and `dist/` untouched) |
-| File | `Papyr-2.3.1-beta.1-macOS-AppleSilicon.zip` (45,283,315 bytes), with `.sha256`, `RELEASE-NOTES.md`, and `BUILT-FROM.txt` |
-| Package type | macOS `.app` in a ZIP made with `ditto --sequesterRsrc --keepParent` |
-| Version | `v2.3.1-beta.1`. The bundle reports `CFBundleShortVersionString` 2.3.1; the version was not bumped. |
-| Built from | `12b2fda`, exported with `git archive`, PyInstaller 6.22.3, arm64 |
-| SHA-256 | `789e9564e777aabe130bd98f4f3a1534a9f858de3213b2d652c31b8510a5f9e4` |
-| Signing | Ad-hoc only (`codesign --verify --deep --strict` passes). No Developer ID, not notarized; `spctl` rejects it. |
-| Checked after unzip | Executable bit kept; all 356 files, modes, and symlinks identical to the built bundle; self-test passed |
+| File as distributed | `Papyr-2.3.1-beta.1-macOS-AppleSilicon.zip` |
+| File as built by CI | `Papyr-macOS-AppleSilicon.zip`, inside the CI artifact `ci-package-Papyr-macOS-AppleSilicon.zip`. The distributed file is a byte-for-byte copy with the beta name; it was not modified or recompressed. |
+| SHA-256 | `a47235c84266594eff732c1b69e089a42a1379f99da256e497c24444602046d1` |
+| Size | 45,559,257 bytes |
+| Source CI run | [41290479138](https://github.com/guntisid2007/papyr/actions/runs/41290479138), job "Package macOS Apple Silicon", runner macOS 15.8.2 |
+| Source commit | `48fef489fe495f0dc924ad8c46e1013ea01645e1`. Its application code is identical to `12b2fda`. |
+| Build date | 2026-11-01 (artifact created 09:27 UTC; GitHub artifact retention ends 2026-11-15) |
+| Build toolchain | python.org Python 3.12.10, PyInstaller 6.22.3, pinned `requirements-dev.txt` |
+| Architecture | arm64 only (`lipo`). Apple silicon Macs. |
+| Version | Bundle `CFBundleShortVersionString` 2.3.1 (not bumped); released as 2.3.1-beta.1 |
+| Signing | Ad-hoc only. `codesign --verify --deep --strict` passes, with no Team ID. Not signed with an Apple Developer ID. |
+| Notarization | Not notarized. Gatekeeper (`spctl`) rejects it until each user chooses Open Anyway. |
+| Archive check | `unzip -t` reports no errors. One top-level item, `Papyr.app` (424 entries), and no `__MACOSX` entries. |
+| Checks run | Self-test passed in CI before and after unzip (macOS 15.8.2), and again on the Mac mini (macOS 26.6.2) after downloading the artifact |
+| Kept at | `~/Downloads/Papyr-Beta-Distribution/` on the Mac mini, with the untouched original under `_source/ci-run-41290479138/` |
+
+The ZIP holds only the app. Installation steps ship beside it, in
+[`docs/beta/INSTALLATION.md`](../../docs/beta/INSTALLATION.md).
+
+### Withdrawn: the Mac mini ZIP
+
+`Papyr-2.3.1-beta.1-macOS-AppleSilicon.zip`, SHA-256
+`789e9564e777aabe130bd98f4f3a1534a9f858de3213b2d652c31b8510a5f9e4`, built on the Mac mini from `12b2fda`.
+**Unsuitable for distribution. Do not send it to anyone.**
+
+- It was built with Homebrew's Python 3.12.16. That interpreter and 52 standard-library modules declare **macOS 26.0**
+  as their minimum, although the app declares 14.4.
+- It has only run on macOS 26.6.2.
+- It also carries 496 `__MACOSX` AppleDouble entries.
+
+It was moved to `~/papyr-release-assets/v2.3.1-beta.1/withdrawn/` with a note.
+
+### macOS compatibility
+
+The app *declares* `LSMinimumSystemVersion` 14.4 in its `Info.plist`. That is a requirement it states, not a version
+anyone has tested.
+
+| macOS | Evidence for this release |
+| --- | --- |
+| 26.6.2 (Mac mini, Apple silicon) | Full suite and matrix from source; approved ZIP's self-test after download |
+| 15.8.2 (CI, Apple silicon) | Full suite and matrix; approved ZIP built there and self-tested before and after unzip |
+| 15.7.9 (CI, Intel) | Full suite and matrix; Intel package self-test. The Intel build is not part of this beta. |
+| 14.x | **Not tested.** In the approved ZIP, eight PySide6 6.12 binding modules declare macOS 26.0 (from the PySide6 wheel), yet they loaded on 15.8.2. Whether the app runs on 14.x is unknown. |
+
+Beta testers are therefore asked for macOS 15 or later.
 
 Not uploaded, not tagged, not released.
 
@@ -251,7 +294,8 @@ Not uploaded, not tagged, not released.
 
 1. **Signing and notarization.** These need an Apple Developer ID. The release notes give the per-app "Open Anyway"
    steps and don't suggest turning off Gatekeeper.
-2. **Native interactions.** A person should run `native-macos-checklist.md` on this build, or grant the automation
+2. **Native interactions.** A person should run `docs/beta/MANUAL-ACCEPTANCE-TEST.md` (39 tests, covering every step of
+   `native-macos-checklist.md`) on the approved ZIP, or grant the automation
    permissions so it can be scripted.
 3. **The exclusive copy is not atomic.** On disks without an atomic no-replace move (exFAT on macOS, some network
    shares), a power loss during the final copy can leave a partly written file under the new name.

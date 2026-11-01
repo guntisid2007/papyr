@@ -3,6 +3,10 @@
 Automated tests drive the window offscreen. They don't open real system dialogs, Finder drag and drop, or the Dock.
 A person runs this checklist on the packaged app before each beta goes out. It takes about 15 minutes.
 
+For 2.3.1-beta.1, run the detailed version instead: [`docs/beta/MANUAL-ACCEPTANCE-TEST.md`](../../docs/beta/MANUAL-ACCEPTANCE-TEST.md)
+(39 tests covering all 20 steps below, with results in `MANUAL-ACCEPTANCE-RESULTS.md`). Test only the approved ZIP,
+SHA-256 `a47235c84266594eff732c1b69e089a42a1379f99da256e497c24444602046d1`.
+
 ## Before you start
 
 1. Quit any running copy of Papyr. The older app in `dist/` and this one share preferences.
