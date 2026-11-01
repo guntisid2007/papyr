@@ -120,30 +120,38 @@ On Windows and Linux, use **Ctrl** for **⌘** and **Alt** for **⌥**.
 - No accounts, no telemetry, no analytics, no API keys.
 - Images that a notebook links from the web are not downloaded. Only images saved inside the notebook or next to it on your computer are shown.
 - Photo metadata such as GPS location, camera model, and date is **not** copied into the converted files.
-- The app writes nothing except the files you ask for. Each file is written to a hidden temporary file in the destination folder. A source's files are moved into place only after all of them are complete, so a file that fails or is cancelled part way leaves none of its pages behind, and an existing file is never replaced unless you agree to replace a merged file.
+- The app writes nothing except the files you ask for, and a local log of conversion failures (paths and error messages, never file contents) in `~/Library/Logs/Papyr` on macOS or the app's data folder elsewhere.
+- Each file is written to a hidden temporary file in the destination folder. A source's files are moved into place only after all of them are complete, so a file that fails or is cancelled part way leaves none of its pages behind.
+- An existing file is never replaced unless you agree to replace a merged file. The move into place uses the system's atomic "rename unless the name is taken" (macOS, Linux, and Windows), so a file another program creates at the same moment survives too. On disks without that, such as exFAT drives on macOS, Papyr creates the name exclusively and copies into it. That copy also never replaces a file, but if the computer loses power during it, a partly written file can remain under the new name.
 
 ## Supported systems
 
-| System | Status |
-| --- | --- |
-| macOS 14.4 (Sonoma) or later, Apple silicon | Built and tested in CI on every release |
-| macOS 14.4 (Sonoma) or later, Intel | Built and tested in CI on every release |
-| Windows 10 and 11, 64-bit | Built and tested in CI on every release |
-| Linux x86-64 (glibc 2.35+) | Built and tested in CI on every release |
+| System | Status | Evidence |
+| --- | --- | --- |
+| macOS 14.4 (Sonoma) or later, Apple silicon | **Verified** | Full test suite and every conversion pair on a Mac and in CI; packaged app self-test; launched through Finder's open path |
+| macOS 14.4 (Sonoma) or later, Intel | Experimental | Full test suite, every conversion pair, and packaged app self-test in CI only |
+| Windows 10 and 11, 64-bit | Experimental | Full test suite, every conversion pair, and packaged app self-test in CI only (Windows Server 2025 runner) |
+| Linux x86-64 (glibc 2.35+) | Experimental | Full test suite, every conversion pair, and packaged app self-test in CI only (Ubuntu 22.04 runner) |
 
-"Tested in CI" means the automated test suite runs on that system, and the packaged app converts HEIC to PDF, PDF to PNG, PNG to every image format, and a notebook to PDF there before the download is published.
+"Experimental" means automated tests pass on that system, but no person has used the app there yet. The self-test converts HEIC to PDF, PDF to PNG, PNG to every image format, an animated GIF to WebP, and a notebook to PDF. It also checks that an encrypted PDF is refused for PDF output and that files can't be replaced, all through the packaged app's own libraries.
+
+On every system, real file dialogs, drag and drop from the file manager, and the Dock or taskbar are tested by hand. They are not automated. See [`tests/reports/native-macos-checklist.md`](tests/reports/native-macos-checklist.md).
 
 ## Known limitations
 
 - **Not code-signed or notarized.** The macOS app has only an ad-hoc signature. It is not signed with an Apple Developer ID or notarized by Apple, so Gatekeeper asks you to approve it once (steps above). The Windows app is not signed either, so SmartScreen may warn. Signing needs paid certificates, which this project does not have.
 - Images become image pages in a PDF, so text in photos is not searchable (no OCR). PDFs you add keep their text.
 - Turning a PDF into an image renders it at the DPI you choose; the image has no selectable text.
+- A PDF converted to JPEG, PNG, or another single-picture format gives one file per page, named `-page-1`, `-page-2`, and so on, in page order. Choose GIF for one animated file, or PDF for one document.
 - Animated GIF and WebP files stay animated, with their own frame timing and looping, when converted to WebP or to an animated GIF. Other formats and PDF take the first frame, or every frame when you turn on **Every frame**. Animated PNG files and multi-image HEIC files such as bursts convert their first image only. Multi-page TIFF files convert every page.
 - An animated WebP is made from every frame held in memory at once, so animations of more than about 134 million pixels in total (for example, 130 frames of 1000 × 1000) are refused.
 - In a combined PDF, page size and margins apply to image and notebook pages; pages from PDFs keep their original size.
 - Notebooks have no syntax highlighting. Interactive outputs such as JavaScript widgets and Plotly charts show only the static fallback saved with them, often a line of text. LaTeX math appears as its source, such as `$x^2$`. With "Original image size", or when a notebook becomes images, notebooks use US Letter in the US and A4 elsewhere.
-- Password-protected PDFs are not supported.
-- PDFs protected with AES encryption that open without a password, such as some statements and forms, can be turned into images or GIFs but not into a new PDF. Copying their pages would drop the owner's restrictions, and Papyr says so instead.
+- **Protected PDFs.** Papyr never removes a PDF's protection:
+  - A PDF that needs a password to open is refused.
+  - An encrypted PDF that opens without a password (common for statements and forms, which carry owner restrictions) is never copied into a new PDF, whatever its encryption (RC4 or AES). The copy would lose those restrictions.
+  - Such a PDF becomes images or a GIF only when its owner allows copying its content. If the owner forbids copying, Papyr refuses it for every format. It still shows the preview thumbnail.
+  - Each refusal is one plain sentence in the summary, and the rest of the batch carries on.
 - HDR and wide-gamut detail is converted to standard 8-bit sRGB.
 - Images larger than about 178 megapixels are refused to protect your computer's memory.
 - "Original image size" uses one image pixel per PDF point (1/72 inch), so a 12-megapixel photo makes a page about 142 × 107 cm. Choose A4 or Letter for printable pages.
@@ -164,8 +172,21 @@ python src/main.py
 Run the tests:
 
 ```sh
-python -m pytest
+python -m pytest tests/ -v
 ```
+
+[`tests/README.md`](tests/README.md) lists focused runs (the conversion matrix, protected PDFs, file-safety and race tests) and explains how to reproduce a conversion failure. Tests keep their preferences in a temporary folder. To run the app without touching your own preferences, set `PAPYR_SETTINGS_DIR` to an empty folder.
+
+## Report a bug
+
+Open an issue at <https://github.com/guntisid2007/papyr/issues>. Include:
+
+- Your system and the Papyr version.
+- The steps and the output format you chose.
+- The exact sentence Papyr showed.
+- The log file. On macOS it is `~/Library/Logs/Papyr/papyr.log`; elsewhere, `papyr.log` in the app's data folder. It holds file paths and error messages, never file contents.
+
+Attach a sample file only if you're comfortable making it public.
 
 ## Build the app yourself
 

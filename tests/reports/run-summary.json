@@ -1,7 +1,7 @@
 {
  "environment": {
-  "python": "3.12.14",
-  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.12.16",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
   "machine": "arm64",
   "libraries": {
    "Pillow": "13.0.0",
@@ -1112,12 +1112,12 @@
   "output_targets": 11,
   "possible_pairs": 121,
   "declared": {
-   "SUPPORTED": 110,
-   "UNSUPPORTED_BY_DESIGN": 11
+   "UNSUPPORTED_BY_DESIGN": 11,
+   "SUPPORTED": 110
   },
   "pair_status": {
-   "PASSED": 110,
-   "UNSUPPORTED_BY_DESIGN": 11
+   "UNSUPPORTED_BY_DESIGN": 11,
+   "PASSED": 110
   },
   "conversions_run": 500,
   "conversion_status": {

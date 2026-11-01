@@ -1,5 +1,7 @@
 # Papyr 2.3.1 beta readiness report
 
+> Superseded for the release decision by [`beta-release-readiness.md`](beta-release-readiness.md) (2026-11-01). Kept as the MacBook record.
+
 Branch `test/comprehensive-conversion-validation`. The fixes are in three commits on top of `fa30405`:
 `2ae1e81`, `99751f2`, and `c8e71f7`. Every number below comes from runs on 2026-10-31 on macOS 27.0, Apple Silicon
 (arm64), Python 3.12.14, Pillow 13.0.0, pypdf 6.21.4, pypdfium2 5.14.0, pillow-heif 1.8.1 (libheif 1.23.6), and
